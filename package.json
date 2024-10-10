@@ -1,0 +1,729 @@
+{
+    "name": "vscode-leetnotion",
+    "displayName": "Leetnotion",
+    "description": "Solve LeetCode problems in VsCode and keep your submissions in sync with your Ultimate LeetCode Tracker template in notion",
+    "version": "0.0.1",
+    "author": "Leetnotion",
+    "publisher": "Leetnotion",
+    "license": "MIT",
+    "icon": "resources/LeetNotion.png",
+    "engines": {
+        "vscode": "^1.57.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Leetnotion/vscode-leetnotion"
+    },
+    "homepage": "https://github.com/Leetnotion/vscode-leetnotion/blob/master/README.md",
+    "categories": [
+        "Other",
+        "Snippets",
+        "Education"
+    ],
+    "keywords": [
+        "leetcode",
+        "algorithm",
+        "interview",
+        "notion"
+    ],
+    "preview": true,
+    "activationEvents": [],
+    "main": "./out/src/extension",
+    "contributes": {
+        "commands": [
+            {
+                "command": "leetnotion.deleteCache",
+                "title": "Delete Cache",
+                "category": "Leetnotion"
+            },
+            {
+                "command": "leetnotion.toggleLeetCodeCn",
+                "title": "Switch Endpoint",
+                "category": "Leetnotion",
+                "icon": "$(globe)"
+            },
+            {
+                "command": "leetnotion.signin",
+                "title": "Sign In",
+                "category": "Leetnotion",
+                "icon": "$(sign-in)"
+            },
+            {
+                "command": "leetnotion.signout",
+                "title": "Sign Out",
+                "category": "Leetnotion"
+            },
+            {
+                "command": "leetnotion.manageSessions",
+                "title": "Manage Sessions",
+                "category": "Leetnotion"
+            },
+            {
+                "command": "leetnotion.refreshExplorer",
+                "title": "Refresh",
+                "category": "Leetnotion",
+                "icon": "$(refresh)"
+            },
+            {
+                "command": "leetnotion.pickOne",
+                "title": "Pick One",
+                "category": "Leetnotion"
+            },
+            {
+                "command": "leetnotion.showProblem",
+                "title": "Show Problem",
+                "category": "Leetnotion"
+            },
+            {
+                "command": "leetnotion.previewProblem",
+                "title": "Preview Problem",
+                "category": "Leetnotion"
+            },
+            {
+                "command": "leetnotion.searchProblem",
+                "title": "Search Problem",
+                "category": "Leetnotion",
+                "icon": "$(search)"
+            },
+            {
+                "command": "leetnotion.showSolution",
+                "title": "Show Top Voted Solution",
+                "category": "Leetnotion"
+            },
+            {
+                "command": "leetnotion.testSolution",
+                "title": "Test in LeetCode",
+                "category": "Leetnotion"
+            },
+            {
+                "command": "leetnotion.submitSolution",
+                "title": "Submit to LeetCode",
+                "category": "Leetnotion"
+            },
+            {
+                "command": "leetnotion.addFavorite",
+                "title": "Add to Favorite List",
+                "category": "Leetnotion",
+                "icon": {
+                    "light": "resources/light/like.png",
+                    "dark": "resources/dark/like.png"
+                }
+            },
+            {
+                "command": "leetnotion.removeFavorite",
+                "title": "Remove from Favorite List",
+                "category": "Leetnotion",
+                "icon": {
+                    "light": "resources/light/dislike.png",
+                    "dark": "resources/dark/dislike.png"
+                }
+            },
+            {
+                "command": "leetnotion.switchDefaultLanguage",
+                "title": "Switch Default Language",
+                "category": "Leetnotion"
+            },
+            {
+                "command": "leetnotion.problems.sort",
+                "title": "Sort Problems",
+                "category": "Leetnotion",
+                "icon": "$(sort-precedence)"
+            }
+        ],
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "leetnotion",
+                    "title": "Leetnotion",
+                    "icon": "resources/LeetCode.svg"
+                }
+            ]
+        },
+        "views": {
+            "leetnotion": [
+                {
+                    "id": "leetnotionExplorer",
+                    "name": "Problems"
+                }
+            ]
+        },
+        "menus": {
+            "view/title": [
+                {
+                    "command": "leetnotion.toggleLeetCodeCn",
+                    "when": "view == leetnotionExplorer",
+                    "group": "navigation@0"
+                },
+                {
+                    "command": "leetnotion.signin",
+                    "when": "view == leetnotionExplorer",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "leetnotion.searchProblem",
+                    "when": "view == leetnotionExplorer",
+                    "group": "navigation@2"
+                },
+                {
+                    "command": "leetnotion.refreshExplorer",
+                    "when": "view == leetnotionExplorer",
+                    "group": "navigation@3"
+                },
+                {
+                    "command": "leetnotion.signout",
+                    "when": "view == leetnotionExplorer",
+                    "group": "overflow@1"
+                },
+                {
+                    "command": "leetnotion.pickOne",
+                    "when": "view == leetnotionExplorer",
+                    "group": "overflow@2"
+                },
+                {
+                    "command": "leetnotion.problems.sort",
+                    "when": "view == leetnotionExplorer",
+                    "group": "overflow@3"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "leetnotion.previewProblem",
+                    "when": "view == leetnotionExplorer && viewItem =~ /problem*/",
+                    "group": "leetnotion@1"
+                },
+                {
+                    "command": "leetnotion.showProblem",
+                    "when": "view == leetnotionExplorer && viewItem =~ /problem*/",
+                    "group": "leetnotion@2"
+                },
+                {
+                    "command": "leetnotion.showSolution",
+                    "when": "view == leetnotionExplorer && viewItem =~ /problem*/",
+                    "group": "leetnotion@3"
+                },
+                {
+                    "command": "leetnotion.addFavorite",
+                    "when": "view == leetnotionExplorer && viewItem == problem",
+                    "group": "inline"
+                },
+                {
+                    "command": "leetnotion.removeFavorite",
+                    "when": "view == leetnotionExplorer && viewItem == problem-favorite",
+                    "group": "inline"
+                }
+            ],
+            "commandPalette": [
+                {
+                    "command": "leetnotion.showProblem",
+                    "when": "never"
+                },
+                {
+                    "command": "leetnotion.showSolution",
+                    "when": "never"
+                },
+                {
+                    "command": "leetnotion.previewProblem",
+                    "when": "never"
+                },
+                {
+                    "command": "leetnotion.addFavorite",
+                    "when": "never"
+                },
+                {
+                    "command": "leetnotion.removeFavorite",
+                    "when": "never"
+                }
+            ],
+            "explorer/context": [
+                {
+                    "command": "leetnotion.testSolution",
+                    "when": "explorerResourceIsFolder == false",
+                    "group": "leetnotion@1"
+                },
+                {
+                    "command": "leetnotion.submitSolution",
+                    "when": "explorerResourceIsFolder == false",
+                    "group": "leetnotion@2"
+                }
+            ],
+            "editor/context": [
+                {
+                    "submenu": "leetnotion.editorAction"
+                }
+            ],
+            "leetnotion.editorAction": [
+                {
+                    "command": "leetnotion.testSolution",
+                    "group": "leetnotion@1"
+                },
+                {
+                    "command": "leetnotion.submitSolution",
+                    "group": "leetnotion@2"
+                },
+                {
+                    "command": "leetnotion.showSolution",
+                    "group": "leetnotion@3"
+                },
+                {
+                    "command": "leetnotion.previewProblem",
+                    "group": "leetnotion@4"
+                }
+            ]
+        },
+        "submenus": [
+            {
+                "id": "leetnotion.editorAction",
+                "label": "Leetnotion"
+            }
+        ],
+        "configuration": [
+            {
+                "title": "Leetnotion",
+                "properties": {
+                    "leetnotion.hideSolved": {
+                        "type": "boolean",
+                        "default": false,
+                        "scope": "application",
+                        "description": "Hide solved problems."
+                    },
+                    "leetnotion.defaultLanguage": {
+                        "type": "string",
+                        "enum": [
+                            "bash",
+                            "c",
+                            "cpp",
+                            "csharp",
+                            "golang",
+                            "java",
+                            "javascript",
+                            "kotlin",
+                            "mysql",
+                            "php",
+                            "python",
+                            "python3",
+                            "ruby",
+                            "rust",
+                            "scala",
+                            "swift",
+                            "typescript"
+                        ],
+                        "scope": "application",
+                        "description": "Default language for solving the problems."
+                    },
+                    "leetnotion.showDescription": {
+                        "type": "string",
+                        "default": "In Webview",
+                        "enum": [
+                            "In Webview",
+                            "In File Comment",
+                            "Both",
+                            "None"
+                        ],
+                        "enumDescriptions": [
+                            "Show the problem description in a new webview window",
+                            "Show the problem description in the file's comment"
+                        ],
+                        "scope": "application",
+                        "description": "Specify where to show the description."
+                    },
+                    "leetnotion.showCommentDescription": {
+                        "type": "boolean",
+                        "default": false,
+                        "scope": "application",
+                        "description": "[Deprecated] Include problem description in comments.",
+                        "deprecationMessage": "This setting will be deprecated in 0.17.0, please use 'leetnotion.showDescription' instead"
+                    },
+                    "leetnotion.hint.setDefaultLanguage": {
+                        "type": "boolean",
+                        "default": true,
+                        "scope": "application",
+                        "description": "Show a hint to set the default language."
+                    },
+                    "leetnotion.hint.configWebviewMarkdown": {
+                        "type": "boolean",
+                        "default": true,
+                        "scope": "application",
+                        "description": "Show a hint to change webview appearance through markdown config."
+                    },
+                    "leetnotion.hint.commentDescription": {
+                        "type": "boolean",
+                        "default": true,
+                        "scope": "application",
+                        "description": "Show a hint to enable comment description in solution code file."
+                    },
+                    "leetnotion.hint.commandShortcut": {
+                        "type": "boolean",
+                        "default": true,
+                        "scope": "application",
+                        "description": "Show a hint to configure commands key binding."
+                    },
+                    "leetnotion.useWsl": {
+                        "type": "boolean",
+                        "default": false,
+                        "scope": "application",
+                        "description": "Use the Windows Subsystem for Linux."
+                    },
+                    "leetnotion.endpoint": {
+                        "type": "string",
+                        "default": "leetcode",
+                        "scope": "application",
+                        "enum": [
+                            "leetcode",
+                            "leetcode-cn"
+                        ],
+                        "description": "Endpoint of the user account."
+                    },
+                    "leetnotion.useEndpointTranslation": {
+                        "type": "boolean",
+                        "default": true,
+                        "scope": "application",
+                        "description": "Use endpoint's translation (if available)"
+                    },
+                    "leetnotion.workspaceFolder": {
+                        "type": "string",
+                        "scope": "application",
+                        "description": "The path of the workspace folder to store the problem files.",
+                        "default": ""
+                    },
+                    "leetnotion.filePath": {
+                        "type": "object",
+                        "scope": "application",
+                        "description": "The output folder and filename to save the problem files.",
+                        "properties": {
+                            "default": {
+                                "type": "object",
+                                "properties": {
+                                    "folder": {
+                                        "type": "string",
+                                        "examples": [
+                                            "src"
+                                        ]
+                                    },
+                                    "filename": {
+                                        "type": "string",
+                                        "examples": [
+                                            "${camelCaseName}.${ext}",
+                                            "${PascalCaseName}.${ext}",
+                                            "${id}-${kebab-case-name}.${ext}",
+                                            "${id}_${snake_case_name}.${ext}"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "folder",
+                                    "filename"
+                                ]
+                            },
+                            "bash": {
+                                "type": "object",
+                                "properties": {
+                                    "folder": {
+                                        "type": "string"
+                                    },
+                                    "filename": {
+                                        "type": "string"
+                                    }
+                                },
+                                "minProperties": 1
+                            },
+                            "c": {
+                                "type": "object",
+                                "properties": {
+                                    "folder": {
+                                        "type": "string"
+                                    },
+                                    "filename": {
+                                        "type": "string"
+                                    }
+                                },
+                                "minProperties": 1
+                            },
+                            "cpp": {
+                                "type": "object",
+                                "properties": {
+                                    "folder": {
+                                        "type": "string"
+                                    },
+                                    "filename": {
+                                        "type": "string"
+                                    }
+                                },
+                                "minProperties": 1
+                            },
+                            "csharp": {
+                                "type": "object",
+                                "properties": {
+                                    "folder": {
+                                        "type": "string"
+                                    },
+                                    "filename": {
+                                        "type": "string"
+                                    }
+                                },
+                                "minProperties": 1
+                            },
+                            "golang": {
+                                "type": "object",
+                                "properties": {
+                                    "folder": {
+                                        "type": "string"
+                                    },
+                                    "filename": {
+                                        "type": "string"
+                                    }
+                                },
+                                "minProperties": 1
+                            },
+                            "java": {
+                                "type": "object",
+                                "properties": {
+                                    "folder": {
+                                        "type": "string"
+                                    },
+                                    "filename": {
+                                        "type": "string"
+                                    }
+                                },
+                                "minProperties": 1
+                            },
+                            "javascript": {
+                                "type": "object",
+                                "properties": {
+                                    "folder": {
+                                        "type": "string"
+                                    },
+                                    "filename": {
+                                        "type": "string"
+                                    }
+                                },
+                                "minProperties": 1
+                            },
+                            "kotlin": {
+                                "type": "object",
+                                "properties": {
+                                    "folder": {
+                                        "type": "string"
+                                    },
+                                    "filename": {
+                                        "type": "string"
+                                    }
+                                },
+                                "minProperties": 1
+                            },
+                            "mysql": {
+                                "type": "object",
+                                "properties": {
+                                    "folder": {
+                                        "type": "string"
+                                    },
+                                    "filename": {
+                                        "type": "string"
+                                    }
+                                },
+                                "minProperties": 1
+                            },
+                            "php": {
+                                "type": "object",
+                                "properties": {
+                                    "folder": {
+                                        "type": "string"
+                                    },
+                                    "filename": {
+                                        "type": "string"
+                                    }
+                                },
+                                "minProperties": 1
+                            },
+                            "python": {
+                                "type": "object",
+                                "properties": {
+                                    "folder": {
+                                        "type": "string"
+                                    },
+                                    "filename": {
+                                        "type": "string"
+                                    }
+                                },
+                                "minProperties": 1
+                            },
+                            "python3": {
+                                "type": "object",
+                                "properties": {
+                                    "folder": {
+                                        "type": "string"
+                                    },
+                                    "filename": {
+                                        "type": "string"
+                                    }
+                                },
+                                "minProperties": 1
+                            },
+                            "ruby": {
+                                "type": "object",
+                                "properties": {
+                                    "folder": {
+                                        "type": "string"
+                                    },
+                                    "filename": {
+                                        "type": "string"
+                                    }
+                                },
+                                "minProperties": 1
+                            },
+                            "rust": {
+                                "type": "object",
+                                "properties": {
+                                    "folder": {
+                                        "type": "string"
+                                    },
+                                    "filename": {
+                                        "type": "string"
+                                    }
+                                },
+                                "minProperties": 1
+                            },
+                            "scala": {
+                                "type": "object",
+                                "properties": {
+                                    "folder": {
+                                        "type": "string"
+                                    },
+                                    "filename": {
+                                        "type": "string"
+                                    }
+                                },
+                                "minProperties": 1
+                            },
+                            "swift": {
+                                "type": "object",
+                                "properties": {
+                                    "folder": {
+                                        "type": "string"
+                                    },
+                                    "filename": {
+                                        "type": "string"
+                                    }
+                                },
+                                "minProperties": 1
+                            }
+                        },
+                        "additionalProperties": {
+                            "type": "object",
+                            "properties": {
+                                "folder": {
+                                    "type": "string"
+                                },
+                                "filename": {
+                                    "type": "string"
+                                }
+                            },
+                            "minProperties": 1
+                        },
+                        "default": {
+                            "default": {
+                                "folder": "",
+                                "filename": "${id}.${kebab-case-name}.${ext}"
+                            }
+                        }
+                    },
+                    "leetnotion.enableStatusBar": {
+                        "type": "boolean",
+                        "default": true,
+                        "scope": "application",
+                        "description": "Show the LeetCode status bar or not."
+                    },
+                    "leetnotion.editor.shortcuts": {
+                        "type": "array",
+                        "default": [
+                            "submit",
+                            "test"
+                        ],
+                        "scope": "application",
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "submit",
+                                "test",
+                                "star",
+                                "solution",
+                                "description"
+                            ],
+                            "enumDescriptions": [
+                                "Submit your answer to LeetCode.",
+                                "Test your answer with customized test cases.",
+                                "Star or unstar the current problem.",
+                                "Show the top voted solution for the current problem.",
+                                "Show the problem description page."
+                            ]
+                        },
+                        "description": "Customize the shortcuts in editors."
+                    },
+                    "leetnotion.enableSideMode": {
+                        "type": "boolean",
+                        "default": true,
+                        "scope": "application",
+                        "description": "Determine whether to group all webview pages into the second editor column when solving problems."
+                    },
+                    "leetnotion.nodePath": {
+                        "type": "string",
+                        "default": "node",
+                        "scope": "application",
+                        "description": "The Node.js executable path. for example, C:\\Program Files\\nodejs\\node.exe"
+                    },
+                    "leetnotion.colorizeProblems": {
+                        "type": "boolean",
+                        "default": true,
+                        "scope": "application",
+                        "description": "Add difficulty badge and colorize problems files in explorer tree."
+                    },
+                    "leetnotion.problems.sortStrategy": {
+                        "type": "string",
+                        "default": "None",
+                        "scope": "application",
+                        "enum": [
+                            "None",
+                            "Acceptance Rate (Ascending)",
+                            "Acceptance Rate (Descending)"
+                        ],
+                        "description": "Sorting strategy for problems list."
+                    },
+                    "leetnotion.allowReportData": {
+                        "type": "boolean",
+                        "default": true,
+                        "scope": "application",
+                        "description": "Allow LeetCode to report anonymous usage data to improve the product."
+                    }
+                }
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "lint": "tslint --project tsconfig.json -e src/*.d.ts -t verbose",
+        "build": "vsce package",
+        "vs-publish": "vsce publish"
+    },
+    "devDependencies": {
+        "@types/fs-extra": "^9.0.11",
+        "@types/lodash": "^4.14.170",
+        "@types/markdown-it": "0.0.7",
+        "@types/mocha": "^2.2.42",
+        "@types/node": "^14.14.33",
+        "@types/require-from-string": "^1.2.0",
+        "@types/vscode": "1.57.0",
+        "tslint": "^5.20.1",
+        "typescript": "^4.3.2"
+    },
+    "dependencies": {
+        "axios": "^1.6.8",
+        "fs-extra": "^10.0.0",
+        "highlight.js": "^10.7.2",
+        "lodash": "^4.17.21",
+        "markdown-it": "^8.4.2",
+        "require-from-string": "^2.0.2",
+        "unescape-js": "^1.1.4",
+        "vsc-leetcode-cli": "2.8.1"
+    }
+}
