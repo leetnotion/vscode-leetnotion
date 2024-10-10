@@ -689,9 +689,41 @@
                     },
                     "leetnotion.allowReportData": {
                         "type": "boolean",
-                        "default": true,
+                        "default": false,
                         "scope": "application",
                         "description": "Allow LeetCode to report anonymous usage data to improve the product."
+                    },
+                    "leetnotion.enableNotionIntegration": {
+                        "type": "boolean",
+                        "default": true,
+                        "scope": "application",
+                        "description": "Enable notion integration to sync with your notion template."
+                    },
+                    "leetnotion.addCodeToSubmissionPage": {
+                        "type": "boolean",
+                        "default": true,
+                        "scope": "application",
+                        "description": "Add code to your problem submission page in notion which is created after a successful submission."
+                    },
+                    "leetnotion.companies.sortStrategy": {
+                        "type": "string",
+                        "default": "Popularity",
+                        "scope": "application",
+                        "enum": [
+                            "Alphabetical",
+                            "Popularity"
+                        ],
+                        "description": "Sorting strategy for companies."
+                    },
+                    "leetnotion.questionTags.sortStrategy": {
+                        "type": "string",
+                        "default": "Popularity",
+                        "scope": "application",
+                        "enum": [
+                            "Alphabetical",
+                            "Popularity"
+                        ],
+                        "description": "Sorting strategy for companies."
                     }
                 }
             }

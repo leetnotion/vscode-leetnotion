@@ -5,7 +5,7 @@ import { workspace, WorkspaceConfiguration } from "vscode";
 import { DescriptionConfiguration } from "../shared";
 
 export function getWorkspaceConfiguration(): WorkspaceConfiguration {
-    return workspace.getConfiguration("leetcode");
+    return workspace.getConfiguration("leetnotion");
 }
 
 export function shouldHideSolvedProblem(): boolean {
@@ -60,6 +60,22 @@ export function getDescriptionConfiguration(): IDescriptionConfiguration {
     }
 
     return config;
+}
+
+export function hasNotionIntegrationEnabled(): boolean {
+    return getWorkspaceConfiguration().get<boolean>("enableNotionIntegration", true);
+}
+
+export function shouldAddCodeToSubmissionPage(): boolean {
+    return getWorkspaceConfiguration().get<boolean>("addCodeToSubmissionPage", true);
+}
+
+export function getCompaniesSortingStrategy(): string {
+    return getWorkspaceConfiguration().get<string>("companies.sortStrategy", "Popularity");
+}
+
+export function getQuestionTagsSortingStrategy(): string {
+    return getWorkspaceConfiguration().get<string>("questionTags.sortingStrategy", "Popularity");
 }
 
 export interface IDescriptionConfiguration {

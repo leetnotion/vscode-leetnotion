@@ -1,9 +1,11 @@
 // Copyright (c) jdneo. All rights reserved.
 // Licensed under the MIT license.
 
+import { leetCodeChannel } from "../leetCodeChannel";
 import { leetCodeExecutor } from "../leetCodeExecutor";
 import { leetCodeManager } from "../leetCodeManager";
 import { IProblem, ProblemState, UserStatus } from "../shared";
+import { getCompanyTags, getTopicTags } from "../utils/dataUtils";
 import * as settingUtils from "../utils/settingUtils";
 import { DialogType, promptForOpenOutputChannel } from "../utils/uiUtils";
 
@@ -18,7 +20,9 @@ export async function listProblems(): Promise<IProblem[]> {
         const problems: IProblem[] = [];
         const lines: string[] = result.split("\n");
         const reg: RegExp = /^(.)\s(.{1,2})\s(.)\s\[\s*(\d*)\s*\]\s*(.*)\s*(Easy|Medium|Hard)\s*\((\s*\d+\.\d+ %)\)/;
-        const { companies, tags } = await leetCodeExecutor.getCompaniesAndTags();
+        // const { companies, tags } = await leetCodeExecutor.getCompaniesAndTags();
+        const companies = getCompanyTags();
+        const tags = getTopicTags();
         for (const line of lines) {
             const match: RegExpMatchArray | null = line.match(reg);
             if (match && match.length === 8) {
@@ -39,6 +43,7 @@ export async function listProblems(): Promise<IProblem[]> {
         return problems.reverse();
     } catch (error) {
         await promptForOpenOutputChannel("Failed to list problems. Please open the output channel for details.", DialogType.error);
+        leetCodeChannel.append(error);
         return [];
     }
 }
