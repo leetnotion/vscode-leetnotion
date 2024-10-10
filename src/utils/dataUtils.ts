@@ -6,13 +6,10 @@ import * as path from 'path';
 import { leetcodeClient } from '../leetCodeClient';
 import { globalState } from '../globalState';
 import { leetCodeChannel } from '../leetCodeChannel';
+import { CompanyTags, Sheets, TopicTags } from '../types';
 
 const sheetsPath = '../../../data/sheets.json';
 const companyTagsPath = '../../../data/companyTags.json';
-
-type Sheets = Record<string, Record<string, string[]>>;
-type CompanyTags = Record<string, string[]>;
-type TopicTags = Record<string, string[]>;
 
 export function getSheets(): Sheets {
     const sheets = fsExtra.readJSONSync(path.join(__dirname, sheetsPath)) as Sheets;

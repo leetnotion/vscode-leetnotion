@@ -9,12 +9,14 @@ import { Category, defaultProblem, ProblemState, SortingStrategy } from "../shar
 import { shouldHideSolvedProblem } from "../utils/settingUtils";
 import { LeetCodeNode } from "./LeetCodeNode";
 import { globalState } from "../globalState";
-import { DialogType, promptForOpenOutputChannel } from "../utils/uiUtils";
+import { getSheets } from "../utils/dataUtils";
+import { Sheets } from "../types";
 
 class ExplorerNodeManager implements Disposable {
     private explorerNodeMap: Map<string, LeetCodeNode> = new Map<string, LeetCodeNode>();
     private companySet: Set<string> = new Set<string>();
     private tagSet: Set<string> = new Set<string>();
+    private sheetSet: Set<string> = new Set<string>();
     private dailyProblem: string | undefined;
 
     public async refreshCache(): Promise<void> {
@@ -31,6 +33,12 @@ class ExplorerNodeManager implements Disposable {
             }
             for (const tag of problem.tags) {
                 this.tagSet.add(tag);
+            }
+        }
+        const sheets = getSheets();
+        if (sheets) {
+            for (const sheetName of Object.keys(sheets)) {
+                this.sheetSet.add(sheetName);
             }
         }
     }
@@ -60,6 +68,10 @@ class ExplorerNodeManager implements Disposable {
             new LeetCodeNode(Object.assign({}, defaultProblem, {
                 id: Category.Daily,
                 name: Category.Daily,
+            }), false),
+            new LeetCodeNode(Object.assign({}, defaultProblem, {
+                id: Category.Sheets,
+                name: Category.Sheets,
             }), false)
         ];
     }
@@ -132,6 +144,14 @@ class ExplorerNodeManager implements Disposable {
         return Array.from(this.explorerNodeMap.values()).filter(({ id }) => id == this.dailyProblem);
     }
 
+    public getSheetNodes(): LeetCodeNode[] {
+        const res: LeetCodeNode[] = [];
+        for (const sheetName of this.sheetSet.values()) {
+            res.push(new LeetCodeNode({ ...defaultProblem, id: `${Category.Sheets}.${sheetName}`, name: sheetName }, false));
+        }
+        return res;
+    }
+
     public getChildrenNodesById(id: string): LeetCodeNode[] {
         // The sub-category node's id is named as {Category.SubName}
         const metaInfo: string[] = id.split(".");
@@ -153,6 +173,26 @@ class ExplorerNodeManager implements Disposable {
                         res.push(node);
                     }
                     break;
+                case Category.Sheets: {
+                    const sheetName = metaInfo[1];
+                    for(const sublist of Object.keys(getSheets()[sheetName])) {
+                        res.push(
+                            new LeetCodeNode(Object.assign({}, defaultProblem, {
+                                id: `${Category.Sublist}.${sheetName}.${sublist}`,
+                                name: sublist,
+                            }), false),
+                        )
+                    }
+                    return res;
+                }
+                case Category.Sublist: {
+                    const questionIds = getSheets()[metaInfo[1]][metaInfo[2]];
+                    const ids = new Set<string>(questionIds);
+                    for (const node of this.explorerNodeMap.values()) {
+                        if(ids.has(node.id)) res.push(node);
+                    }
+                    return res;
+                }
                 default:
                     break;
             }

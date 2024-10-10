@@ -6,6 +6,7 @@ import { getLeetCodeEndpoint } from "../commands/plugin";
 import { Endpoint, IProblem } from "../shared";
 import { ILeetCodeWebviewOption, LeetCodeWebview } from "./LeetCodeWebview";
 import { markdownEngine } from "./markdownEngine";
+import * as _ from "lodash"
 
 class LeetCodePreviewProvider extends LeetCodeWebview {
     protected readonly viewType: string = "leetnotion.preview";
@@ -77,7 +78,7 @@ class LeetCodePreviewProvider extends LeetCodeWebview {
         const tags: string = [
             `<details>`,
             `<summary><strong>Tags</strong></summary>`,
-            markdownEngine.render(this.description.tags.map((t: string) => `[\`${t}\`](${this.getTagLink(t)})`).join(" | ")),
+            markdownEngine.render(this.description.tags.map((t: string) => `[\`${t}\`](${this.getTagLink(_.kebabCase(t))})`).join(" | ")),
             `</details>`,
         ].join("\n");
         const companies: string = [

@@ -28,6 +28,7 @@ import TrackData from "./utils/trackingUtils";
 import { globalState } from "./globalState";
 import { leetcodeClient } from "./leetCodeClient";
 import { clearInterval, setInterval } from "timers";
+import { repeatAction } from "./utils/toolUtils";
 
 let interval: NodeJS.Timeout;
 
@@ -45,14 +46,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         leetCodeTreeDataProvider.initialize(context);
         globalState.initialize(context);
         leetcodeClient.initialize(context);
-        leetcodeClient.checkIn();
-        leetcodeClient.collectEasterEgg();
-        leetcodeClient.setDailyProblem();
-        interval = setInterval(() => {
+
+        interval = repeatAction(() => {
             leetcodeClient.checkIn();
             leetcodeClient.collectEasterEgg();
-            leetcodeClient.setDailyProblem();
-        }, 1800000)
+            leetcodeClient.setDailyProblem().then(() => {
+                leetCodeTreeDataProvider.refresh();
+            });
+        })
 
         context.subscriptions.push(
             leetCodeStatusBarController,

@@ -42,3 +42,8 @@ export function extractCookie(cookie: string): ICredential {
     });
     return { csrf, session };
 }
+
+export function repeatAction(fn: () => void, time = 180000): NodeJS.Timeout {
+    fn();
+    return setInterval(fn, time)
+}
