@@ -2,9 +2,12 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
+import { TopicTags } from "./types";
 
 const CookieKey = "leetcode-cookie";
 const UserStatusKey = "leetcode-user-status";
+const TopicTagsKey = "leetcode-topic-tags";
+const DailyProblemKey = "leetcode-daily-problem";
 
 export type UserDataType = {
     isSignedIn: boolean;
@@ -49,6 +52,22 @@ class GlobalState {
     public removeAll(): void {
         this._state.update(CookieKey, undefined);
         this._state.update(UserStatusKey, undefined);
+    }
+
+    public setTopicTags(topicTags: TopicTags): void {
+        this._state.update(TopicTagsKey, topicTags);
+    }
+
+    public getTopicTags(): TopicTags | undefined {
+        return this._state.get(TopicTagsKey);
+    }
+
+    public setDailyProblem(dailyProblemId: string): void {
+        this._state.update(DailyProblemKey, dailyProblemId);
+    }
+
+    public getDailyProblem(): string | undefined {
+        return this._state.get(DailyProblemKey);
     }
 }
 

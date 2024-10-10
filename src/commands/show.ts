@@ -125,7 +125,7 @@ export async function showSolution(input: LeetCodeNode | vscode.Uri): Promise<vo
 }
 
 async function fetchProblemLanguage(): Promise<string | undefined> {
-    const leetCodeConfig: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("leetcode");
+    const leetCodeConfig: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("leetnotion");
     let defaultLanguage: string | undefined = leetCodeConfig.get<string>("defaultLanguage");
     if (defaultLanguage && languages.indexOf(defaultLanguage) < 0) {
         defaultLanguage = undefined;
@@ -162,7 +162,7 @@ async function showProblemInternal(node: IProblem): Promise<void> {
             return;
         }
 
-        const leetCodeConfig: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("leetcode");
+        const leetCodeConfig: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("leetnotion");
         const workspaceFolder: string = await selectWorkspaceFolder();
         if (!workspaceFolder) {
             return;
@@ -214,7 +214,7 @@ async function showProblemInternal(node: IProblem): Promise<void> {
 }
 
 async function showDescriptionView(node: IProblem): Promise<void> {
-    return previewProblem(node, vscode.workspace.getConfiguration("leetcode").get<boolean>("enableSideMode", true));
+    return previewProblem(node, vscode.workspace.getConfiguration("leetnotion").get<boolean>("enableSideMode", true));
 }
 async function parseProblemsToPicks(p: Promise<IProblem[]>): Promise<Array<IQuickItemEx<IProblem>>> {
     return new Promise(async (resolve: (res: Array<IQuickItemEx<IProblem>>) => void): Promise<void> => {

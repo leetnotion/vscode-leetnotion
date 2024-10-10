@@ -9,6 +9,7 @@ import { Category, defaultProblem, ProblemState } from "../shared";
 import { explorerNodeManager } from "./explorerNodeManager";
 import { LeetCodeNode } from "./LeetCodeNode";
 import { globalState } from "../globalState";
+import { leetCodeChannel } from "../leetCodeChannel";
 
 export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<LeetCodeNode> {
     private context: vscode.ExtensionContext;
@@ -85,6 +86,10 @@ export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<LeetCod
                     return explorerNodeManager.getAllTagNodes();
                 case Category.Company:
                     return explorerNodeManager.getAllCompanyNodes();
+                case Category.Daily:
+                    leetCodeChannel.appendLine("Hello world");
+                    leetCodeChannel.appendLine(globalState.getDailyProblem() as string);
+                    return explorerNodeManager.getDailyNode();
                 default:
                     if (element.isProblem) {
                         return [];

@@ -101,6 +101,8 @@ export enum Category {
     Tag = "Tag",
     Company = "Company",
     Favorite = "Favorite",
+    Daily = "Daily",
+    Sheets = "Sheets"
 }
 
 export const supportedPlugins: string[] = ["company", "solution.discuss", "leetcode.cn"];
@@ -146,7 +148,7 @@ export const urlsCn = {
 };
 
 export const getUrl = (key: string) => {
-    const leetCodeConfig: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("leetcode");
+    const leetCodeConfig: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("leetnotion");
     const point = leetCodeConfig.get<string>("endpoint", Endpoint.LeetCode);
     switch (point) {
         case Endpoint.LeetCodeCN:

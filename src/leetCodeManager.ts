@@ -14,6 +14,7 @@ import { getLeetCodeEndpoint } from "./commands/plugin";
 import { globalState } from "./globalState";
 import { queryUserData } from "./request/query-user-data";
 import { parseQuery } from "./utils/toolUtils";
+import { leetcodeClient } from "./leetCodeClient";
 
 class LeetCodeManager extends EventEmitter {
     private currentUser: string | undefined;
@@ -37,6 +38,7 @@ class LeetCodeManager extends EventEmitter {
             this.currentUser = undefined;
             this.userStatus = UserStatus.SignedOut;
             globalState.removeAll();
+            leetcodeClient.signOut();
         } finally {
             this.emit("statusChanged");
         }
@@ -129,6 +131,7 @@ class LeetCodeManager extends EventEmitter {
             this.currentUser = undefined;
             this.userStatus = UserStatus.SignedOut;
             globalState.removeAll();
+            leetcodeClient.signOut();
             this.emit("statusChanged");
         } catch (error) {
             // swallow the error when sign out.

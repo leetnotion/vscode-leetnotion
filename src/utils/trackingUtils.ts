@@ -68,7 +68,7 @@ function getRandomString(len: number) {
 }
 
 function getAllowReportDataConfig() {
-    const leetCodeConfig = vscode.workspace.getConfiguration("leetcode");
+    const leetCodeConfig = vscode.workspace.getConfiguration("leetnotion");
     const allowReportData = !!leetCodeConfig.get<boolean>("allowReportData");
     return allowReportData;
 }

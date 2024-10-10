@@ -26,6 +26,10 @@ import { leetCodeSubmissionProvider } from "./webview/leetCodeSubmissionProvider
 import { markdownEngine } from "./webview/markdownEngine";
 import TrackData from "./utils/trackingUtils";
 import { globalState } from "./globalState";
+import { leetcodeClient } from "./leetCodeClient";
+import { clearInterval, setInterval } from "timers";
+
+let interval: NodeJS.Timeout;
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
     try {
@@ -40,6 +44,15 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
         leetCodeTreeDataProvider.initialize(context);
         globalState.initialize(context);
+        leetcodeClient.initialize(context);
+        leetcodeClient.checkIn();
+        leetcodeClient.collectEasterEgg();
+        leetcodeClient.setDailyProblem();
+        interval = setInterval(() => {
+            leetcodeClient.checkIn();
+            leetcodeClient.collectEasterEgg();
+            leetcodeClient.setDailyProblem();
+        }, 1800000)
 
         context.subscriptions.push(
             leetCodeStatusBarController,
@@ -97,7 +110,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             vscode.commands.registerCommand("leetnotion.switchDefaultLanguage", () => switchDefaultLanguage()),
             vscode.commands.registerCommand("leetnotion.addFavorite", (node: LeetCodeNode) => star.addFavorite(node)),
             vscode.commands.registerCommand("leetnotion.removeFavorite", (node: LeetCodeNode) => star.removeFavorite(node)),
-            vscode.commands.registerCommand("leetnotion.problems.sort", () => plugin.switchSortingStrategy())
+            vscode.commands.registerCommand("leetnotion.problems.sort", () => plugin.switchSortingStrategy()),
+            {
+                dispose: () => clearInterval(interval)
+            }
         );
 
         await leetCodeExecutor.switchEndpoint(plugin.getLeetCodeEndpoint());
@@ -110,5 +126,5 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 }
 
 export function deactivate(): void {
-    // Do nothing.
+    clearInterval(interval);
 }

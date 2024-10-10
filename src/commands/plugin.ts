@@ -30,7 +30,7 @@ export async function switchEndpoint(): Promise<void> {
     if (!choice || choice.value === getLeetCodeEndpoint()) {
         return;
     }
-    const leetCodeConfig: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("leetcode");
+    const leetCodeConfig: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("leetnotion");
     try {
         const endpoint: string = choice.value;
         await leetCodeExecutor.switchEndpoint(endpoint);
@@ -50,7 +50,7 @@ export async function switchEndpoint(): Promise<void> {
 }
 
 export function getLeetCodeEndpoint(): string {
-    const leetCodeConfig: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("leetcode");
+    const leetCodeConfig: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("leetnotion");
     return leetCodeConfig.get<string>("endpoint", Endpoint.LeetCode);
 }
 
@@ -77,12 +77,12 @@ export async function switchSortingStrategy(): Promise<void> {
         return;
     }
 
-    const leetCodeConfig: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("leetcode");
+    const leetCodeConfig: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("leetnotion");
     await leetCodeConfig.update("problems.sortStrategy", choice.value, true);
     await leetCodeTreeDataProvider.refresh();
 }
 
 export function getSortingStrategy(): SortingStrategy {
-    const leetCodeConfig: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("leetcode");
+    const leetCodeConfig: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("leetnotion");
     return leetCodeConfig.get<SortingStrategy>("problems.sortStrategy", SortingStrategy.None);
 }

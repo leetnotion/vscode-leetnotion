@@ -8,15 +8,19 @@ import { getSortingStrategy } from "../commands/plugin";
 import { Category, defaultProblem, ProblemState, SortingStrategy } from "../shared";
 import { shouldHideSolvedProblem } from "../utils/settingUtils";
 import { LeetCodeNode } from "./LeetCodeNode";
+import { globalState } from "../globalState";
+import { DialogType, promptForOpenOutputChannel } from "../utils/uiUtils";
 
 class ExplorerNodeManager implements Disposable {
     private explorerNodeMap: Map<string, LeetCodeNode> = new Map<string, LeetCodeNode>();
     private companySet: Set<string> = new Set<string>();
     private tagSet: Set<string> = new Set<string>();
+    private dailyProblem: string | undefined;
 
     public async refreshCache(): Promise<void> {
         this.dispose();
         const shouldHideSolved: boolean = shouldHideSolvedProblem();
+        this.dailyProblem = globalState.getDailyProblem();
         for (const problem of await list.listProblems()) {
             if (shouldHideSolved && problem.state === ProblemState.AC) {
                 continue;
@@ -53,6 +57,10 @@ class ExplorerNodeManager implements Disposable {
                 id: Category.Favorite,
                 name: Category.Favorite,
             }), false),
+            new LeetCodeNode(Object.assign({}, defaultProblem, {
+                id: Category.Daily,
+                name: Category.Daily,
+            }), false)
         ];
     }
 
@@ -118,6 +126,10 @@ class ExplorerNodeManager implements Disposable {
             }
         }
         return this.applySortingStrategy(res);
+    }
+
+    public getDailyNode(): LeetCodeNode[] {
+        return Array.from(this.explorerNodeMap.values()).filter(({ id }) => id == this.dailyProblem);
     }
 
     public getChildrenNodesById(id: string): LeetCodeNode[] {

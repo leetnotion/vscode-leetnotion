@@ -3,10 +3,12 @@
 
 import * as fsExtra from 'fs-extra';
 import * as path from 'path';
+import { leetcodeClient } from '../leetCodeClient';
+import { globalState } from '../globalState';
+import { leetCodeChannel } from '../leetCodeChannel';
 
 const sheetsPath = '../../../data/sheets.json';
 const companyTagsPath = '../../../data/companyTags.json';
-const topicTagsPath = '../../../data/topicTags.json';
 
 type Sheets = Record<string, Record<string, string[]>>;
 type CompanyTags = Record<string, string[]>;
@@ -22,8 +24,20 @@ export function getCompanyTags(): CompanyTags {
     return companyTags;
 }
 
-export function getTopicTags(): TopicTags {
-    const topicTags = fsExtra.readJSONSync(path.join(__dirname, topicTagsPath)) as TopicTags;
+export async function getTopicTags(): Promise<TopicTags> {
+    let topicTags = globalState.getTopicTags();
+
+    if (!topicTags) {
+        topicTags = await leetcodeClient.getTopicTags();
+        globalState.setTopicTags(topicTags);
+    } else {
+        leetcodeClient.getTopicTags().then(freshTags => {
+            globalState.setTopicTags(freshTags);
+        }).catch(error => {
+            leetCodeChannel.appendLine(`Failed to update topic tags in the background: ${error}`);
+        });
+    }
+
     return topicTags;
 }
 
