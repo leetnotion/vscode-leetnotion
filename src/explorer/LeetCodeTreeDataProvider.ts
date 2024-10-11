@@ -9,6 +9,7 @@ import { Category, defaultProblem, ProblemState } from "../shared";
 import { explorerNodeManager } from "./explorerNodeManager";
 import { LeetCodeNode } from "./LeetCodeNode";
 import { globalState } from "../globalState";
+import { leetCodeChannel } from "../leetCodeChannel";
 
 export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<LeetCodeNode> {
     private context: vscode.ExtensionContext;
@@ -136,7 +137,20 @@ export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<LeetCod
             return "";
         }
 
-        const childrenNodes: LeetCodeNode[] = this.getChildrenByElementId(element.id);
+        let childrenNodes: LeetCodeNode[] = this.getChildrenByElementId(element.id);
+
+        if(element.id in Category) {
+            return `Count: ${childrenNodes.length}`
+        }
+
+        if(element.id.startsWith(Category.Sheets) && element.id.split(".").length === 2) {
+            let problemNodes: LeetCodeNode[] = [];
+            for(const childNode of childrenNodes) {
+                const problems = this.getChildrenByElementId(childNode.id);
+                problemNodes = [...problemNodes, ...problems];
+            }
+            childrenNodes = problemNodes;
+        }
 
         let acceptedNum: number = 0;
         let failedNum: number = 0;
