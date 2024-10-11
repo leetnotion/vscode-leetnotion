@@ -156,6 +156,30 @@ class ExplorerNodeManager implements Disposable {
         // The sub-category node's id is named as {Category.SubName}
         const metaInfo: string[] = id.split(".");
         const res: LeetCodeNode[] = [];
+
+        if (metaInfo[0] === Category.Sheets) {
+            const sheetName = metaInfo[1];
+            for (const sublist of Object.keys(getSheets()[sheetName])) {
+                res.push(
+                    new LeetCodeNode(Object.assign({}, defaultProblem, {
+                        id: `${Category.Sublist}.${sheetName}.${sublist}`,
+                        name: sublist,
+                    }), false),
+                )
+            }
+            return res;
+        }
+
+        if (metaInfo[0] === Category.Sublist) {
+            const questionIds = getSheets()[metaInfo[1]][metaInfo[2]];
+            const ids = new Set<string>(questionIds);
+            for (const node of this.explorerNodeMap.values()) {
+                if (ids.has(node.id)) res.push(node);
+            }
+            res.sort((a, b) => questionIds.indexOf(a.id) - questionIds.indexOf(b.id));
+            return res;
+        }
+
         for (const node of this.explorerNodeMap.values()) {
             switch (metaInfo[0]) {
                 case Category.Company:
@@ -173,26 +197,6 @@ class ExplorerNodeManager implements Disposable {
                         res.push(node);
                     }
                     break;
-                case Category.Sheets: {
-                    const sheetName = metaInfo[1];
-                    for(const sublist of Object.keys(getSheets()[sheetName])) {
-                        res.push(
-                            new LeetCodeNode(Object.assign({}, defaultProblem, {
-                                id: `${Category.Sublist}.${sheetName}.${sublist}`,
-                                name: sublist,
-                            }), false),
-                        )
-                    }
-                    return res;
-                }
-                case Category.Sublist: {
-                    const questionIds = getSheets()[metaInfo[1]][metaInfo[2]];
-                    const ids = new Set<string>(questionIds);
-                    for (const node of this.explorerNodeMap.values()) {
-                        if(ids.has(node.id)) res.push(node);
-                    }
-                    return res;
-                }
                 default:
                     break;
             }
