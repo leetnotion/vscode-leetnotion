@@ -159,3 +159,18 @@ export const getUrl = (key: string) => {
             return urls[key];
     }
 };
+
+export const defaultHeaders = {
+    "cpp": `#include <bits/stdc++.h>
+using namespace std;
+
+`,
+    "java": `import java.util.*
+
+`
+}
+
+export const defaultFooters = {
+    "cpp": ``,
+    "java": ``
+}

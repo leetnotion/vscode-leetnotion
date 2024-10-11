@@ -724,6 +724,16 @@
                             "Popularity"
                         ],
                         "description": "Sorting strategy for companies."
+                    },
+                    "leetnotion.language.header": {
+                        "type": "object",
+                        "scope": "application",
+                        "description": "A custom header added to each solution file for the selected language."
+                    },
+                    "leetnotion.language.footer": {
+                        "type": "object",
+                        "scope": "application",
+                        "description": "A custom footer added to each solution file for the selected language."
                     }
                 }
             }

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { workspace, WorkspaceConfiguration } from "vscode";
-import { DescriptionConfiguration } from "../shared";
+import { defaultFooters, defaultHeaders, DescriptionConfiguration } from "../shared";
 
 export function getWorkspaceConfiguration(): WorkspaceConfiguration {
     return workspace.getConfiguration("leetnotion");
@@ -76,6 +76,16 @@ export function getCompaniesSortingStrategy(): string {
 
 export function getQuestionTagsSortingStrategy(): string {
     return getWorkspaceConfiguration().get<string>("questionTags.sortingStrategy", "Popularity");
+}
+
+export function getCodeHeader(language: string): string {
+    const headers = getWorkspaceConfiguration().get<Record<string, string>>("language.header");
+    return headers?.[language] ?? defaultHeaders?.[language] ?? "";
+}
+
+export function getCodeFooter(language: string): string {
+    const footers = getWorkspaceConfiguration().get<Record<string, string>>("language.footer");
+    return footers?.[language] ?? defaultFooters?.[language] ?? "";
 }
 
 export interface IDescriptionConfiguration {
