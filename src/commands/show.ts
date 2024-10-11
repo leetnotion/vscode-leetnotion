@@ -157,7 +157,13 @@ async function fetchProblemLanguage(): Promise<string | undefined> {
 
 async function showProblemInternal(node: IProblem): Promise<void> {
     try {
-        const language: string | undefined = await fetchProblemLanguage();
+        const isDatabaseLanguage = node.tags.indexOf("Database") >= 0;
+        let language: string | undefined;
+        if(isDatabaseLanguage) {
+            language = "mysql"
+        } else {
+            language = await fetchProblemLanguage();
+        }
         if (!language) {
             return;
         }

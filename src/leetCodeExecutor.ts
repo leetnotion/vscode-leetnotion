@@ -198,17 +198,6 @@ class LeetCodeExecutor implements Disposable {
         await this.executeCommandWithProgressEx("Updating the favorite list...", "node", commandParams);
     }
 
-    public async getCompaniesAndTags(): Promise<{ companies: { [key: string]: string[] }, tags: { [key: string]: string[] } }> {
-        // preprocess the plugin source
-        const companiesTagsPath: string = path.join(this.leetCodeRootPath, "lib", "plugins", "company.js");
-        const companiesTagsSrc: string = (await fse.readFile(companiesTagsPath, "utf8")).replace(
-            "module.exports = plugin",
-            "module.exports = { COMPONIES, TAGS }",
-        );
-        const { COMPONIES, TAGS } = requireFromString(companiesTagsSrc, companiesTagsPath);
-        return { companies: COMPONIES, tags: TAGS };
-    }
-
     public get node(): string {
         return this.nodeExecutable;
     }

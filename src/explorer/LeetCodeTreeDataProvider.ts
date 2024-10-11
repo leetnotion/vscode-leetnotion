@@ -74,27 +74,31 @@ export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<LeetCod
             // Root view
             return explorerNodeManager.getRootNodes();
         } else {
-            switch (element.id) {
-                case Category.All:
-                    return explorerNodeManager.getAllNodes();
-                case Category.Favorite:
-                    return explorerNodeManager.getFavoriteNodes();
-                case Category.Difficulty:
-                    return explorerNodeManager.getAllDifficultyNodes();
-                case Category.Tag:
-                    return explorerNodeManager.getAllTagNodes();
-                case Category.Company:
-                    return explorerNodeManager.getAllCompanyNodes();
-                case Category.Daily:
-                    return explorerNodeManager.getDailyNode();
-                case Category.Sheets:
-                    return explorerNodeManager.getSheetNodes();
-                default:
-                    if (element.isProblem) {
-                        return [];
-                    }
-                    return explorerNodeManager.getChildrenNodesById(element.id);
-            }
+            return this.getChildrenByElementId(element.id, element.isProblem);
+        }
+    }
+
+    private getChildrenByElementId(id: string, isProblem = false) {
+        switch (id) {
+            case Category.All:
+                return explorerNodeManager.getAllNodes();
+            case Category.Favorite:
+                return explorerNodeManager.getFavoriteNodes();
+            case Category.Difficulty:
+                return explorerNodeManager.getAllDifficultyNodes();
+            case Category.Tag:
+                return explorerNodeManager.getAllTagNodes();
+            case Category.Company:
+                return explorerNodeManager.getAllCompanyNodes();
+            case Category.Daily:
+                return explorerNodeManager.getDailyNode();
+            case Category.Sheets:
+                return explorerNodeManager.getSheetNodes();
+            default:
+                if (isProblem) {
+                    return [];
+                }
+                return explorerNodeManager.getChildrenNodesById(id);
         }
     }
 
@@ -128,15 +132,15 @@ export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<LeetCod
 
     private getSubCategoryTooltip(element: LeetCodeNode): string {
         // return '' unless it is a sub-category node
-        if (element.isProblem || element.id === "ROOT" || element.id in Category) {
+        if (element.isProblem || element.id === "ROOT") {
             return "";
         }
 
-        const childernNodes: LeetCodeNode[] = explorerNodeManager.getChildrenNodesById(element.id);
+        const childrenNodes: LeetCodeNode[] = this.getChildrenByElementId(element.id);
 
         let acceptedNum: number = 0;
         let failedNum: number = 0;
-        for (const node of childernNodes) {
+        for (const node of childrenNodes) {
             switch (node.state) {
                 case ProblemState.AC:
                     acceptedNum++;
@@ -149,7 +153,7 @@ export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<LeetCod
             }
         }
 
-        return [`AC: ${acceptedNum}`, `Failed: ${failedNum}`, `Total: ${childernNodes.length}`].join(os.EOL);
+        return [`AC: ${acceptedNum}`, `Failed: ${failedNum}`, `Total: ${childrenNodes.length}`].join(os.EOL);
     }
 }
 
