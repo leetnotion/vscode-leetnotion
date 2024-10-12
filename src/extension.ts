@@ -25,10 +25,12 @@ import { leetCodeSolutionProvider } from "./webview/leetCodeSolutionProvider";
 import { leetCodeSubmissionProvider } from "./webview/leetCodeSubmissionProvider";
 import { markdownEngine } from "./webview/markdownEngine";
 import TrackData from "./utils/trackingUtils";
-import { globalState } from "./globalState";
+import { globalState, NotionIntegrationStatusKey, QuestionNumberPageIdMappingKey } from "./globalState";
 import { leetcodeClient } from "./leetCodeClient";
-import { clearInterval, setInterval } from "timers";
+import { clearInterval } from "timers";
 import { repeatAction } from "./utils/toolUtils";
+import { leetnotionManager } from "./leetnotionManager";
+import { leetnotionClient } from "./leetnotionClient";
 
 let interval: NodeJS.Timeout;
 
@@ -45,15 +47,19 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
         leetCodeTreeDataProvider.initialize(context);
         globalState.initialize(context);
-        leetcodeClient.initialize(context);
+        leetcodeClient.initialize();
+        leetnotionClient.initialize();
 
-        interval = repeatAction(() => {
+        interval = repeatAction(async () => {
             leetcodeClient.checkIn();
             leetcodeClient.collectEasterEgg();
             leetcodeClient.setDailyProblem().then(() => {
                 leetCodeTreeDataProvider.refresh();
             });
         })
+        if(globalState.getNotionIntegrationStatus() === "pending") {
+            leetnotionManager.updateTemplatePages().then(() => globalState.setNotionIntegrationStatus("done"));
+        }
 
         context.subscriptions.push(
             leetCodeStatusBarController,
@@ -112,6 +118,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             vscode.commands.registerCommand("leetnotion.addFavorite", (node: LeetCodeNode) => star.addFavorite(node)),
             vscode.commands.registerCommand("leetnotion.removeFavorite", (node: LeetCodeNode) => star.removeFavorite(node)),
             vscode.commands.registerCommand("leetnotion.problems.sort", () => plugin.switchSortingStrategy()),
+            vscode.commands.registerCommand("leetnotion.clearAllData", () => leetnotionManager.clearAllData()),
+            vscode.commands.registerCommand("leetnotion.updateTemplateInfo", () => leetnotionManager.updateTemplatePages()),
+            vscode.commands.registerCommand("leetnotion.integrateNotion", () => leetnotionManager.enableNotionIntegration()),
             {
                 dispose: () => clearInterval(interval)
             }

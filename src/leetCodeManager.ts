@@ -15,6 +15,8 @@ import { globalState } from "./globalState";
 import { queryUserData } from "./request/query-user-data";
 import { parseQuery } from "./utils/toolUtils";
 import { leetcodeClient } from "./leetCodeClient";
+import { leetnotionManager } from "./leetnotionManager";
+import { hasNotionIntegrationEnabled } from "./utils/settingUtils";
 
 class LeetCodeManager extends EventEmitter {
     private currentUser: string | undefined;
@@ -54,6 +56,9 @@ class LeetCodeManager extends EventEmitter {
             this.currentUser = data.username;
             this.userStatus = UserStatus.SignedIn;
             this.emit("statusChanged");
+        }
+        if(hasNotionIntegrationEnabled()) {
+            leetnotionManager.enableNotionIntegration();
         }
     }
 
@@ -172,12 +177,12 @@ class LeetCodeManager extends EventEmitter {
 
             const childProc: cp.ChildProcess = wsl.useWsl()
                 ? cp.spawn("wsl", [leetCodeExecutor.node, leetCodeBinaryPath, "user", loginArgsMapping.get("Cookie") ?? ""], {
-                      shell: true,
-                  })
+                    shell: true,
+                })
                 : cp.spawn(leetCodeExecutor.node, [leetCodeBinaryPath, "user", loginArgsMapping.get("Cookie") ?? ""], {
-                      shell: true,
-                      env: createEnvOption(),
-                  });
+                    shell: true,
+                    env: createEnvOption(),
+                });
 
             childProc.stdout?.on("data", async (data: string | Buffer) => {
                 data = data.toString();

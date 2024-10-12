@@ -1,22 +1,17 @@
 // Copyright (c) leetnotion. All rights reserved.
 // Licensed under the MIT license.
 
-import LeetCode, { Credential, LeetCodeAdvanced } from "@leetnotion/leetcode-api";
+import { Credential, LeetCodeAdvanced } from "@leetnotion/leetcode-api";
 import { globalState } from "./globalState";
-import * as vscode from "vscode";
 import { extractCookie } from "./utils/toolUtils";
 import { DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";
 import { leetCodeChannel } from "./leetCodeChannel";
 
-
-
 class LeetcodeClient {
-    private context: vscode.ExtensionContext;
     private leetcode: LeetCodeAdvanced;
     private isSignedIn: boolean;
 
-    public initialize(context: vscode.ExtensionContext) {
-        this.context = context;
+    public initialize() {
         const cookie = globalState.getCookie();
         if (cookie) {
             this.isSignedIn = true;
@@ -68,6 +63,10 @@ class LeetcodeClient {
         } catch (error) {
             leetCodeChannel.appendLine(`Error getting daily question: ${error}`);
         }
+    }
+
+    public async getNoOfProblems() {
+        return await this.leetcode.noOfProblems();
     }
 }
 
