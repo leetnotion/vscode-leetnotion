@@ -151,3 +151,8 @@ export interface ProblemDifficulty extends MutationSelect {
 export type TopicTags = Record<string, string[]>
 export type Sheets = Record<string, Record<string, string[]>>;
 export type CompanyTags = Record<string, string[]>;
+export type SubmissionPageDetails = {
+    submissionId: number,
+    submissionPageId: string,
+    lang: string
+}

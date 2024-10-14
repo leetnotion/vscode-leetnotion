@@ -9,6 +9,7 @@ export const NotionAccessTokenKey = "notion-access-token";
 export const QuestionsDatabaseIdKey = "notion-questions-database-id";
 export const SubmissionsDatabaseIdKey = "notion-submissions-database-id";
 export const QuestionNumberPageIdMappingKey = "leetnotion-question-number-page-id-mapping";
+export const TitleSlugQuestionNumberMappingKey = "leetnotion-title-slug-question-number-mapping";
 export const NotionIntegrationStatusKey = "notion-integration-status";
 
 export type UserDataType = {
@@ -34,6 +35,7 @@ class GlobalState {
     private _questionsDatabaseId?: string;
     private _submissionsDatabaseId?: string;
     private _questionNumberPageIdMapping?: Mapping;
+    private _titleSlugQuestionNumberMapping?: Mapping;
     private _notionIntegrationStatus?: NotionIntegrationStatus;
 
     public initialize(context: vscode.ExtensionContext): void {
@@ -123,6 +125,15 @@ class GlobalState {
 
     public getQuestionNumberPageIdMapping(): Mapping | undefined {
         return this._questionNumberPageIdMapping ?? this._state.get(QuestionNumberPageIdMappingKey);
+    }
+
+    public setTitleSlugQuestionNumberMapping(mapping: Mapping): any {
+        this._titleSlugQuestionNumberMapping = mapping;
+        return this._state.update(TitleSlugQuestionNumberMappingKey, mapping);
+    }
+
+    public getTitleSlugQuestionNumberMapping(): Mapping | undefined {
+        return this._titleSlugQuestionNumberMapping ?? this._state.get(TitleSlugQuestionNumberMappingKey);
     }
 
     public setNotionIntegrationStatus(status: NotionIntegrationStatus): any {

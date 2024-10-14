@@ -774,7 +774,7 @@
         "typescript": "^4.3.2"
     },
     "dependencies": {
-        "@leetnotion/leetcode-api": "^1.8.2",
+        "@leetnotion/leetcode-api": "^1.8.4",
         "@leetnotion/notion-api": "^0.0.2",
         "axios": "^1.6.8",
         "fs-extra": "^10.0.0",

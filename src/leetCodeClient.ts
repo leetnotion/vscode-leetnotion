@@ -32,6 +32,11 @@ class LeetcodeClient {
         return await this.leetcode.topicTags();
     }
 
+    public async setTitleSlugQuestionNumberMapping() {
+        const mapping = await this.leetcode.getTitleSlugQuestionNumberMapping();
+        globalState.setTitleSlugQuestionNumberMapping(mapping);
+    }
+
     public async collectEasterEgg() {
         if (!this.isSignedIn) return;
         try {
@@ -67,6 +72,26 @@ class LeetcodeClient {
 
     public async getNoOfProblems() {
         return await this.leetcode.noOfProblems();
+    }
+
+    public async getRecentSubmission() {
+        if(!this.isSignedIn) {
+            leetCodeChannel.appendLine('Leetcode user not signed in');
+            return null;
+        }
+        return await this.leetcode.recentSubmission();
+    }
+
+    public async getRecentSubmissionCode() {
+        if(!this.isSignedIn) {
+            leetCodeChannel.appendLine('Leetcode user not signed in');
+            return null;
+        }
+        const recentSubmission = await this.leetcode.recentSubmissionDetail();
+        if(!recentSubmission) {
+            return null;
+        }
+        return recentSubmission.code;
     }
 }
 

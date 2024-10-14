@@ -57,6 +57,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
                 leetCodeTreeDataProvider.refresh();
             });
         })
+        leetcodeClient.setTitleSlugQuestionNumberMapping();
         if(globalState.getNotionIntegrationStatus() === "pending") {
             leetnotionManager.updateTemplatePages().then(() => globalState.setNotionIntegrationStatus("done"));
         }
