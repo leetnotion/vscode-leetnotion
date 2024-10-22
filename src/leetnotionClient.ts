@@ -1,12 +1,13 @@
 import AdvancedNotionClient, { PageObjectResponse } from "@leetnotion/notion-api";
 import { globalState } from "./globalState";
-import { Mapping, ProblemPageResponse, QueryProblemPageProperties, SubmissionPageDetails } from "./types";
+import { Mapping, ProblemPageResponse, QueryProblemPageProperties } from "./types";
 import { leetCodeChannel } from "./leetCodeChannel";
-import { hasNotionIntegrationEnabled } from "./utils/settingUtils";
+import { hasNotionIntegrationEnabled, shouldAddCodeToSubmissionPage } from "./utils/settingUtils";
 import { leetcodeClient } from "./leetCodeClient";
 import * as _ from 'lodash'
 import { DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";
 import { getISODate, getNotionLang, splitTextIntoChunks } from "./utils/toolUtils";
+import { Submission } from "@leetnotion/leetcode-api";
 
 const QuestionsDatabaseKey = "Questions Database";
 const SubmissionsDatabaseKey = "Submissions Database";
@@ -72,7 +73,7 @@ class LeetnotionClient {
 
     public getPageIdOfQuestion(questionNumber: string): string | null {
         const mapping: Mapping | undefined = globalState.getQuestionNumberPageIdMapping();
-        if (!mapping || mapping[questionNumber]) {
+        if (!mapping || !mapping[questionNumber]) {
             return null;
         }
         return mapping[questionNumber];
@@ -82,13 +83,13 @@ class LeetnotionClient {
         if (!hasNotionIntegrationEnabled()) return;
         try {
             const updateResponse = await this.updateStatusOfQuestion(questionNumber);
-            const pageId = updateResponse.id;
-            const { submissionPageId, lang } = await this.createSubmission(pageId);
-            const code = await leetcodeClient.getRecentSubmissionCode();
-            if(!code) {
-                throw new Error(`submission-not-found`);
+            const submission = await leetcodeClient.getRecentSubmission();
+            if(!submission) {
+                throw new Error(`no-recent-submission`);
             }
-            await this.addCodeToPage(submissionPageId, code, lang);
+            const pageId = updateResponse.id;
+            const submissionPageId = await this.createSubmissionPage(pageId, submission);
+            await this.addCodeToPage(submissionPageId, submission.lang, submission.code);
         } catch (error) {
             promptForOpenOutputChannel(`Failed to update notion for your submission`, DialogType.error);
             leetCodeChannel.appendLine(`Failed to update notion for your submission: ${error}`);
@@ -118,14 +119,10 @@ class LeetnotionClient {
         }
     }
 
-    public async createSubmission(questionPageId: string): Promise<SubmissionPageDetails> {
+    public async createSubmissionPage(questionPageId: string, submission: Submission): Promise<string> {
         try {
             if (!this.isSignedIn || !this.notion) {
                 throw new Error("notion-integration-not-enabled");
-            }
-            const submission = await leetcodeClient.getRecentSubmission();
-            if (!submission) {
-                throw new Error("no-recent-submission");
             }
             const submissionsDatabaseId = globalState.getSubmissionsDatabaseId();
             if (!submissionsDatabaseId) {
@@ -174,13 +171,14 @@ class LeetnotionClient {
                     }
                 }
             })
-            return { submissionId: submission.id,  submissionPageId: response.id, lang: submission.lang };
+            return response.id;
         } catch (error) {
             throw new Error(`Failed to create submission: ${error}`);
         }
     }
 
-    public async addCodeToPage(pageId: string, code: string, lang: string) {
+    public async addCodeToPage(pageId: string, lang: string, code: string) {
+        if(!shouldAddCodeToSubmissionPage()) return;
         try {
             if (!this.isSignedIn || !this.notion) {
                 throw new Error("notion-integration-not-enabled");
