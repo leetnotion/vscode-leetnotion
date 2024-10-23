@@ -5,11 +5,11 @@ import * as _ from "lodash";
 import { Disposable } from "vscode";
 import * as list from "../commands/list";
 import { getSortingStrategy } from "../commands/plugin";
-import { Category, defaultProblem, ProblemState, SortingStrategy } from "../shared";
-import { shouldHideSolvedProblem } from "../utils/settingUtils";
+import { Category, CompanySortingStrategy, defaultProblem, ProblemState, SortingStrategy } from "../shared";
+import { getCompaniesSortingStrategy, shouldHideSolvedProblem } from "../utils/settingUtils";
 import { LeetCodeNode } from "./LeetCodeNode";
 import { globalState } from "../globalState";
-import { getSheets } from "../utils/dataUtils";
+import { getCompanyPopularity, getSheets } from "../utils/dataUtils";
 
 class ExplorerNodeManager implements Disposable {
     private explorerNodeMap: Map<string, LeetCodeNode> = new Map<string, LeetCodeNode>();
@@ -230,15 +230,7 @@ class ExplorerNodeManager implements Disposable {
                 break;
             case Category.Tag:
             case Category.Company:
-                subCategoryNodes.sort((a: LeetCodeNode, b: LeetCodeNode): number => {
-                    if (a.name === "Unknown") {
-                        return 1;
-                    } else if (b.name === "Unknown") {
-                        return -1;
-                    } else {
-                        return Number(a.name > b.name) - Number(a.name < b.name);
-                    }
-                });
+                subCategoryNodes = this.applyCompanySortingStrategy(subCategoryNodes);
                 break;
             default:
                 break;
@@ -251,6 +243,31 @@ class ExplorerNodeManager implements Disposable {
             case SortingStrategy.AcceptanceRateAsc: return nodes.sort((x: LeetCodeNode, y: LeetCodeNode) => Number(x.acceptanceRate) - Number(y.acceptanceRate));
             case SortingStrategy.AcceptanceRateDesc: return nodes.sort((x: LeetCodeNode, y: LeetCodeNode) => Number(y.acceptanceRate) - Number(x.acceptanceRate));
             default: return nodes;
+        }
+    }
+
+    private applyCompanySortingStrategy(nodes: LeetCodeNode[]): LeetCodeNode[] {
+        const strategy: CompanySortingStrategy = getCompaniesSortingStrategy();
+        switch (strategy) {
+            case CompanySortingStrategy.Alphabetical: {
+                return nodes.sort((a: LeetCodeNode, b: LeetCodeNode): number => {
+                    if (a.name === 'Unknown') {
+                        return 1;
+                    }
+                    if (b.name === 'Unknown') {
+                        return -1;
+                    }
+                    return Number(a.name > b.name) - Number(a.name < b.name);
+                });
+            }
+            case CompanySortingStrategy.Popularity: {
+                const companyPopularityMapping = getCompanyPopularity();
+                return nodes.sort(
+                    (a: LeetCodeNode, b: LeetCodeNode): number => companyPopularityMapping[b.id] - companyPopularityMapping[a.id]
+                );
+            }
+            default:
+                return nodes;
         }
     }
 }

@@ -54,15 +54,15 @@ export function getCompanyPopularity(): Record<string, number> {
 
 export function getTitleSlugPageIdMapping() {
     const questionNumberPageIdMapping = globalState.getQuestionNumberPageIdMapping();
-    if(!questionNumberPageIdMapping) {
+    if (!questionNumberPageIdMapping) {
         throw new Error(`question-number-page-id-mapping-not-found`);
     }
     const titleSlugQuestionNumberMapping = globalState.getTitleSlugQuestionNumberMapping();
-    if(!titleSlugQuestionNumberMapping) {
+    if (!titleSlugQuestionNumberMapping) {
         throw new Error(`title-slug-question-number-mapping-not-found`);;
     }
     const mapping: Mapping = {};
-    for(const [slug, questionNumber] of Object.entries(titleSlugQuestionNumberMapping)) {
+    for (const [slug, questionNumber] of Object.entries(titleSlugQuestionNumberMapping)) {
         mapping[slug] = questionNumberPageIdMapping[questionNumber];
     }
     return mapping;

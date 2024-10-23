@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { workspace, WorkspaceConfiguration } from "vscode";
-import { defaultFooters, defaultHeaders, DescriptionConfiguration } from "../shared";
+import { CompanySortingStrategy, defaultFooters, defaultHeaders, DescriptionConfiguration } from "../shared";
 
 export function getWorkspaceConfiguration(): WorkspaceConfiguration {
     return workspace.getConfiguration("leetnotion");
@@ -70,8 +70,8 @@ export function shouldAddCodeToSubmissionPage(): boolean {
     return getWorkspaceConfiguration().get<boolean>("addCodeToSubmissionPage", true);
 }
 
-export function getCompaniesSortingStrategy(): string {
-    return getWorkspaceConfiguration().get<string>("companies.sortStrategy", "Popularity");
+export function getCompaniesSortingStrategy(): CompanySortingStrategy {
+    return getWorkspaceConfiguration().get<CompanySortingStrategy>("companies.sortStrategy", CompanySortingStrategy.Popularity);
 }
 
 export function getQuestionTagsSortingStrategy(): string {

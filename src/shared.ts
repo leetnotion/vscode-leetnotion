@@ -125,6 +125,11 @@ export enum SortingStrategy {
     FrequencyDesc = "Frequency (Descending)",
 }
 
+export enum CompanySortingStrategy {
+    Alphabetical = 'Alphabetical',
+    Popularity = 'Popularity',
+}
+
 export const PREMIUM_URL_CN = "https://leetcode.cn/premium-payment/?source=vscode";
 export const PREMIUM_URL_GLOBAL = "https://leetcode.com/subscribe/?ref=lp_pl&source=vscode";
 
