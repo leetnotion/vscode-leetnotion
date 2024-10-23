@@ -11,6 +11,7 @@ export const SubmissionsDatabaseIdKey = "notion-submissions-database-id";
 export const QuestionNumberPageIdMappingKey = "leetnotion-question-number-page-id-mapping";
 export const TitleSlugQuestionNumberMappingKey = "leetnotion-title-slug-question-number-mapping";
 export const NotionIntegrationStatusKey = "notion-integration-status";
+export const UserQuestionTagsKey = "notion-user-question-tags";
 
 export type UserDataType = {
     isSignedIn: boolean;
@@ -37,6 +38,7 @@ class GlobalState {
     private _questionNumberPageIdMapping?: Mapping;
     private _titleSlugQuestionNumberMapping?: Mapping;
     private _notionIntegrationStatus?: NotionIntegrationStatus;
+    private _userQuestionTags?: string[];
 
     public initialize(context: vscode.ExtensionContext): void {
         this.context = context;
@@ -143,6 +145,19 @@ class GlobalState {
 
     public getNotionIntegrationStatus(): NotionIntegrationStatus | undefined {
         return this._notionIntegrationStatus ?? this._state.get(NotionIntegrationStatusKey);
+    }
+
+    public getExtensionUri(): vscode.Uri {
+        return this.context.extensionUri;
+    }
+
+    public setUserQuestionTags(tags: string[]): any {
+        this._userQuestionTags = tags;
+        return this._state.update(UserQuestionTagsKey, tags);
+    }
+
+    public getUserQuestionTags(): string[] | undefined {
+        return this._userQuestionTags ?? this._state.get(UserQuestionTagsKey);
     }
 
     public clearAllNotionDetails(): void {

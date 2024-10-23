@@ -1,15 +1,20 @@
 // Copyright (c) jdneo. All rights reserved.
 // Licensed under the MIT license.
-
 import { ViewColumn } from "vscode";
-import { openKeybindingsEditor, promptHintMessage } from "../utils/uiUtils";
+import { DialogType, openKeybindingsEditor, promptForOpenOutputChannel, promptHintMessage } from "../utils/uiUtils";
 import { ILeetCodeWebviewOption, LeetCodeWebview } from "./LeetCodeWebview";
 import { markdownEngine } from "./markdownEngine";
+import { leetnotionEngine } from "./leetnotionEngine";
+import { SetPropertiesMessage } from "../types";
+import { leetnotionClient } from "../leetnotionClient";
+import { leetCodeChannel } from "../leetCodeChannel";
 
 class LeetCodeSubmissionProvider extends LeetCodeWebview {
 
     protected readonly viewType: string = "leetnotion.submission";
     private result: IResult;
+
+    private isValidSubmission: boolean;
 
     public show(resultString: string): void {
         this.result = this.parseResult(resultString);
@@ -25,7 +30,8 @@ class LeetCodeSubmissionProvider extends LeetCodeWebview {
     }
 
     protected getWebviewContent(): string {
-        const styles: string = markdownEngine.getStyles();
+        const styles: string = [markdownEngine.getStyles(), leetnotionEngine.getStyles()].join("\n");
+        const scripts: string = leetnotionEngine.getScripts();
         const title: string = `## ${this.result.messages[0]}`;
         const messages: string[] = this.result.messages.slice(1).map((m: string) => `* ${m}`);
         const sections: string[] = Object.keys(this.result)
@@ -41,6 +47,7 @@ class LeetCodeSubmissionProvider extends LeetCodeWebview {
             ...messages,
             ...sections,
         ].join("\n"));
+        const leetnotionBody: string = leetnotionEngine.render();
         return `
             <!DOCTYPE html>
             <html>
@@ -49,9 +56,12 @@ class LeetCodeSubmissionProvider extends LeetCodeWebview {
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 ${styles}
+                ${scripts}
             </head>
             <body class="vscode-body 'scrollBeyondLastLine' 'wordWrap' 'showEditorSelection'" style="tab-size:4">
                 ${body}
+                <hr />
+                ${leetnotionBody}
             </body>
             </html>
         `;
@@ -59,6 +69,19 @@ class LeetCodeSubmissionProvider extends LeetCodeWebview {
 
     protected onDidDisposeWebview(): void {
         super.onDidDisposeWebview();
+    }
+
+    protected async onDidReceiveMessage(message: SetPropertiesMessage): Promise<void> {
+        switch (message.command) {
+            case 'set-properties': {
+                await leetnotionClient.setProperties(message);
+                promptForOpenOutputChannel(`Properties Updated in Notion`, DialogType.completed);
+                break;
+            }
+            default: {
+                break;
+            }
+        }
     }
 
     private async showKeybindingsHint(): Promise<void> {

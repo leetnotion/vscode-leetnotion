@@ -1,0 +1,59 @@
+#setPropertiesSection {
+    display: none;
+}
+#notes-label,
+#notes-input {
+    font-size: 1.2rem;
+}
+#review-container {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+    font-size: 1.2rem;
+}
+#review-label {
+    margin: 0 15px 0 0;
+}
+#tags-label {
+    font-size: 1.2rem;
+    margin: 16px 0;
+}
+#tags-select {
+    margin: 5px 0;
+}
+#review-date-input {
+    background-color: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    padding: 4px 4px 4px 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: Arial, sans-serif;
+    font-size: 1.2rem;
+}
+#optimal-checkbox-input {
+    font-size: 1.2rem;
+}
+#setPropertiesButton {
+    margin: 10px 0;
+}
+#optimal-checkbox-input {
+    margin: 7px 0;
+}
+.form-control {
+    display: block;
+    width: inherit;
+}
+.select2-container--default .select2-selection--multiple {
+    background-color: var(--vscode-input-background);
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: var(--button-primary-background);
+    color: var(--button-primary-foreground);
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: var(--vscode-button-foreground);
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+    background-color: var(--button-primary-background);
+    color: var(--vscode-button-secondaryHoverBackground);
+}

@@ -56,6 +56,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             leetcodeClient.setDailyProblem().then(() => {
                 leetCodeTreeDataProvider.refresh();
             });
+            leetnotionClient.setUserQuestionTags();
         })
         leetcodeClient.setTitleSlugQuestionNumberMapping();
         if(globalState.getNotionIntegrationStatus() === "pending") {

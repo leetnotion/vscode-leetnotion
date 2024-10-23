@@ -24,6 +24,7 @@ import type {
     MutationSelect,
     MutationTitle,
     MutationUrl,
+    PrimaryColor,
 } from '@leetnotion/notion-api';
 
 export interface LeetcodeSubmission {
@@ -156,3 +157,44 @@ export type SubmissionPageDetails = {
     submissionPageId: string,
     lang: string
 }
+
+export type WebviewMessage = {
+    command: string;
+    questionPageId: string;
+    submissionPageId: string;
+    tags: string;
+}
+
+export type SetPropertiesMessage = {
+    command: string;
+    questionPageId: string;
+    submissionPageId: string;
+    notes: string;
+    reviewDate: string;
+    isOptimal: boolean;
+    initialTags: string[];
+    finalTags: string[]
+}
+
+export type SelectTags = {
+    id: number;
+    text: string;
+    selected: boolean;
+}[]
+
+export type MultiSelectDatabasePropertyConfigResponse = {
+    type: "multi_select";
+    multi_select: {
+        options: Array<SelectPropertyResponse>;
+    };
+    id: string;
+    name: string;
+    description: string | null;
+};
+
+export type SelectPropertyResponse = {
+    id: string;
+    name: string;
+    color: PrimaryColor;
+    description: string | null;
+};

@@ -4,6 +4,7 @@
 import { commands, ConfigurationChangeEvent, Disposable, ViewColumn, WebviewPanel, window, workspace } from "vscode";
 import { openSettingsEditor, promptHintMessage } from "../utils/uiUtils";
 import { markdownEngine } from "./markdownEngine";
+import { leetnotionEngine } from "./leetnotionEngine";
 
 export abstract class LeetCodeWebview implements Disposable {
 
@@ -17,15 +18,20 @@ export abstract class LeetCodeWebview implements Disposable {
         }
     }
 
+    public getPanel() {
+        return this.panel;
+    }
+
     protected showWebviewInternal(): void {
         const { title, viewColumn, preserveFocus } = this.getWebviewOption();
         if (!this.panel) {
+
             this.panel = window.createWebviewPanel(this.viewType, title, { viewColumn, preserveFocus }, {
                 enableScripts: true,
                 enableCommandUris: true,
                 enableFindWidget: true,
                 retainContextWhenHidden: true,
-                localResourceRoots: markdownEngine.localResourceRoots,
+                localResourceRoots: [...markdownEngine.localResourceRoots, ...leetnotionEngine.localResourceRoots],
             });
             this.panel.onDidDispose(this.onDidDisposeWebview, this, this.listeners);
             this.panel.webview.onDidReceiveMessage(this.onDidReceiveMessage, this, this.listeners);

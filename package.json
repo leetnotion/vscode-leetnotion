@@ -776,7 +776,9 @@
     "dependencies": {
         "@leetnotion/leetcode-api": "^1.9.0",
         "@leetnotion/notion-api": "^0.0.2",
+        "@vscode/webview-ui-toolkit": "^1.4.0",
         "axios": "^1.6.8",
+        "bottleneck": "^2.19.5",
         "fs-extra": "^10.0.0",
         "highlight.js": "^10.7.2",
         "lodash": "^4.17.21",

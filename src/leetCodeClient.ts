@@ -42,7 +42,7 @@ class LeetcodeClient {
         try {
             const isCollected = await this.leetcode.collectEasterEgg();
             if (isCollected) {
-                promptForOpenOutputChannel(`Collected Easter Egg 🎉: +10 coins`, DialogType.info);
+                promptForOpenOutputChannel(`Collected Easter Egg 🎉: +10 coins`, DialogType.completed);
             }
         } catch (error) {
             leetCodeChannel.appendLine(`Error collecting Easter Egg: ${error}`);
@@ -54,7 +54,7 @@ class LeetcodeClient {
         try {
             const checkedIn = await this.leetcode.checkIn();
             if (checkedIn) {
-                promptForOpenOutputChannel(`Checked in: +1 Coin`, DialogType.info);
+                promptForOpenOutputChannel(`Checked in: +1 Coin`, DialogType.completed);
             }
         } catch (error) {
             leetCodeChannel.appendLine(`Error checking in: ${error}`);

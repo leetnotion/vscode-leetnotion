@@ -1,13 +1,15 @@
-import AdvancedNotionClient, { PageObjectResponse } from "@leetnotion/notion-api";
+import AdvancedNotionClient, { PageObjectResponse, UpdatePageProperties } from "@leetnotion/notion-api";
 import { globalState } from "./globalState";
-import { Mapping, ProblemPageResponse, QueryProblemPageProperties } from "./types";
+import { Mapping, MultiSelectDatabasePropertyConfigResponse, ProblemPageResponse, QueryProblemPageProperties, SelectTags, SetPropertiesMessage } from "./types";
 import { leetCodeChannel } from "./leetCodeChannel";
 import { hasNotionIntegrationEnabled, shouldAddCodeToSubmissionPage } from "./utils/settingUtils";
 import { leetcodeClient } from "./leetCodeClient";
 import * as _ from 'lodash'
 import { DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";
-import { getISODate, getNotionLang, splitTextIntoChunks } from "./utils/toolUtils";
+import { areArraysEqual, getISODate, getNotionLang, splitTextIntoChunks } from "./utils/toolUtils";
 import { Submission } from "@leetnotion/leetcode-api";
+import { leetCodeSubmissionProvider } from "./webview/leetCodeSubmissionProvider";
+import Bottleneck from "bottleneck";
 
 const QuestionsDatabaseKey = "Questions Database";
 const SubmissionsDatabaseKey = "Submissions Database";
@@ -15,6 +17,9 @@ const SubmissionsDatabaseKey = "Submissions Database";
 class LeetnotionClient {
     private notion: AdvancedNotionClient | undefined;
     private isSignedIn: boolean;
+    private limiter = new Bottleneck({
+        minTime: 334
+    })
 
     public initialize() {
         const accessToken = globalState.getNotionAccessToken();
@@ -84,15 +89,27 @@ class LeetnotionClient {
         try {
             const updateResponse = await this.updateStatusOfQuestion(questionNumber);
             const submission = await leetcodeClient.getRecentSubmission();
-            if(!submission) {
+            if (!submission) {
                 throw new Error(`no-recent-submission`);
             }
-            const pageId = updateResponse.id;
-            const submissionPageId = await this.createSubmissionPage(pageId, submission);
+            const submissionPageId = await this.createSubmissionPage(questionNumber, submission);
+            this.updatePanel(updateResponse.id, submissionPageId, this.getSelectTags(updateResponse.properties.Tags.multi_select.map(tag => tag.name)));
             await this.addCodeToPage(submissionPageId, submission.lang, submission.code);
         } catch (error) {
             promptForOpenOutputChannel(`Failed to update notion for your submission`, DialogType.error);
             leetCodeChannel.appendLine(`Failed to update notion for your submission: ${error}`);
+        }
+    }
+
+    public updatePanel(questionPageId: string, submissionPageId: string, tags: SelectTags) {
+        try {
+            const panel = leetCodeSubmissionProvider.getPanel();
+            if (!panel) {
+                throw new Error('panel-not-available');
+            }
+            panel.webview.postMessage({ command: 'submission-done', questionPageId, submissionPageId, tags })
+        } catch (error) {
+            throw new Error(`Failed to update submission panel: ${error}`);
         }
     }
 
@@ -119,10 +136,14 @@ class LeetnotionClient {
         }
     }
 
-    public async createSubmissionPage(questionPageId: string, submission: Submission): Promise<string> {
+    public async createSubmissionPage(questionNumber: string, submission: Submission): Promise<string> {
         try {
             if (!this.isSignedIn || !this.notion) {
                 throw new Error("notion-integration-not-enabled");
+            }
+            const pageId = this.getPageIdOfQuestion(questionNumber);
+            if (!pageId) {
+                throw new Error("question-not-available");
             }
             const submissionsDatabaseId = globalState.getSubmissionsDatabaseId();
             if (!submissionsDatabaseId) {
@@ -154,7 +175,7 @@ class LeetnotionClient {
                     },
                     Question: {
                         relation: [{
-                            id: questionPageId
+                            id: pageId,
                         }]
                     },
                     Status: {
@@ -178,7 +199,7 @@ class LeetnotionClient {
     }
 
     public async addCodeToPage(pageId: string, lang: string, code: string) {
-        if(!shouldAddCodeToSubmissionPage()) return;
+        if (!shouldAddCodeToSubmissionPage()) return;
         try {
             if (!this.isSignedIn || !this.notion) {
                 throw new Error("notion-integration-not-enabled");
@@ -202,6 +223,101 @@ class LeetnotionClient {
         } catch (error) {
             throw new Error(`Failed to add code to page: ${error}`);
         }
+    }
+
+    public async setProperties(message: SetPropertiesMessage) {
+        if (!hasNotionIntegrationEnabled()) return;
+        if (message.command !== "set-properties") return;
+        const tagsChanged = !areArraysEqual(message.initialTags, message.finalTags);
+        const hasReviewDate = message.reviewDate && message.reviewDate.length > 0;
+        const hasNotes = message.notes && message.notes.length > 0;
+        const questionPageProperties: UpdatePageProperties = {};
+        if (hasReviewDate) {
+            questionPageProperties['Review Date'] = {
+                date: {
+                    start: message.reviewDate
+                }
+            },
+                questionPageProperties['Reviewed'] = {
+                    checkbox: false
+                }
+        }
+        if (tagsChanged) {
+            questionPageProperties['Tags'] = {
+                multi_select: message.finalTags.map(name => ({ name }))
+            }
+        }
+
+        const submissionPageProperties: UpdatePageProperties = {};
+        submissionPageProperties['Note'] = {
+            rich_text: [{ text: { content: message.notes } }]
+        }
+        submissionPageProperties['Tags'] = {
+            multi_select: message.isOptimal ? [{ name: 'Optimal' }] : []
+        }
+        try {
+            if (!this.isSignedIn || !this.notion) {
+                throw new Error("notion-integration-not-enabled");
+            }
+            if (hasReviewDate || tagsChanged) {
+                await this.notion.pages.update({
+                    page_id: message.questionPageId,
+                    properties: questionPageProperties
+                })
+            }
+            if (hasNotes || message.isOptimal) {
+                await this.notion.pages.update({
+                    page_id: message.submissionPageId,
+                    properties: submissionPageProperties
+                })
+            }
+            let prevTags = globalState.getUserQuestionTags();
+            if(!prevTags) prevTags = [];
+            const allTags = Array.from(new Set([...prevTags, ...message.finalTags]));
+            globalState.setUserQuestionTags(allTags);
+        } catch (error) {
+            leetCodeChannel.appendLine(`Failed to set properties: ${error}`);
+            promptForOpenOutputChannel(`Failed to set properties`, DialogType.error);
+        }
+    }
+
+    public async setUserQuestionTags(): Promise<void> {
+        if (!hasNotionIntegrationEnabled()) return;
+        try {
+            if (!this.isSignedIn || !this.notion) {
+                throw new Error("notion-integration-not-enabled");
+            }
+            const questionsDatabaseId = globalState.getQuestionsDatabaseId();
+            if (!questionsDatabaseId) {
+                throw new Error("questions-database-id-not-found");
+            }
+            const databaseProperties = await this.notion.databases.retrieve({
+                database_id: questionsDatabaseId
+            })
+            const tags = databaseProperties.properties["Tags"] as MultiSelectDatabasePropertyConfigResponse
+            const questionTags = tags.multi_select.options.map(({ name }) => name);
+            globalState.setUserQuestionTags(questionTags);
+        } catch (error) {
+            leetCodeChannel.appendLine(`Failed to set user question tags: ${error}`);
+        }
+    }
+
+    public getSelectTags(selectedTags: string[]): SelectTags {
+        let existingTags = globalState.getUserQuestionTags();
+        if (!existingTags) existingTags = [];
+        const selectedTagsSet = new Set(selectedTags);
+        const allTagsSet = new Set(existingTags);
+        selectedTags.forEach(selectedTag => allTagsSet.add(selectedTag));
+        const allTags = Array.from(allTagsSet);
+        const selectTags: SelectTags = [];
+        for (let id = 1; id <= allTags.length; id += 1) {
+            selectTags.push({
+                id,
+                text: allTags[id - 1],
+                selected: selectedTagsSet.has(allTags[id - 1])
+            })
+        }
+        return selectTags;
     }
 }
 
