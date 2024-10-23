@@ -6,7 +6,7 @@ import * as path from 'path';
 import { leetcodeClient } from '../leetCodeClient';
 import { globalState } from '../globalState';
 import { leetCodeChannel } from '../leetCodeChannel';
-import { CompanyTags, Sheets, TopicTags } from '../types';
+import { CompanyTags, Mapping, Sheets, TopicTags } from '../types';
 
 const sheetsPath = '../../../data/sheets.json';
 const companyTagsPath = '../../../data/companyTags.json';
@@ -50,4 +50,20 @@ export function getCompanyPopularity(): Record<string, number> {
         }
     }
     return companyPoularityMapping;
+}
+
+export function getTitleSlugPageIdMapping() {
+    const questionNumberPageIdMapping = globalState.getQuestionNumberPageIdMapping();
+    if(!questionNumberPageIdMapping) {
+        throw new Error(`question-number-page-id-mapping-not-found`);
+    }
+    const titleSlugQuestionNumberMapping = globalState.getTitleSlugQuestionNumberMapping();
+    if(!titleSlugQuestionNumberMapping) {
+        throw new Error(`title-slug-question-number-mapping-not-found`);;
+    }
+    const mapping: Mapping = {};
+    for(const [slug, questionNumber] of Object.entries(titleSlugQuestionNumberMapping)) {
+        mapping[slug] = questionNumberPageIdMapping[questionNumber];
+    }
+    return mapping;
 }

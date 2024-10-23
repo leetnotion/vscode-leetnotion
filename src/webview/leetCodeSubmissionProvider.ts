@@ -7,14 +7,11 @@ import { markdownEngine } from "./markdownEngine";
 import { leetnotionEngine } from "./leetnotionEngine";
 import { SetPropertiesMessage } from "../types";
 import { leetnotionClient } from "../leetnotionClient";
-import { leetCodeChannel } from "../leetCodeChannel";
 
 class LeetCodeSubmissionProvider extends LeetCodeWebview {
 
     protected readonly viewType: string = "leetnotion.submission";
     private result: IResult;
-
-    private isValidSubmission: boolean;
 
     public show(resultString: string): void {
         this.result = this.parseResult(resultString);

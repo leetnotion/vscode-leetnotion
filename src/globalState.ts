@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { Mapping, TopicTags } from "./types";
+import { Mapping, PendingSessionDetails, TopicTags } from "./types";
 
 export const CookieKey = "leetcode-cookie";
 export const UserStatusKey = "leetcode-user-status";
@@ -12,6 +12,7 @@ export const QuestionNumberPageIdMappingKey = "leetnotion-question-number-page-i
 export const TitleSlugQuestionNumberMappingKey = "leetnotion-title-slug-question-number-mapping";
 export const NotionIntegrationStatusKey = "notion-integration-status";
 export const UserQuestionTagsKey = "notion-user-question-tags";
+export const PendingSessionKey = "leetnotion-template-update-pending-session"
 
 export type UserDataType = {
     isSignedIn: boolean;
@@ -39,6 +40,7 @@ class GlobalState {
     private _titleSlugQuestionNumberMapping?: Mapping;
     private _notionIntegrationStatus?: NotionIntegrationStatus;
     private _userQuestionTags?: string[];
+    private _pendingSession?: PendingSessionDetails;
 
     public initialize(context: vscode.ExtensionContext): void {
         this.context = context;
@@ -160,6 +162,15 @@ class GlobalState {
         return this._userQuestionTags ?? this._state.get(UserQuestionTagsKey);
     }
 
+    public setPendingSession(pendingSession: PendingSessionDetails | undefined): any {
+        this._pendingSession = pendingSession;
+        return this._state.update(PendingSessionKey, pendingSession);
+    }
+
+    public getPendingSession(): PendingSessionDetails | undefined {
+        return this._pendingSession ?? this._state.get(PendingSessionKey);
+    }
+
     public clearAllNotionDetails(): void {
         this._topicTags = undefined;
         this._dailyProblemId = undefined;
@@ -175,6 +186,14 @@ class GlobalState {
         this._state.update(SubmissionsDatabaseIdKey, undefined);
         this._state.update(QuestionNumberPageIdMappingKey, undefined);
         this._state.update(NotionIntegrationStatusKey, undefined);
+    }
+
+    public get(key: string) {
+        return this._state.get(key);
+    }
+
+    public async update(key: string, value: any) {
+        await this._state.update(key, value);
     }
 }
 

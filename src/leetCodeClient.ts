@@ -6,6 +6,7 @@ import { globalState } from "./globalState";
 import { extractCookie } from "./utils/toolUtils";
 import { DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";
 import { leetCodeChannel } from "./leetCodeChannel";
+import { LeetcodeProblem } from "./types";
 
 class LeetcodeClient {
     private leetcode: LeetCodeAdvanced;
@@ -75,11 +76,26 @@ class LeetcodeClient {
     }
 
     public async getRecentSubmission() {
-        if(!this.isSignedIn) {
+        if (!this.isSignedIn) {
             leetCodeChannel.appendLine('Leetcode user not signed in');
             return null;
         }
         return await this.leetcode.recentSubmission();
+    }
+
+    public async getLeetcodeProblems(progressCallback: (problems: LeetcodeProblem[]) => void = () => {}): Promise<LeetcodeProblem[]> {
+        try {
+            if (!this.isSignedIn) throw new Error(`not-signed-in-to-leetcode`);
+            const problems = await this.leetcode.getLeetcodeProblems(500, progressCallback);
+            const problemTypes = await this.leetcode.getProblemTypes();
+            const typedProblems = problems.map(problem => ({
+                ...problem,
+                type: problemTypes[problem.questionFrontendId]
+            }))
+            return typedProblems;
+        } catch (error) {
+            throw new Error(`Error getting leetcode problems: ${error}`);
+        }
     }
 }
 

@@ -1,6 +1,8 @@
-import AdvancedNotionClient, { PageObjectResponse, UpdatePageProperties } from "@leetnotion/notion-api";
+
+
+import AdvancedNotionClient, { CreatePageResponse, PageObjectResponse, UpdatePageProperties } from "@leetnotion/notion-api";
 import { globalState } from "./globalState";
-import { Mapping, MultiSelectDatabasePropertyConfigResponse, ProblemPageResponse, QueryProblemPageProperties, SelectTags, SetPropertiesMessage } from "./types";
+import { LeetcodeProblem, Mapping, MultiSelectDatabasePropertyConfigResponse, ProblemPageResponse, QueryProblemPageProperties, SelectTags, SetPropertiesMessage } from "./types";
 import { leetCodeChannel } from "./leetCodeChannel";
 import { hasNotionIntegrationEnabled, shouldAddCodeToSubmissionPage } from "./utils/settingUtils";
 import { leetcodeClient } from "./leetCodeClient";
@@ -9,7 +11,7 @@ import { DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";
 import { areArraysEqual, getISODate, getNotionLang, splitTextIntoChunks } from "./utils/toolUtils";
 import { Submission } from "@leetnotion/leetcode-api";
 import { leetCodeSubmissionProvider } from "./webview/leetCodeSubmissionProvider";
-import Bottleneck from "bottleneck";
+import { LeetCodeToNotionConverter } from "./modules/leetnotion/converter";
 
 const QuestionsDatabaseKey = "Questions Database";
 const SubmissionsDatabaseKey = "Submissions Database";
@@ -17,9 +19,6 @@ const SubmissionsDatabaseKey = "Submissions Database";
 class LeetnotionClient {
     private notion: AdvancedNotionClient | undefined;
     private isSignedIn: boolean;
-    private limiter = new Bottleneck({
-        minTime: 334
-    })
 
     public initialize() {
         const accessToken = globalState.getNotionAccessToken();
@@ -272,7 +271,7 @@ class LeetnotionClient {
                 })
             }
             let prevTags = globalState.getUserQuestionTags();
-            if(!prevTags) prevTags = [];
+            if (!prevTags) prevTags = [];
             const allTags = Array.from(new Set([...prevTags, ...message.finalTags]));
             globalState.setUserQuestionTags(allTags);
         } catch (error) {
@@ -318,6 +317,45 @@ class LeetnotionClient {
             })
         }
         return selectTags;
+    }
+
+    public async addProblems(problems: LeetcodeProblem[], callbackFn: (response: ProblemPageResponse) => void = () => { }): Promise<ProblemPageResponse[]> {
+        try {
+            if (!this.isSignedIn || !this.notion) {
+                throw new Error(`notion-integration-not-enabled`);
+            }
+            const databaseId = globalState.getQuestionsDatabaseId();
+            if (!databaseId) {
+                throw new Error(`questions-database-id-not-found`);
+            }
+            const problemPages = problems.map(problem => LeetCodeToNotionConverter.convertProblemToCreatePage(problem));
+            return await this.notion.addPagesToDatabase(databaseId, problemPages, callbackFn) as ProblemPageResponse[];
+        } catch (error) {
+            throw new Error(`Failed to add problems: ${error}`);
+        }
+    }
+
+    public async updateProblems(problems: LeetcodeProblem[], callbackFn: (response: ProblemPageResponse) => void = () => { }): Promise<ProblemPageResponse[]> {
+        try {
+            if (!this.isSignedIn || !this.notion) {
+                throw new Error(`notion-integration-not-enabled`);
+            }
+            const databaseId = globalState.getQuestionsDatabaseId();
+            if (!databaseId) {
+                throw new Error(`questions-database-id-not-found`);
+            }
+            const questionNumberPageIdMapping = globalState.getQuestionNumberPageIdMapping();
+            if (!questionNumberPageIdMapping) {
+                throw new Error(`question-number-page-id-mapping`);
+            }
+            const updateProperties = problems.map(problem => {
+                const properties = LeetCodeToNotionConverter.convertProblemToUpdatePage(problem)
+                return { pageId: questionNumberPageIdMapping[problem.questionFrontendId], properties }
+            });
+            return await this.notion.updatePages(updateProperties, callbackFn) as ProblemPageResponse[];
+        } catch (error) {
+            throw new Error(`Failed to update problems: ${error}`);
+        }
     }
 }
 

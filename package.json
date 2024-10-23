@@ -136,12 +136,17 @@
             },
             {
                 "command": "leetnotion.updateTemplateInfo",
-                "title": "Update template information in the extension",
+                "title": "Update notion information in the extension",
                 "category": "Leetnotion"
             },
             {
                 "command": "leetnotion.integrateNotion",
                 "title": "Integrate notion with the leetnotion extension",
+                "category": "Leetnotion"
+            },
+            {
+                "command": "leetnotion.updateTemplate",
+                "title": "Update leetnotion template",
                 "category": "Leetnotion"
             }
         ],

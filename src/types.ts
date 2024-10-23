@@ -64,10 +64,10 @@ export type CreateProblemPageProperties = {
     Name: MutationTitle;
     Difficulty: ProblemDifficulty;
     'Question Tags': MutationMultiSelect;
-    'Company Tags': MutationMultiSelect;
+    'Company Tags'?: MutationMultiSelect;
     Slug: MutationRichText;
     URL: MutationUrl;
-    Frequency: MutationNumberType;
+    Frequency?: MutationNumberType;
     'Question Number': MutationNumberType;
     Solution: MutationUrl;
     'Free or Paid': FreeOrPaid;
@@ -197,4 +197,15 @@ export type SelectPropertyResponse = {
     name: string;
     color: PrimaryColor;
     description: string | null;
+};
+
+export type PendingSessionDetails = {
+    id: string;
+    createdTime: Date;
+};
+
+export type SessionDetails = {
+    isProblemsRetrieved: boolean;
+    updatedPages: Record<string, string>;
+    leetcodeProblems: LeetcodeProblem[];
 };

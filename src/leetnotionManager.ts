@@ -28,7 +28,7 @@ class LeetnotionManager {
             await leetnotionClient.setDatabaseIds();
             globalState.setNotionIntegrationStatus("pending");
             if (!previousQuestionsDatabaseId || previousQuestionsDatabaseId === globalState.getQuestionsDatabaseId()) {
-                await this.updateTemplatePages();
+                await this.updateNotionInfo();
             }
             globalState.setNotionIntegrationStatus("done");
         } catch (error) {
@@ -70,7 +70,7 @@ class LeetnotionManager {
         }
     }
 
-    public async updateTemplatePages(): Promise<void> {
+    public async updateNotionInfo(): Promise<void> {
         const totalNoOfPages = await leetcodeClient.getNoOfProblems();
         leetCodeChannel.appendLine("Started fetching template pages from notion.")
         await window.withProgress(

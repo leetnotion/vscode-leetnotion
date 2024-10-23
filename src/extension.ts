@@ -31,6 +31,7 @@ import { clearInterval } from "timers";
 import { repeatAction } from "./utils/toolUtils";
 import { leetnotionManager } from "./leetnotionManager";
 import { leetnotionClient } from "./leetnotionClient";
+import { templateUpdater } from "./modules/leetnotion/template-updater";
 
 let interval: NodeJS.Timeout;
 
@@ -60,7 +61,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         })
         leetcodeClient.setTitleSlugQuestionNumberMapping();
         if(globalState.getNotionIntegrationStatus() === "pending") {
-            leetnotionManager.updateTemplatePages().then(() => globalState.setNotionIntegrationStatus("done"));
+            leetnotionManager.updateNotionInfo().then(() => globalState.setNotionIntegrationStatus("done"));
         }
 
         context.subscriptions.push(
@@ -121,8 +122,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             vscode.commands.registerCommand("leetnotion.removeFavorite", (node: LeetCodeNode) => star.removeFavorite(node)),
             vscode.commands.registerCommand("leetnotion.problems.sort", () => plugin.switchSortingStrategy()),
             vscode.commands.registerCommand("leetnotion.clearAllData", () => leetnotionManager.clearAllData()),
-            vscode.commands.registerCommand("leetnotion.updateTemplateInfo", () => leetnotionManager.updateTemplatePages()),
+            vscode.commands.registerCommand("leetnotion.updateTemplateInfo", () => leetnotionManager.updateNotionInfo()),
             vscode.commands.registerCommand("leetnotion.integrateNotion", () => leetnotionManager.enableNotionIntegration()),
+            vscode.commands.registerCommand("leetnotion.updateTemplate", () => templateUpdater.updateTemplate()),
             {
                 dispose: () => clearInterval(interval)
             }
