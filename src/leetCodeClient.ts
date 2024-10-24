@@ -1,7 +1,7 @@
 // Copyright (c) leetnotion. All rights reserved.
 // Licensed under the MIT license.
 
-import { Credential, LeetCodeAdvanced } from "@leetnotion/leetcode-api";
+import { Credential, LeetCodeAdvanced, Submission } from "@leetnotion/leetcode-api";
 import { globalState } from "./globalState";
 import { extractCookie } from "./utils/toolUtils";
 import { DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";
@@ -83,7 +83,7 @@ class LeetcodeClient {
         return await this.leetcode.recentSubmission();
     }
 
-    public async getLeetcodeProblems(progressCallback: (problems: LeetcodeProblem[]) => void = () => {}): Promise<LeetcodeProblem[]> {
+    public async getLeetcodeProblems(progressCallback: (problems: LeetcodeProblem[]) => void = () => { }): Promise<LeetcodeProblem[]> {
         try {
             if (!this.isSignedIn) throw new Error(`not-signed-in-to-leetcode`);
             const problems = await this.leetcode.getLeetcodeProblems(500, progressCallback);
@@ -96,6 +96,9 @@ class LeetcodeClient {
         } catch (error) {
             throw new Error(`Error getting leetcode problems: ${error}`);
         }
+    }
+
+    public async getUserSubmissions() {
     }
 }
 

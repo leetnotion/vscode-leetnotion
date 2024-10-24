@@ -1,24 +1,29 @@
 
 
-import AdvancedNotionClient, { CreatePageResponse, PageObjectResponse, UpdatePageProperties } from "@leetnotion/notion-api";
+import AdvancedNotionClient, { CreatePageResponse, PageObjectResponse, QueryDatabaseResponse, UpdatePageProperties } from "@leetnotion/notion-api";
 import { globalState } from "./globalState";
-import { LeetcodeProblem, Mapping, MultiSelectDatabasePropertyConfigResponse, ProblemPageResponse, QueryProblemPageProperties, SelectTags, SetPropertiesMessage } from "./types";
+import { LeetcodeProblem, LeetcodeSubmission, Mapping, MultiSelectDatabasePropertyConfigResponse, ProblemPageResponse, QueryProblemPageProperties, SelectTags, SetPropertiesMessage, SubmissionPageDetails } from "./types";
 import { leetCodeChannel } from "./leetCodeChannel";
-import { hasNotionIntegrationEnabled, shouldAddCodeToSubmissionPage } from "./utils/settingUtils";
+import { hasNotionIntegrationEnabled, shouldAddCodeToSubmissionPage, shouldUpdateStatusWhenUploadingSubmissions } from "./utils/settingUtils";
 import { leetcodeClient } from "./leetCodeClient";
 import * as _ from 'lodash'
 import { DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";
-import { areArraysEqual, getISODate, getNotionLang, splitTextIntoChunks } from "./utils/toolUtils";
-import { Submission } from "@leetnotion/leetcode-api";
+import { areArraysEqual, getISODate, getNotionLang, splitTextIntoChunks, startCase } from "./utils/toolUtils";
+import { Submission, SubmissionDetail } from "@leetnotion/leetcode-api";
 import { leetCodeSubmissionProvider } from "./webview/leetCodeSubmissionProvider";
 import { LeetCodeToNotionConverter } from "./modules/leetnotion/converter";
+import Bottleneck from "bottleneck";
+import { getTitleSlugPageIdMapping } from "./utils/dataUtils";
 
-const QuestionsDatabaseKey = "Questions Database";
-const SubmissionsDatabaseKey = "Submissions Database";
+const QuestionsDatabaseKey = "Questions";
+const SubmissionsDatabaseKey = "Submissions";
 
 class LeetnotionClient {
     private notion: AdvancedNotionClient | undefined;
     private isSignedIn: boolean;
+    private limiter = new Bottleneck({
+        minTime: 334
+    })
 
     public initialize() {
         const accessToken = globalState.getNotionAccessToken();
@@ -169,7 +174,7 @@ class LeetnotionClient {
                     },
                     Language: {
                         select: {
-                            name: _.startCase(submission.lang)
+                            name: startCase(getNotionLang(submission.lang))
                         }
                     },
                     Question: {
@@ -355,6 +360,82 @@ class LeetnotionClient {
             return await this.notion.updatePages(updateProperties, callbackFn) as ProblemPageResponse[];
         } catch (error) {
             throw new Error(`Failed to update problems: ${error}`);
+        }
+    }
+
+    public async getSubmissionPages(callbackFn: (response: QueryDatabaseResponse) => void = () => {}) {
+        try {
+            if (!this.isSignedIn || !this.notion) {
+                throw new Error(`notion-integration-not-enabled`);
+            }
+            const databaseId = globalState.getSubmissionsDatabaseId();
+            if (!databaseId) {
+                throw new Error(`submissions-database-id-not-found`);
+            }
+            return await this.notion.getAllPages(databaseId, callbackFn);
+        } catch (error) {
+            throw new Error(`Failed to get submission pages: ${error}`);
+        }
+    }
+
+    public async addSubmissions(submissions: LeetcodeSubmission[], callbackFn: () => void = () => {}) {
+        try {
+            if (!this.isSignedIn || !this.notion) {
+                throw new Error(`notion-integration-not-enabled`);
+            }
+            const questionsDatabaseId = globalState.getQuestionsDatabaseId();
+            if(!questionsDatabaseId) {
+                throw new Error(`questions-database-id-not-found`);
+            }
+            const submissionsDatabaseId = globalState.getSubmissionsDatabaseId();
+            if (!submissionsDatabaseId) {
+                throw new Error(`submissions-database-id-not-found`);
+            }
+            const titleSlugQuestionNumberMapping = globalState.getTitleSlugQuestionNumberMapping();
+            if(!titleSlugQuestionNumberMapping) {
+                throw new Error(`title-slug-question-number-mapping-not-found`);
+            }
+            const questionNumberPageIdMapping = globalState.getQuestionNumberPageIdMapping();
+            if(!questionNumberPageIdMapping) {
+                throw new Error(`question-number-page-id-mapping-not-found`);
+            }
+            let questionsMissing = false;
+            for(const submission of submissions) {
+                const questionNumber = titleSlugQuestionNumberMapping[submission.title_slug];
+                const pageId = questionNumberPageIdMapping[questionNumber];
+                if(!pageId) {
+                    questionsMissing = true;
+                    continue;
+                }
+                if(shouldUpdateStatusWhenUploadingSubmissions()) {
+                    await this.limiter.schedule(async () => await this.updateStatusOfQuestion(questionNumber))
+                    leetCodeChannel.appendLine(`Updated status of question: ${submission.title_slug}`)
+                }
+                const submissionPageProperties = LeetCodeToNotionConverter.convertSubmissionToSubmissionPage(
+                    submission,
+                    pageId
+                );
+                const submissionPageId = await this.limiter.schedule(async () => {
+                    if(!this.notion) throw new Error(`notion-not-initialized`);
+                    const submissionPage = await this.notion.pages.create({
+                        parent: {
+                            database_id: submissionsDatabaseId,
+                        },
+                        properties: submissionPageProperties
+                    })
+                    leetCodeChannel.appendLine(`Created submission page for ${submission.id} submission`)
+                    return submissionPage.id;
+                })
+                if(shouldAddCodeToSubmissionPage()) {
+                    await this.limiter.schedule(async () => {
+                        await this.addCodeToPage(submissionPageId, submission.lang, submission.code);
+                        leetCodeChannel.appendLine(`Added code to submission page for ${submission.title_slug} question`)
+                    })
+                }
+                callbackFn();
+            }
+        } catch (error) {
+            throw new Error(`Failed to add submissions: ${error}`);
         }
     }
 }

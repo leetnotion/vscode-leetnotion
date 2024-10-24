@@ -125,6 +125,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             vscode.commands.registerCommand("leetnotion.updateTemplateInfo", () => leetnotionManager.updateNotionInfo()),
             vscode.commands.registerCommand("leetnotion.integrateNotion", () => leetnotionManager.enableNotionIntegration()),
             vscode.commands.registerCommand("leetnotion.updateTemplate", () => templateUpdater.updateTemplate()),
+            vscode.commands.registerCommand("leetnotion.addSubmissions", () => leetnotionManager.uploadSubmissions()),
             {
                 dispose: () => clearInterval(interval)
             }

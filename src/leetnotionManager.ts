@@ -1,11 +1,14 @@
+import * as fse from 'fs-extra';
 import { globalState } from "./globalState";
-import { InputBoxOptions, ProgressLocation, window } from "vscode";
+import { InputBoxOptions, OpenDialogOptions, ProgressLocation, Uri, window } from "vscode";
 import { leetCodeChannel } from "./leetCodeChannel";
-import { DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";
-import { getWorkspaceConfiguration } from "./utils/settingUtils";
+import { DialogType, getBelongingWorkspaceFolderUri, promptForOpenOutputChannel } from "./utils/uiUtils";
+import { getWorkspaceConfiguration, hasNotionIntegrationEnabled } from "./utils/settingUtils";
 import { leetnotionClient } from "./leetnotionClient";
 import { leetcodeClient } from "./leetCodeClient";
 import { leetCodeManager } from "./leetCodeManager";
+import { LeetcodeSubmission } from "./types";
+import { PageObjectResponse, QueryRichText } from '@leetnotion/notion-api';
 
 class LeetnotionManager {
     public async enableNotionIntegration(): Promise<void> {
@@ -88,6 +91,93 @@ class LeetnotionManager {
             }
         )
     }
+
+    public async uploadSubmissions() {
+        try {
+            if (!hasNotionIntegrationEnabled()) {
+                leetCodeChannel.appendLine(`Notion integration not enabled. Enable notion integration and complete setup to upload submissions.`);
+                promptForOpenOutputChannel(`Notion integration not enabled.`, DialogType.error);
+                return;
+            }
+            const submissions = await this.getLeetcodeSubmissions();
+            let notionSubmissionPages: PageObjectResponse[] = [];
+            let notionSubmissionsCount = 0;
+            await window.withProgress(
+                {
+                    location: ProgressLocation.Notification,
+                    cancellable: true,
+                    title: 'Collecting existing submissions from notion',
+                },
+                async progress => {
+                    notionSubmissionPages = await leetnotionClient.getSubmissionPages(response => {
+                        notionSubmissionsCount += response.results.length;
+                        progress.report({
+                            message: `${notionSubmissionsCount} collected`,
+                        });
+                    });
+                }
+            );
+            const existingSubmissions = new Set<string>();
+            notionSubmissionPages.forEach(submissionPage => {
+                const submissionIdProperty = submissionPage.properties['Submission ID'] as QueryRichText;
+                const submissionId = submissionIdProperty.rich_text[0].plain_text;
+                if (!submissionId) {
+                    return;
+                }
+                existingSubmissions.add(submissionId);
+            });
+            const newSubmissions = submissions.filter(submission => !existingSubmissions.has(submission.id.toString()));
+            await window.withProgress(
+                {
+                    location: ProgressLocation.Notification,
+                    cancellable: true,
+                    title: 'Adding submissions to notion',
+                },
+                async (progress, cancellationToken) => {
+                    let count = 0;
+                    await leetnotionClient.addSubmissions(newSubmissions, () => {
+                        count += 1;
+                        progress.report({
+                            message: `(${count}/${newSubmissions.length}) added`,
+                            increment: (1 / newSubmissions.length) * 100,
+                        })
+                        if(cancellationToken.isCancellationRequested) {
+                            throw new Error(`adding-submissions-cancelled`);
+                        }
+                    });
+                }
+            )
+        } catch (error) {
+            if(error.message === "adding-submissions-cancelled") {
+                promptForOpenOutputChannel(`Adding submissions cancelled`, DialogType.completed);
+                return;
+            }
+            leetCodeChannel.appendLine(`Failed to upload submissions: ${error}`);
+            promptForOpenOutputChannel(`Failed to upload submissions`, DialogType.error);
+        }
+    }
+
+    public async getLeetcodeSubmissions() {
+        const defaultUri: Uri | undefined = getBelongingWorkspaceFolderUri(undefined);
+        const options: OpenDialogOptions = {
+            defaultUri,
+            canSelectFiles: true,
+            canSelectFolders: false,
+            canSelectMany: false,
+            openLabel: 'Select',
+            filters: {
+                JSON: ['json'],
+            },
+            title: 'Select submissions.json where all your leetcode submissions contain.',
+        };
+        const submissionsFile: Uri[] | undefined = await window.showOpenDialog(options);
+        if (submissionsFile && submissionsFile.length) {
+            const submissions = fse.readJSONSync(submissionsFile[0].fsPath) as LeetcodeSubmission[];
+            return submissions;
+        }
+        throw new Error(`Error at getting submission from submissions.json`);
+    }
+
 
     public async clearAllData(): Promise<void> {
         try {

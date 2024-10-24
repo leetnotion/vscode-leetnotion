@@ -95,7 +95,7 @@ export async function showFileSelectDialog(fsPath?: string): Promise<vscode.Uri[
     return await vscode.window.showOpenDialog(options);
 }
 
-function getBelongingWorkspaceFolderUri(fsPath: string | undefined): vscode.Uri | undefined {
+export function getBelongingWorkspaceFolderUri(fsPath: string | undefined): vscode.Uri | undefined {
     let defaultUri: vscode.Uri | undefined;
     if (fsPath) {
         const workspaceFolder: vscode.WorkspaceFolder | undefined = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(fsPath));

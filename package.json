@@ -148,6 +148,11 @@
                 "command": "leetnotion.updateTemplate",
                 "title": "Update leetnotion template",
                 "category": "Leetnotion"
+            },
+            {
+                "command": "leetnotion.addSubmissions",
+                "title": "Add existing submissions to template",
+                "category": "LeetNotion"
             }
         ],
         "viewsContainers": {
@@ -754,6 +759,12 @@
                         "type": "object",
                         "scope": "application",
                         "description": "A custom footer added to each solution file for the selected language."
+                    },
+                    "leetnotion.changeStatusWhenUploadingSubmissions": {
+                        "type": "boolean",
+                        "scope": "application",
+                        "default": true,
+                        "description": "Change status of problem when uploading existing submissions to the template."
                     }
                 }
             }

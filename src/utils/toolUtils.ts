@@ -118,3 +118,8 @@ export function areArraysEqual(arr1: any[], arr2: any[]): boolean {
     }
     return true;
 }
+
+export function startCase(str) {
+    if (!str) return str;
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}

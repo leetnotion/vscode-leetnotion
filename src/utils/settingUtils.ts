@@ -70,6 +70,10 @@ export function shouldAddCodeToSubmissionPage(): boolean {
     return getWorkspaceConfiguration().get<boolean>("addCodeToSubmissionPage", true);
 }
 
+export function shouldUpdateStatusWhenUploadingSubmissions(): boolean {
+    return getWorkspaceConfiguration().get<boolean>("changeStatusWhenUploadingSubmissions", true);
+}
+
 export function getCompaniesSortingStrategy(): CompanySortingStrategy {
     return getWorkspaceConfiguration().get<CompanySortingStrategy>("companies.sortStrategy", CompanySortingStrategy.Popularity);
 }

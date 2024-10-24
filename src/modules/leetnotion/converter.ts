@@ -1,6 +1,7 @@
 import { OfficialSolution, ProblemDifficulty, SimilarQuestion, Stats, TopicTag } from "@leetnotion/leetcode-api";
-import { CreateProblemPageProperties, LeetcodeProblem, UpdateProblemPageProperties } from "../../types";
+import { CreateProblemPageProperties, LeetcodeProblem, LeetcodeSubmission, UpdateProblemPageProperties } from "../../types";
 import { getTitleSlugPageIdMapping } from "../../utils/dataUtils";
+import { getISODate } from "../../utils/toolUtils";
 
 export class LeetCodeToNotionConverter {
     static convertProblemToCreatePage(problem: LeetcodeProblem) {
@@ -177,5 +178,50 @@ export class LeetCodeToNotionConverter {
             },
         };
         return problemPageProperties;
+    }
+
+    static convertSubmissionToSubmissionPage(submission: LeetcodeSubmission, questionPageId: string) {
+        return {
+            title: {
+                title: [
+                    {
+                        text: {
+                            content: submission.title,
+                        },
+                    },
+                ],
+            },
+            'Time Submitted': {
+                date: {
+                    start: getISODate(submission.timestamp),
+                },
+            },
+            Language: {
+                select: {
+                    name: submission.lang_name,
+                },
+            },
+            Question: {
+                relation: [
+                    {
+                        id: questionPageId,
+                    },
+                ],
+            },
+            Status: {
+                select: {
+                    name: submission.status_display,
+                },
+            },
+            'Submission ID': {
+                rich_text: [
+                    {
+                        text: {
+                            content: submission.id.toString(),
+                        },
+                    },
+                ],
+            },
+        };
     }
 }
