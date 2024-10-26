@@ -8,8 +8,8 @@ import { globalState } from '../globalState';
 import { leetCodeChannel } from '../leetCodeChannel';
 import { CompanyTags, Mapping, Sheets, TopicTags } from '../types';
 
-const sheetsPath = '../../../data/sheets.json';
-const companyTagsPath = '../../../data/companyTags.json';
+const sheetsPath = '../../data/sheets.json';
+const companyTagsPath = '../../data/companyTags.json';
 
 export function getSheets(): Sheets {
     const sheets = fsExtra.readJSONSync(path.join(__dirname, sheetsPath)) as Sheets;

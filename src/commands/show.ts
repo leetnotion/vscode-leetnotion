@@ -3,7 +3,7 @@
 
 import * as _ from "lodash";
 import * as path from "path";
-import * as unescapeJS from "unescape-js";
+import unescapeJS from "unescape-js";
 import * as vscode from "vscode";
 import { explorerNodeManager } from "../explorer/explorerNodeManager";
 import { LeetCodeNode } from "../explorer/LeetCodeNode";

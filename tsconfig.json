@@ -1,23 +1,21 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
-        "target": "es6",
+        "target": "ES6",
+        "module": "Node16",
+        "rootDir": "src",
         "outDir": "out",
         "resolveJsonModule": true,
-        "lib": [
-            "es6"
-        ],
-        "sourceMap": true,
-        "rootDir": ".",
-        "noUnusedLocals": true,
-        "noImplicitThis": true,
-        "noImplicitReturns": true,
-        "strictNullChecks": true,
-        "noUnusedParameters": true,
-        "alwaysStrict": true
+        "moduleResolution": "Node16",
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["src/*"]
+        },
+        "noImplicitAny": false,
+        "removeComments": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "skipLibCheck": true
     },
-    "exclude": [
-        "node_modules",
-        ".vscode-test"
-    ]
+    "include": ["src/**/*.ts"],
+    "exclude": ["node_modules", "dist", "out", "build", "coverage", "__tests__"]
 }
