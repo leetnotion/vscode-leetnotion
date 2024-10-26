@@ -193,7 +193,7 @@ export class LeetCodeToNotionConverter {
             },
             'Time Submitted': {
                 date: {
-                    start: getISODate(submission.timestamp),
+                    start: getISODate(submission.timestamp * 1000),
                 },
             },
             Language: {
