@@ -209,3 +209,11 @@ export type SessionDetails = {
     updatedPages: Record<string, string>;
     leetcodeProblems: LeetcodeProblem[];
 };
+
+export type LeetnotionSubmission = {
+    title: string,
+    timestamp: number,
+    lang: string,
+    status_display: string,
+    id: number,
+}

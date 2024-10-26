@@ -1,19 +1,16 @@
-
-
-import AdvancedNotionClient, { CreatePageResponse, PageObjectResponse, QueryDatabaseResponse, UpdatePageProperties } from "@leetnotion/notion-api";
+import AdvancedNotionClient, { PageObjectResponse, QueryDatabaseResponse, UpdatePageProperties } from "@leetnotion/notion-api";
 import { globalState } from "./globalState";
-import { LeetcodeProblem, LeetcodeSubmission, Mapping, MultiSelectDatabasePropertyConfigResponse, ProblemPageResponse, QueryProblemPageProperties, SelectTags, SetPropertiesMessage, SubmissionPageDetails } from "./types";
+import { LeetcodeProblem, LeetcodeSubmission, LeetnotionSubmission, Mapping, MultiSelectDatabasePropertyConfigResponse, ProblemPageResponse, QueryProblemPageProperties, SelectTags, SetPropertiesMessage, SubmissionPageDetails } from "./types";
 import { leetCodeChannel } from "./leetCodeChannel";
 import { hasNotionIntegrationEnabled, shouldAddCodeToSubmissionPage, shouldUpdateStatusWhenUploadingSubmissions } from "./utils/settingUtils";
 import { leetcodeClient } from "./leetCodeClient";
 import * as _ from 'lodash'
 import { DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";
-import { areArraysEqual, getISODate, getNotionLang, splitTextIntoChunks, startCase } from "./utils/toolUtils";
-import { Submission, SubmissionDetail } from "@leetnotion/leetcode-api";
+import { areArraysEqual, getNotionLang, splitTextIntoChunks } from "./utils/toolUtils";
+import { Submission } from "@leetnotion/leetcode-api";
 import { leetCodeSubmissionProvider } from "./webview/leetCodeSubmissionProvider";
 import { LeetCodeToNotionConverter } from "./modules/leetnotion/converter";
 import Bottleneck from "bottleneck";
-import { getTitleSlugPageIdMapping } from "./utils/dataUtils";
 
 const QuestionsDatabaseKey = "Questions";
 const SubmissionsDatabaseKey = "Submissions";
@@ -140,7 +137,7 @@ class LeetnotionClient {
         }
     }
 
-    public async createSubmissionPage(questionNumber: string, submission: Submission): Promise<string> {
+    public async createSubmissionPage(questionNumber: string, submission: LeetnotionSubmission): Promise<string> {
         try {
             if (!this.isSignedIn || !this.notion) {
                 throw new Error("notion-integration-not-enabled");
@@ -157,44 +154,7 @@ class LeetnotionClient {
                 parent: {
                     database_id: submissionsDatabaseId,
                 },
-                properties: {
-                    title: {
-                        title: [
-                            {
-                                text: {
-                                    content: submission.title,
-                                },
-                            },
-                        ],
-                    },
-                    'Time Submitted': {
-                        date: {
-                            start: getISODate(submission.timestamp * 1000)
-                        }
-                    },
-                    Language: {
-                        select: {
-                            name: startCase(getNotionLang(submission.lang))
-                        }
-                    },
-                    Question: {
-                        relation: [{
-                            id: pageId,
-                        }]
-                    },
-                    Status: {
-                        select: {
-                            name: 'Accepted',
-                        }
-                    },
-                    'Submission ID': {
-                        rich_text: [{
-                            text: {
-                                content: submission.id.toString()
-                            }
-                        }]
-                    }
-                }
+                properties: LeetCodeToNotionConverter.convertSubmissionToSubmissionPage(submission, pageId),
             })
             return response.id;
         } catch (error) {
@@ -363,7 +323,7 @@ class LeetnotionClient {
         }
     }
 
-    public async getSubmissionPages(callbackFn: (response: QueryDatabaseResponse) => void = () => {}) {
+    public async getSubmissionPages(callbackFn: (response: QueryDatabaseResponse) => void = () => { }) {
         try {
             if (!this.isSignedIn || !this.notion) {
                 throw new Error(`notion-integration-not-enabled`);
@@ -378,13 +338,13 @@ class LeetnotionClient {
         }
     }
 
-    public async addSubmissions(submissions: LeetcodeSubmission[], callbackFn: () => void = () => {}) {
+    public async addSubmissions(submissions: LeetcodeSubmission[], callbackFn: () => void = () => { }) {
         try {
             if (!this.isSignedIn || !this.notion) {
                 throw new Error(`notion-integration-not-enabled`);
             }
             const questionsDatabaseId = globalState.getQuestionsDatabaseId();
-            if(!questionsDatabaseId) {
+            if (!questionsDatabaseId) {
                 throw new Error(`questions-database-id-not-found`);
             }
             const submissionsDatabaseId = globalState.getSubmissionsDatabaseId();
@@ -392,47 +352,37 @@ class LeetnotionClient {
                 throw new Error(`submissions-database-id-not-found`);
             }
             const titleSlugQuestionNumberMapping = globalState.getTitleSlugQuestionNumberMapping();
-            if(!titleSlugQuestionNumberMapping) {
+            if (!titleSlugQuestionNumberMapping) {
                 throw new Error(`title-slug-question-number-mapping-not-found`);
             }
             const questionNumberPageIdMapping = globalState.getQuestionNumberPageIdMapping();
-            if(!questionNumberPageIdMapping) {
+            if (!questionNumberPageIdMapping) {
                 throw new Error(`question-number-page-id-mapping-not-found`);
             }
             let questionsMissing = false;
-            for(const submission of submissions) {
+            for (const submission of submissions) {
                 const questionNumber = titleSlugQuestionNumberMapping[submission.title_slug];
                 const pageId = questionNumberPageIdMapping[questionNumber];
-                if(!pageId) {
+                if (!pageId) {
                     questionsMissing = true;
                     continue;
                 }
-                if(shouldUpdateStatusWhenUploadingSubmissions()) {
+                if (shouldUpdateStatusWhenUploadingSubmissions()) {
                     await this.limiter.schedule(async () => await this.updateStatusOfQuestion(questionNumber))
                     leetCodeChannel.appendLine(`Updated status of question: ${submission.title_slug}`)
                 }
-                const submissionPageProperties = LeetCodeToNotionConverter.convertSubmissionToSubmissionPage(
-                    submission,
-                    pageId
-                );
-                const submissionPageId = await this.limiter.schedule(async () => {
-                    if(!this.notion) throw new Error(`notion-not-initialized`);
-                    const submissionPage = await this.notion.pages.create({
-                        parent: {
-                            database_id: submissionsDatabaseId,
-                        },
-                        properties: submissionPageProperties
-                    })
-                    leetCodeChannel.appendLine(`Created submission page for ${submission.id} submission`)
-                    return submissionPage.id;
-                })
-                if(shouldAddCodeToSubmissionPage()) {
-                    await this.limiter.schedule(async () => {
-                        await this.addCodeToPage(submissionPageId, submission.lang, submission.code);
-                        leetCodeChannel.appendLine(`Added code to submission page for ${submission.title_slug} question`)
-                    })
+                const submissionPageId = await this.limiter.schedule(async () =>  await this.createSubmissionPage(questionNumber, submission));
+                leetCodeChannel.appendLine(`Created submission page for ${submission.id} submission`)
+                if (shouldAddCodeToSubmissionPage()) {
+                    await this.limiter.schedule(async () => await this.addCodeToPage(submissionPageId, submission.lang, submission.code))
+                    leetCodeChannel.appendLine(`Added code to submission page for ${submission.title_slug} question`)
                 }
                 callbackFn();
+            }
+            if(questionsMissing) {
+                promptForOpenOutputChannel(`Few questions are missing in the template. Submissions of other questions are added. Update the template using 'Update leetnotion template' command and run 'Add existing submissions to template' command again to add remaining submissions to template`, DialogType.warning);
+            } else {
+                promptForOpenOutputChannel(`Successfully added submissions to template`, DialogType.completed);
             }
         } catch (error) {
             throw new Error(`Failed to add submissions: ${error}`);

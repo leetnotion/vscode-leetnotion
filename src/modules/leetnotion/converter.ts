@@ -1,7 +1,7 @@
 import { OfficialSolution, ProblemDifficulty, SimilarQuestion, Stats, TopicTag } from "@leetnotion/leetcode-api";
-import { CreateProblemPageProperties, LeetcodeProblem, LeetcodeSubmission, UpdateProblemPageProperties } from "../../types";
+import { CreateProblemPageProperties, LeetcodeProblem, LeetcodeSubmission, LeetnotionSubmission, UpdateProblemPageProperties } from "../../types";
 import { getTitleSlugPageIdMapping } from "../../utils/dataUtils";
-import { getISODate } from "../../utils/toolUtils";
+import { getISODate, getNotionLang, startCase } from "../../utils/toolUtils";
 
 export class LeetCodeToNotionConverter {
     static convertProblemToCreatePage(problem: LeetcodeProblem) {
@@ -180,7 +180,7 @@ export class LeetCodeToNotionConverter {
         return problemPageProperties;
     }
 
-    static convertSubmissionToSubmissionPage(submission: LeetcodeSubmission, questionPageId: string) {
+    static convertSubmissionToSubmissionPage(submission: LeetnotionSubmission, questionPageId: string) {
         return {
             title: {
                 title: [
@@ -198,7 +198,7 @@ export class LeetCodeToNotionConverter {
             },
             Language: {
                 select: {
-                    name: submission.lang_name,
+                    name: startCase(getNotionLang(submission.lang)),
                 },
             },
             Question: {
