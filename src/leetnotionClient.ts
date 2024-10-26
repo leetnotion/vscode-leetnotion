@@ -1,13 +1,12 @@
 import AdvancedNotionClient, { PageObjectResponse, QueryDatabaseResponse, UpdatePageProperties } from "@leetnotion/notion-api";
 import { globalState } from "./globalState";
-import { LeetcodeProblem, LeetcodeSubmission, LeetnotionSubmission, Mapping, MultiSelectDatabasePropertyConfigResponse, ProblemPageResponse, QueryProblemPageProperties, SelectTags, SetPropertiesMessage, SubmissionPageDetails } from "./types";
+import { LeetcodeProblem, LeetcodeSubmission, LeetnotionSubmission, Mapping, MultiSelectDatabasePropertyConfigResponse, ProblemPageResponse, QueryProblemPageProperties, SelectTags, SetPropertiesMessage } from "./types";
 import { leetCodeChannel } from "./leetCodeChannel";
 import { hasNotionIntegrationEnabled, shouldAddCodeToSubmissionPage, shouldUpdateStatusWhenUploadingSubmissions } from "./utils/settingUtils";
 import { leetcodeClient } from "./leetCodeClient";
 import * as _ from 'lodash'
 import { DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";
 import { areArraysEqual, getNotionLang, splitTextIntoChunks } from "./utils/toolUtils";
-import { Submission } from "@leetnotion/leetcode-api";
 import { leetCodeSubmissionProvider } from "./webview/leetCodeSubmissionProvider";
 import { LeetCodeToNotionConverter } from "./modules/leetnotion/converter";
 import Bottleneck from "bottleneck";

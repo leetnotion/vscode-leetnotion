@@ -1,5 +1,5 @@
 import { OfficialSolution, ProblemDifficulty, SimilarQuestion, Stats, TopicTag } from "@leetnotion/leetcode-api";
-import { CreateProblemPageProperties, LeetcodeProblem, LeetcodeSubmission, LeetnotionSubmission, UpdateProblemPageProperties } from "../../types";
+import { CreateProblemPageProperties, LeetcodeProblem, LeetnotionSubmission, UpdateProblemPageProperties } from "../../types";
 import { getTitleSlugPageIdMapping } from "../../utils/dataUtils";
 import { getISODate, getNotionLang, startCase } from "../../utils/toolUtils";
 

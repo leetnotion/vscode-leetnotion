@@ -1,7 +1,7 @@
 // Copyright (c) leetnotion. All rights reserved.
 // Licensed under the MIT license.
 
-import { Credential, LeetCodeAdvanced, Submission } from "@leetnotion/leetcode-api";
+import { Credential, LeetCodeAdvanced } from "@leetnotion/leetcode-api";
 import { globalState } from "./globalState";
 import { extractCookie } from "./utils/toolUtils";
 import { DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";

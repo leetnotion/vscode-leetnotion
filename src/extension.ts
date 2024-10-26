@@ -25,7 +25,7 @@ import { leetCodeSolutionProvider } from "./webview/leetCodeSolutionProvider";
 import { leetCodeSubmissionProvider } from "./webview/leetCodeSubmissionProvider";
 import { markdownEngine } from "./webview/markdownEngine";
 import TrackData from "./utils/trackingUtils";
-import { globalState, NotionIntegrationStatusKey, QuestionNumberPageIdMappingKey } from "./globalState";
+import { globalState } from "./globalState";
 import { leetcodeClient } from "./leetCodeClient";
 import { clearInterval } from "timers";
 import { repeatAction } from "./utils/toolUtils";
