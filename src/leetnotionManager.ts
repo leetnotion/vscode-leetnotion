@@ -148,7 +148,7 @@ class LeetnotionManager {
                 }
             )
         } catch (error) {
-            if(error.message === "adding-submissions-cancelled") {
+            if(error.message.includes("adding-submissions-cancelled")) {
                 promptForOpenOutputChannel(`Adding submissions cancelled`, DialogType.completed);
                 return;
             }

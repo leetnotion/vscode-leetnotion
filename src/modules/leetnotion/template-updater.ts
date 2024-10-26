@@ -24,7 +24,9 @@ export class TemplateUpdater {
             promptForOpenOutputChannel(`Updated leetnotion template successfully 🥳.`, DialogType.completed);
             await templateUpdateSession.close();
         } catch (error) {
-            if(error.message === "updating-cancelled") {
+            leetCodeChannel.appendLine(error.message);
+            let str = "";
+            if(error.message.includes("updating-cancelled")) {
                 promptForOpenOutputChannel(`Updating template cancelled. You can resume it later.`, DialogType.completed);
                 return;
             }
