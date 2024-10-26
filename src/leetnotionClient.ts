@@ -11,8 +11,8 @@ import { leetCodeSubmissionProvider } from "./webview/leetCodeSubmissionProvider
 import { LeetCodeToNotionConverter } from "./modules/leetnotion/converter";
 import Bottleneck from "bottleneck";
 
-const QuestionsDatabaseKey = "Questions";
-const SubmissionsDatabaseKey = "Submissions";
+const QuestionsDatabaseKey = "Questions Database";
+const SubmissionsDatabaseKey = "Submissions Database";
 
 class LeetnotionClient {
     private notion: AdvancedNotionClient | undefined;
