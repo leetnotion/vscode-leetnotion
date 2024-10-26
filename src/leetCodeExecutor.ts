@@ -148,22 +148,6 @@ class LeetCodeExecutor implements Disposable {
         return await this.executeCommandWithProgressEx("Fetching problem description...", this.nodeExecutable, cmd);
     }
 
-    public async listSessions(): Promise<string> {
-        return await this.executeCommandEx(this.nodeExecutable, [await this.getLeetCodeBinaryPath(), "session"]);
-    }
-
-    public async enableSession(name: string): Promise<string> {
-        return await this.executeCommandEx(this.nodeExecutable, [await this.getLeetCodeBinaryPath(), "session", "-e", name]);
-    }
-
-    public async createSession(id: string): Promise<string> {
-        return await this.executeCommandEx(this.nodeExecutable, [await this.getLeetCodeBinaryPath(), "session", "-c", id]);
-    }
-
-    public async deleteSession(id: string): Promise<string> {
-        return await this.executeCommandEx(this.nodeExecutable, [await this.getLeetCodeBinaryPath(), "session", "-d", id]);
-    }
-
     public async submitSolution(filePath: string): Promise<string> {
         try {
             return await this.executeCommandWithProgressEx("Submitting to LeetCode...", this.nodeExecutable, [await this.getLeetCodeBinaryPath(), "submit", `"${filePath}"`]);

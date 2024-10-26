@@ -54,11 +54,6 @@
                 "category": "Leetnotion"
             },
             {
-                "command": "leetnotion.manageSessions",
-                "title": "Manage Sessions",
-                "category": "Leetnotion"
-            },
-            {
                 "command": "leetnotion.refreshExplorer",
                 "title": "Refresh",
                 "category": "Leetnotion",
@@ -731,16 +726,6 @@
                         "description": "Add code to your problem submission page in notion which is created after a successful submission."
                     },
                     "leetnotion.companies.sortStrategy": {
-                        "type": "string",
-                        "default": "Popularity",
-                        "scope": "application",
-                        "enum": [
-                            "Alphabetical",
-                            "Popularity"
-                        ],
-                        "description": "Sorting strategy for companies."
-                    },
-                    "leetnotion.questionTags.sortStrategy": {
                         "type": "string",
                         "default": "Popularity",
                         "scope": "application",

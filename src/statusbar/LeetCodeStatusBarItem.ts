@@ -9,7 +9,6 @@ export class LeetCodeStatusBarItem implements vscode.Disposable {
 
     constructor() {
         this.statusBarItem = vscode.window.createStatusBarItem();
-        this.statusBarItem.command = "leetnotion.manageSessions";
     }
 
     public updateStatusBar(status: UserStatus, user?: string): void {
