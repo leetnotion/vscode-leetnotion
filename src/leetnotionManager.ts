@@ -173,9 +173,6 @@ class LeetnotionManager {
         const submissionsFile: Uri[] | undefined = await window.showOpenDialog(options);
         if (submissionsFile && submissionsFile.length) {
             const submissions = fse.readJSONSync(submissionsFile[0].fsPath) as LeetcodeSubmission[];
-            for(let i = 0; i < submissions.length; i++) {
-                submissions[i].timestamp /= 1000;
-            }
             return submissions;
         }
         throw new Error(`Error at getting submission from submissions.json`);
