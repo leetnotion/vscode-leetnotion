@@ -2,7 +2,7 @@
     "name": "vscode-leetnotion",
     "displayName": "Leetnotion",
     "description": "Solve LeetCode problems in VsCode and keep your submissions in sync with your Ultimate LeetCode Tracker template in notion",
-    "version": "0.0.7",
+    "version": "1.0.0",
     "author": "Leetnotion",
     "publisher": "Leetnotion",
     "license": "MIT",
