@@ -31,6 +31,7 @@ import { repeatAction } from "./utils/toolUtils";
 import { leetnotionManager } from "./leetnotionManager";
 import { leetnotionClient } from "./leetnotionClient";
 import { templateUpdater } from "./modules/leetnotion/template-updater";
+import { setLists, setQuestionsOfAllLists } from "./utils/dataUtils";
 
 let interval: NodeJS.Timeout;
 
@@ -52,15 +53,23 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         leetnotionClient.initialize();
 
         interval = repeatAction(async () => {
-            leetcodeClient.checkIn();
-            leetcodeClient.collectEasterEgg();
-            leetcodeClient.setDailyProblem().then(() => {
+            try {
+                await Promise.all([
+                    leetcodeClient.checkIn(),
+                    leetcodeClient.collectEasterEgg(),
+                    leetcodeClient.setDailyProblem(),
+                    leetnotionClient.setUserQuestionTags(),
+                    setLists(),
+                    setQuestionsOfAllLists()
+                ])
                 leetCodeTreeDataProvider.refresh();
-            });
-            leetnotionClient.setUserQuestionTags();
+            } catch (error) {
+                leetCodeChannel.appendLine(`Failed to perform repeated actions: ${error}`);
+            }
         })
+
         leetcodeClient.setTitleSlugQuestionNumberMapping();
-        if(globalState.getNotionIntegrationStatus() === "pending") {
+        if (globalState.getNotionIntegrationStatus() === "pending") {
             leetnotionManager.updateNotionInfo().then(() => globalState.setNotionIntegrationStatus("done"));
         }
 

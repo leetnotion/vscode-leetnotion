@@ -1,4 +1,4 @@
-import { LeetcodeProblem as Problem } from '@leetnotion/leetcode-api';
+import { List, LeetcodeProblem as Problem, QuestionOfList } from '@leetnotion/leetcode-api';
 import type {
     DateFormulaPropertyResponse,
     NumberFormulaPropertyResponse,
@@ -150,6 +150,9 @@ export interface ProblemDifficulty extends MutationSelect {
 }
 
 export type TopicTags = Record<string, string[]>
+export type Lists = Array<List>;
+export type QuestionsOfList = Array<QuestionOfList>;
+
 export type Sheets = Record<string, Record<string, string[]>>;
 export type CompanyTags = Record<string, string[]>;
 export type SubmissionPageDetails = {

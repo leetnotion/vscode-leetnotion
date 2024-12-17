@@ -2,7 +2,7 @@
     "name": "vscode-leetnotion",
     "displayName": "Leetnotion",
     "description": "Solve LeetCode problems in VsCode and keep your submissions in sync with your Ultimate LeetCode Tracker template in notion",
-    "version": "1.0.2",
+    "version": "1.1.0",
     "author": "Leetnotion",
     "publisher": "Leetnotion",
     "license": "MIT",
@@ -775,7 +775,7 @@
         "typescript": "^5.6.3"
     },
     "dependencies": {
-        "@leetnotion/leetcode-api": "^1.9.0",
+        "@leetnotion/leetcode-api": "^1.10.0",
         "@leetnotion/notion-api": "^0.0.2",
         "@vscode/webview-ui-toolkit": "^1.4.0",
         "axios": "^1.6.8",

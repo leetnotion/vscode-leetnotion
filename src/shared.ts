@@ -103,7 +103,8 @@ export enum Category {
     Favorite = "Favorite",
     Daily = "Daily",
     Sheets = "Sheets",
-    Sublist = "Sublist"
+    Sublist = "Sublist",
+    Lists = "Lists",
 }
 
 export const supportedPlugins: string[] = ["company", "solution.discuss", "leetcode.cn"];

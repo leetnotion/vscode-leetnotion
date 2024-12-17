@@ -98,7 +98,24 @@ class LeetcodeClient {
         }
     }
 
-    public async getUserSubmissions() {
+    public async getLists() {
+        try {
+            if (!this.isSignedIn) throw new Error(`not-signed-in-to-leetcode`);
+            const lists = await this.leetcode.getLists();
+            return lists;
+        } catch (error) {
+            throw new Error(`Error getting leetcode lists: ${error}`);
+        }
+    }
+
+    public async getQuestionsOfList(slug: string) {
+        try {
+            if (!this.isSignedIn) throw new Error(`not-signed-in-to-leetcode`);
+            const questions = await this.leetcode.getQuestionsOfList(slug);
+            return questions;
+        } catch (error) {
+            throw new Error(`Error getting leetcode lists: ${error}`);
+        }
     }
 }
 

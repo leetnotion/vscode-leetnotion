@@ -5,7 +5,7 @@ import { leetCodeChannel } from "../leetCodeChannel";
 import { leetCodeExecutor } from "../leetCodeExecutor";
 import { leetCodeManager } from "../leetCodeManager";
 import { IProblem, ProblemState, UserStatus } from "../shared";
-import { getCompanyTags, getTopicTags } from "../utils/dataUtils";
+import { getCompanyTags, getLists, getTopicTags } from "../utils/dataUtils";
 import * as settingUtils from "../utils/settingUtils";
 import { DialogType, promptForOpenOutputChannel } from "../utils/uiUtils";
 
@@ -22,6 +22,7 @@ export async function listProblems(): Promise<IProblem[]> {
         const reg: RegExp = /^(.)\s(.{1,2})\s(.)\s\[\s*(\d*)\s*\]\s*(.*)\s*(Easy|Medium|Hard)\s*\((\s*\d+\.\d+ %)\)/;
         const companies = getCompanyTags();
         const tags = await getTopicTags();
+        const lists = await getLists();
         for (const line of lines) {
             const match: RegExpMatchArray | null = line.match(reg);
             if (match && match.length === 8) {

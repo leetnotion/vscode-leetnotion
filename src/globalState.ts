@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { Mapping, PendingSessionDetails, TopicTags } from "./types";
+import { Lists, Mapping, PendingSessionDetails, QuestionsOfList, TopicTags } from "./types";
 
 export const CookieKey = "leetcode-cookie";
 export const UserStatusKey = "leetcode-user-status";
@@ -12,7 +12,9 @@ export const QuestionNumberPageIdMappingKey = "leetnotion-question-number-page-i
 export const TitleSlugQuestionNumberMappingKey = "leetnotion-title-slug-question-number-mapping";
 export const NotionIntegrationStatusKey = "notion-integration-status";
 export const UserQuestionTagsKey = "notion-user-question-tags";
-export const PendingSessionKey = "leetnotion-template-update-pending-session"
+export const PendingSessionKey = "leetnotion-template-update-pending-session";
+export const LeetcodeListsKey = "leetcode-lists";
+export const QuestionsOfListKey = "leetcode-questions-of-list";
 
 export type UserDataType = {
     isSignedIn: boolean;
@@ -41,6 +43,8 @@ class GlobalState {
     private _notionIntegrationStatus?: NotionIntegrationStatus;
     private _userQuestionTags?: string[];
     private _pendingSession?: PendingSessionDetails;
+    private _lists?: Lists;
+    private _questionsOfList?: Record<string, QuestionsOfList>;
 
     public initialize(context: vscode.ExtensionContext): void {
         this.context = context;
@@ -171,6 +175,35 @@ class GlobalState {
         return this._pendingSession ?? this._state.get(PendingSessionKey);
     }
 
+    public setLists(lists: Lists | undefined): any {
+        this._lists = lists;
+        return this._state.update(LeetcodeListsKey, lists);
+    }
+
+    public getLists(): Lists | undefined {
+        return this._lists ?? this._state.get(LeetcodeListsKey);
+    }
+
+    public async setQuestionsOfList(questions: QuestionsOfList, listId: string): Promise<void> {
+        if (!this._questionsOfList) {
+            await this._initializeQuestionsOfList();
+        }
+        this._questionsOfList[listId] = questions;
+        await this._state.update(QuestionsOfListKey, this._questionsOfList);
+    }
+
+    public async getQuestionsOfList(listId: string): Promise<QuestionsOfList | undefined> {
+        if (!this._questionsOfList) {
+            await this._initializeQuestionsOfList();
+        }
+        return this._questionsOfList[listId] ?? [];
+    }
+
+    private async _initializeQuestionsOfList(): Promise<void> {
+        const savedState = this._state.get<Record<string, QuestionsOfList>>(QuestionsOfListKey) || {};
+        this._questionsOfList = { ...savedState };
+    }
+
     public clearAllNotionDetails(): void {
         this._topicTags = undefined;
         this._dailyProblemId = undefined;
@@ -190,6 +223,8 @@ class GlobalState {
         this._state.update(NotionIntegrationStatusKey, undefined);
         this._state.update(UserQuestionTagsKey, undefined);
         this._state.update(PendingSessionKey, undefined);
+        this._state.update(LeetcodeListsKey, undefined);
+        this._state.update(QuestionsOfListKey, undefined);
     }
 
     public get(key: string) {

@@ -6,7 +6,10 @@ import * as path from 'path';
 import { leetcodeClient } from '../leetCodeClient';
 import { globalState } from '../globalState';
 import { leetCodeChannel } from '../leetCodeChannel';
-import { CompanyTags, Mapping, Sheets, TopicTags } from '../types';
+import { CompanyTags, Lists, Mapping, QuestionsOfList, Sheets, TopicTags } from '../types';
+import Bottleneck from 'bottleneck';
+import { sleep } from './toolUtils';
+import { leetCodeTreeDataProvider } from '@/explorer/LeetCodeTreeDataProvider';
 
 const sheetsPath = '../../data/sheets.json';
 const companyTagsPath = '../../data/companyTags.json';
@@ -27,12 +30,6 @@ export async function getTopicTags(): Promise<TopicTags> {
     if (!topicTags) {
         topicTags = await leetcodeClient.getTopicTags();
         globalState.setTopicTags(topicTags);
-    } else {
-        leetcodeClient.getTopicTags().then(freshTags => {
-            globalState.setTopicTags(freshTags);
-        }).catch(error => {
-            leetCodeChannel.appendLine(`Failed to update topic tags in the background: ${error}`);
-        });
     }
 
     return topicTags;
@@ -66,4 +63,43 @@ export function getTitleSlugPageIdMapping() {
         mapping[slug] = questionNumberPageIdMapping[questionNumber];
     }
     return mapping;
+}
+
+const limiter = new Bottleneck({
+    maxConcurrent: 1,
+    minTime: 1000,
+});
+
+const rateLimitedGetQuestionsOfList = limiter.wrap(
+    async (slug: string): Promise<QuestionsOfList> => {
+        return leetcodeClient.getQuestionsOfList(slug);
+    }
+);
+
+export async function getLists(): Promise<Lists> {
+    let lists = globalState.getLists();
+    if (!lists) {
+        lists = await leetcodeClient.getLists();
+        globalState.setLists(lists);
+    }
+    return lists;
+}
+
+export async function setLists() {
+    const lists = await leetcodeClient.getLists();
+    globalState.setLists(lists);
+}
+
+export async function setQuestionsOfAllLists() {
+    const lists = await getLists();
+    for (const { name, slug } of lists) {
+        try {
+            const questions = await leetcodeClient.getQuestionsOfList(slug);
+            await globalState.setQuestionsOfList(questions, slug);
+            leetCodeChannel.appendLine(`Updated questions of ${name} list`);
+            await sleep(1000);
+        } catch (error) {
+            leetCodeChannel.appendLine(`Failed to update questions of list: ${error}`);
+        }
+    }
 }
