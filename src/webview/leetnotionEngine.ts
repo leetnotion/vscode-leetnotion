@@ -1,8 +1,6 @@
-import * as os from "os";
 import * as path from "path";
 import * as vscode from "vscode";
 import { hasNotionIntegrationEnabled } from "../utils/settingUtils";
-import { leetCodeChannel } from "../leetCodeChannel";
 import { globalState } from "../globalState";
 
 class LeetnotionEngine implements vscode.Disposable {
@@ -34,7 +32,7 @@ class LeetnotionEngine implements vscode.Disposable {
         this.notionIntegrationEnabled = hasNotionIntegrationEnabled();
     }
 
-    public render(): string {
+    public render(webview: vscode.Webview): string {
         if(!this.notionIntegrationEnabled) return "";
         return `<div id="setPropertiesSection">
                     <div id="setPropertiesInputSection">
@@ -58,38 +56,28 @@ class LeetnotionEngine implements vscode.Disposable {
                     <vscode-divider></vscode-divider>
                     <vscode-button id="setPropertiesButton" appearance="primary">Set Properties</vscode-button>
                 </div>
-                <script type="module" src="${this.getLeetnotionScript()}"></script>
-                <script type="module" src="${this.getVscodeComponentsUri()}"></script>`
+                <script type="module" src="${this.getLeetnotionScript(webview)}"></script>
+                <script type="module" src="${this.getVscodeComponentsUri(webview)}"></script>`
     }
 
-    public getStyles(): string {
-        let styles: vscode.Uri[] = [];
-        try {
-            const stylePaths: string[] = ['select2.min.css', 'style.css'];
-            styles = stylePaths.map((p: string) => vscode.Uri.file(path.join(globalState.getExtensionUri().fsPath, "public", "styles", p)).with({ scheme: "vscode-resource" }));
-        } catch (error) {
-            leetCodeChannel.appendLine("[Error] Fail to load built-in markdown style file.");
-        }
-        return styles.map((style: vscode.Uri) => `<link rel="stylesheet" type="text/css" href="${style.toString()}">`).join(os.EOL);
+    private getLeetnotionScript(webview: vscode.Webview): string {
+        const onDiskPath = vscode.Uri.joinPath(
+            globalState.getExtensionUri(),
+            "public",
+            "scripts",
+            "script.js",
+        );
+        return webview.asWebviewUri(onDiskPath).toString();
     }
 
-    public getScripts() {
-        let scripts: vscode.Uri[] = [];
-        try {
-            const scriptPaths = ["jquery.min.js", "select2.min.js"];
-            scripts = scriptPaths.map((p: string) => vscode.Uri.file(path.join(globalState.getExtensionUri().fsPath, "public", "scripts", p)).with({ scheme: "vscode-resource" }));
-        } catch (error) {
-            leetCodeChannel.appendLine("[Error] Fail to load built-in markdown style file.");
-        }
-        return scripts.map((script: vscode.Uri) => `<script src="${script.toString()}"></script>`).join(os.EOL);
-    }
-
-    private getLeetnotionScript(): string {
-        return vscode.Uri.file(path.join(globalState.getExtensionUri().fsPath, "public", "scripts", "script.js")).with({ scheme: "vscode-resource" }).toString();
-    }
-
-    private getVscodeComponentsUri(): string {
-        return vscode.Uri.file(path.join(globalState.getExtensionUri().fsPath, "public", "scripts", "vscode-components.js")).with({ scheme: "vscode-resource" }).toString();
+    private getVscodeComponentsUri(webview: vscode.Webview): string {
+        const onDiskPath = vscode.Uri.joinPath(
+            globalState.getExtensionUri(),
+            "public",
+            "scripts",
+            "vscode-components.js",
+        );
+        return webview.asWebviewUri(onDiskPath).toString();
     }
 }
 

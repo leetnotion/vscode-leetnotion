@@ -7,6 +7,11 @@ import { markdownEngine } from "./markdownEngine";
 import { leetnotionEngine } from "./leetnotionEngine";
 import { SetPropertiesMessage } from "../types";
 import { leetnotionClient } from "../leetnotionClient";
+import { leetCodeChannel } from "@/leetCodeChannel";
+import * as vscode from 'vscode';
+import { globalState } from "@/globalState";
+import * as path from "path";
+import * as os from 'os';
 
 class LeetCodeSubmissionProvider extends LeetCodeWebview {
 
@@ -27,8 +32,9 @@ class LeetCodeSubmissionProvider extends LeetCodeWebview {
     }
 
     protected getWebviewContent(): string {
-        const styles: string = [markdownEngine.getStyles(), leetnotionEngine.getStyles()].join("\n");
-        const scripts: string = leetnotionEngine.getScripts();
+        const webview = this.panel.webview;
+        const styles: string = [markdownEngine.getStyles(webview), this.getStyles()].join("\n");
+        const scripts: string = this.getScripts();
         const title: string = `## ${this.result.messages[0]}`;
         const messages: string[] = this.result.messages.slice(1).map((m: string) => `* ${m}`);
         const sections: string[] = Object.keys(this.result)
@@ -44,12 +50,18 @@ class LeetCodeSubmissionProvider extends LeetCodeWebview {
             ...messages,
             ...sections,
         ].join("\n"));
-        const leetnotionBody: string = leetnotionEngine.render();
+        const leetnotionBody: string = leetnotionEngine.render(webview);
         return `
             <!DOCTYPE html>
             <html>
             <head>
-                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https:; script-src vscode-resource:; style-src vscode-resource:;"/>
+                <meta http-equiv="Content-Security-Policy" content="
+                    default-src 'none';
+                    img-src ${webview.cspSource} https: data:;
+                    script-src ${webview.cspSource} 'unsafe-inline' 'unsafe-eval';
+                    style-src ${webview.cspSource} 'unsafe-inline' https://*.vscode-cdn.net https://cdnjs.cloudflare.com;
+                    font-src ${webview.cspSource} https://*.vscode-cdn.net https://cdnjs.cloudflare.com data:;
+                ">
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 ${styles}
@@ -115,6 +127,48 @@ class LeetCodeSubmissionProvider extends LeetCodeWebview {
             }
         } while (entry);
         return result;
+    }
+
+    private getScripts() {
+        let scripts: vscode.Uri[] = [];
+        try {
+            const scriptPaths = ["jquery.min.js", "select2.min.js"];
+            scripts = scriptPaths.map((p: string) => {
+                const onDiskPath = vscode.Uri.joinPath(
+                    globalState.getExtensionUri(),
+                    "public",
+                    "scripts",
+                    p,
+                );
+                return this.panel
+                    ? this.panel.webview.asWebviewUri(onDiskPath)
+                    : onDiskPath;
+            });
+        } catch (error) {
+            leetCodeChannel.appendLine("[Error] Fail to load built-in markdown style file.");
+        }
+        return scripts.map((script: vscode.Uri) => `<script src="${script.toString()}"></script>`).join(os.EOL);
+    }
+
+    public getStyles(): string {
+        let styles: vscode.Uri[] = [];
+        try {
+            const stylePaths: string[] = ['select2.min.css', 'style.css'];
+            styles = stylePaths.map((p: string) => {
+                const onDiskPath = vscode.Uri.joinPath(
+                    globalState.getExtensionUri(),
+                    "public",
+                    "styles",
+                    p,
+                );
+                return this.panel
+                    ? this.panel.webview.asWebviewUri(onDiskPath)
+                    : onDiskPath;
+            });
+        } catch (error) {
+            leetCodeChannel.appendLine("[Error] Fail to load built-in markdown style file.");
+        }
+        return styles.map((style: vscode.Uri) => `<link rel="stylesheet" type="text/css" href="${style.toString()}">`).join(os.EOL);
     }
 }
 

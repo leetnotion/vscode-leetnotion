@@ -8,6 +8,7 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { leetCodeChannel } from "../leetCodeChannel";
 import { isWindows } from "../utils/osUtils";
+import { globalState } from "@/globalState";
 
 class MarkdownEngine implements vscode.Disposable {
 
@@ -41,22 +42,38 @@ class MarkdownEngine implements vscode.Disposable {
         return this.engine.render(md, env);
     }
 
-    public getStyles(): string {
+    public getStyles(webview: vscode.Webview): string {
         return [
-            this.getBuiltinStyles(),
+            this.getBuiltinStyles(webview),
             this.getSettingsStyles(),
         ].join(os.EOL);
     }
 
-    private getBuiltinStyles(): string {
+    private getBuiltinStyles(webview: vscode.Webview): string {
+        if (!this.config) {
+            return "";
+        }
+        const extRoot = this.config.extRoot;
         let styles: vscode.Uri[] = [];
         try {
-            const stylePaths: string[] = require(path.join(this.config.extRoot, "package.json"))["contributes"]["markdown.previewStyles"];
-            styles = stylePaths.map((p: string) => vscode.Uri.file(path.join(this.config.extRoot, p)).with({ scheme: "vscode-resource" }));
+            const stylePaths: string[] = require(
+                path.join(extRoot, "package.json"),
+            )["contributes"]["markdown.previewStyles"];
+            styles = stylePaths.map((p: string) => {
+                const styleUri = vscode.Uri.file(path.join(extRoot, p));
+                return webview.asWebviewUri(styleUri);
+            });
         } catch (error) {
-            leetCodeChannel.appendLine("[Error] Fail to load built-in markdown style file.");
+            leetCodeChannel.appendLine(
+                `[Error] Fail to load built-in markdown style file: ${error}`,
+            );
         }
-        return styles.map((style: vscode.Uri) => `<link rel="stylesheet" type="text/css" href="${style.toString()}">`).join(os.EOL);
+        return styles
+            .map(
+                (style: vscode.Uri) =>
+                    `<link rel="stylesheet" type="text/css" href="${style.toString()}">`,
+            )
+            .join(os.EOL);
     }
 
     private getSettingsStyles(): string {
