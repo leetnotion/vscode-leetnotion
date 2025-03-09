@@ -47,6 +47,14 @@ export class LeetCodeNode {
         return this.isProblemNode;
     }
 
+    public get rating(): number {
+        return this.data.rating;
+    }
+
+    public get problemIndex(): string {
+        return this.data.problemIndex;
+    }
+
     public get previewCommand(): Command {
         return {
             title: "Preview Problem",

@@ -134,7 +134,14 @@ export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<LeetCod
 
     private getSubCategoryTooltip(element: LeetCodeNode): string {
         // return '' unless it is a sub-category node
-        if (element.isProblem || element.id === "ROOT") {
+        if(element.isProblem) {
+            if(element.rating) {
+                return `Acceptance: ${element.acceptanceRate}%\nRating: ${element.rating}\nIndex: ${element.problemIndex}`
+            } else {
+                return `Acceptance: ${element.acceptanceRate}%`
+            }
+        }
+        if (element.id === "ROOT") {
             return "";
         }
 

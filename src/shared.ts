@@ -81,6 +81,15 @@ export interface IProblem {
     passRate: string;
     companies: string[];
     tags: string[];
+    rating?: number;
+    problemIndex?: string;
+}
+
+export interface ProblemRating {
+    ID: number;
+    Rating: number;
+    ContestID_en: string;
+    ProblemIndex: string;
 }
 
 export const defaultProblem: IProblem = {

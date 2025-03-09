@@ -5,12 +5,13 @@ import * as _ from "lodash";
 import { Disposable } from "vscode";
 import * as list from "../commands/list";
 import { getSortingStrategy } from "../commands/plugin";
-import { Category, CompanySortingStrategy, defaultProblem, ProblemState, SortingStrategy } from "../shared";
+import { Category, CompanySortingStrategy, defaultProblem, ProblemRating, ProblemState, SortingStrategy } from "../shared";
 import { getCompaniesSortingStrategy, shouldHideSolvedProblem } from "../utils/settingUtils";
 import { LeetCodeNode } from "./LeetCodeNode";
 import { globalState } from "../globalState";
 import { getCompanyPopularity, getLists, getSheets } from "../utils/dataUtils";
 import { List } from "@leetnotion/leetcode-api";
+import { leetcodeClient } from "@/leetCodeClient";
 
 class ExplorerNodeManager implements Disposable {
     private explorerNodeMap: Map<string, LeetCodeNode> = new Map<string, LeetCodeNode>();
@@ -25,9 +26,15 @@ class ExplorerNodeManager implements Disposable {
         this.dispose();
         const shouldHideSolved: boolean = shouldHideSolvedProblem();
         this.dailyProblem = globalState.getDailyProblem();
+        const ratingsMap = await leetcodeClient.getProblemRatingsMap();
         for (const problem of await list.listProblems()) {
             if (shouldHideSolved && problem.state === ProblemState.AC) {
                 continue;
+            }
+            const problemId = problem.id;
+            if(ratingsMap[problemId]) {
+                problem.rating = ratingsMap[problemId].Rating;
+                problem.problemIndex = ratingsMap[problemId].ProblemIndex;
             }
             this.explorerNodeMap.set(problem.id, new LeetCodeNode(problem));
             for (const company of problem.companies) {
