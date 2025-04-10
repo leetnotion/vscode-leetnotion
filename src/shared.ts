@@ -180,7 +180,7 @@ export const defaultHeaders = {
 using namespace std;
 
 `,
-    "java": `import java.util.*
+    "java": `import java.util.*;
 
 `
 }
