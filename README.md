@@ -28,7 +28,7 @@
 
 ## Ultimate Leetcode Tracker Notion Template
 
-To get started using this, you can get the Ultimate LeetCode Tracker template from [here](https://leetnotion.gumroad.com/l/leetnotion). Feel free to duplicate it into your own Notion workspace!
+To get started using this, you can get the Ultimate LeetCode Tracker template from [here](https://codewithsathya.gumroad.com/l/leetnotion). Feel free to duplicate it into your own Notion workspace!
 
 ![Ultimate Leetcode Tracker](./docs/imgs/notion-template-preview.png)
 
