@@ -34,6 +34,7 @@ import { templateUpdater } from "./modules/leetnotion/template-updater";
 import { setLists, setQuestionsOfAllLists } from "./utils/dataUtils";
 
 let interval: NodeJS.Timeout;
+export let leetcodeTreeView: vscode.TreeView<LeetCodeNode> | undefined;
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
     try {
@@ -73,6 +74,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             leetnotionManager.updateNotionInfo().then(() => globalState.setNotionIntegrationStatus("done"));
         }
 
+        leetcodeTreeView = vscode.window.createTreeView("leetnotionExplorer", { treeDataProvider: leetCodeTreeDataProvider, showCollapseAll: true });
+
         context.subscriptions.push(
             leetCodeStatusBarController,
             leetCodeChannel,
@@ -84,7 +87,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             codeLensController,
             explorerNodeManager,
             vscode.window.registerFileDecorationProvider(leetCodeTreeItemDecorationProvider),
-            vscode.window.createTreeView("leetnotionExplorer", { treeDataProvider: leetCodeTreeDataProvider, showCollapseAll: true }),
+            leetcodeTreeView,
             vscode.commands.registerCommand("leetnotion.deleteCache", () => cache.deleteCache()),
             vscode.commands.registerCommand("leetnotion.toggleLeetCodeCn", () => plugin.switchEndpoint()),
             vscode.commands.registerCommand("leetnotion.signin", () => leetCodeManager.signIn()),
@@ -103,6 +106,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             vscode.commands.registerCommand("leetnotion.showProblem", (node: LeetCodeNode) => show.showProblem(node)),
             vscode.commands.registerCommand("leetnotion.pickOne", () => show.pickOne()),
             vscode.commands.registerCommand("leetnotion.searchProblem", () => show.searchProblem()),
+            vscode.commands.registerCommand("leetnotion.searchCompany", () => show.searchCompany()),
+            vscode.commands.registerCommand("leetnotion.searchTag", () => show.searchTag()),
+            vscode.commands.registerCommand("leetnotion.searchSheets", () => show.searchSheets()),
+            vscode.commands.registerCommand("leetnotion.searchList", () => show.searchLists()),
             vscode.commands.registerCommand("leetnotion.showSolution", (input: LeetCodeNode | vscode.Uri) => show.showSolution(input)),
             vscode.commands.registerCommand("leetnotion.refreshExplorer", () => leetCodeTreeDataProvider.refresh()),
             vscode.commands.registerCommand("leetnotion.testSolution", (uri?: vscode.Uri) => {
@@ -151,3 +158,4 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 export function deactivate(): void {
     clearInterval(interval);
 }
+

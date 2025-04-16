@@ -10,7 +10,7 @@ import { LeetCodeNode } from "../explorer/LeetCodeNode";
 import { leetCodeChannel } from "../leetCodeChannel";
 import { leetCodeExecutor } from "../leetCodeExecutor";
 import { leetCodeManager } from "../leetCodeManager";
-import { Endpoint, IProblem, IQuickItemEx, languages, PREMIUM_URL_CN, PREMIUM_URL_GLOBAL, ProblemState } from "../shared";
+import { ALL_TIME, Category, Endpoint, IProblem, IQuickItemEx, languages, PREMIUM_URL_CN, PREMIUM_URL_GLOBAL, ProblemState } from "../shared";
 import { genFileExt, genFileName, getNodeIdFromFile } from "../utils/problemUtils";
 import * as settingUtils from "../utils/settingUtils";
 import { IDescriptionConfiguration } from "../utils/settingUtils";
@@ -30,6 +30,9 @@ import { leetCodeSolutionProvider } from "../webview/leetCodeSolutionProvider";
 import * as list from "./list";
 import { getLeetCodeEndpoint } from "./plugin";
 import { globalState } from "../globalState";
+import { extractArrayElements, getCompanyTags, getLists, getSheets, getTopicTags } from "@/utils/dataUtils";
+import { CompanyTags, Lists, Sheets, TopicTags } from "@/types";
+import { leetcodeTreeView } from "@/extension";
 
 export async function previewProblem(input: IProblem | vscode.Uri, isSideMode: boolean = false): Promise<void> {
     let node: IProblem;
@@ -90,6 +93,74 @@ export async function searchProblem(): Promise<void> {
         return;
     }
     await showProblemInternal(choice.value);
+}
+
+export async function searchCompany(): Promise<void> {
+    if (!leetCodeManager.getUser()) {
+        promptForSignIn();
+        return;
+    }
+    const companyTags = getCompanyTags();
+    const choice: IQuickItemEx<string> | undefined = await vscode.window.showQuickPick(parseCompaniesToPicks(companyTags), {
+        matchOnDetail: true,
+        placeHolder: "Select one company",
+    });
+    if (!choice) {
+        return;
+    }
+    const companyNode = explorerNodeManager.getNodeById(`${Category.Company}.${choice.value}`);
+    leetcodeTreeView.reveal(companyNode, { select: true, focus: true, expand: 2 });
+}
+
+export async function searchTag(): Promise<void> {
+    if (!leetCodeManager.getUser()) {
+        promptForSignIn();
+        return;
+    }
+    const topicTags = await getTopicTags();
+    const choice: IQuickItemEx<string> | undefined = await vscode.window.showQuickPick(parseTagsToPicks(topicTags), {
+        matchOnDetail: true,
+        placeHolder: "Search for a tag",
+    });
+    if (!choice) {
+        return;
+    }
+    const node = explorerNodeManager.getNodeById(`${Category.Tag}.${choice.value}`);
+    leetcodeTreeView.reveal(node, { select: true, focus: true, expand: 2 });
+}
+
+export async function searchSheets(): Promise<void> {
+    if (!leetCodeManager.getUser()) {
+        promptForSignIn();
+        return;
+    }
+    const sheets = getSheets();
+    const choice: IQuickItemEx<string> | undefined = await vscode.window.showQuickPick(parseSheetsToPicks(sheets), {
+        matchOnDetail: true,
+        placeHolder: "Search for a sheet",
+    });
+    if (!choice) {
+        return;
+    }
+    const node = explorerNodeManager.getNodeById(`${Category.Sheets}.${choice.value}`);
+    leetcodeTreeView.reveal(node, { select: true, focus: true, expand: 2 });
+}
+
+export async function searchLists(): Promise<void> {
+    if (!leetCodeManager.getUser()) {
+        promptForSignIn();
+        return;
+    }
+    const lists = await getLists();
+    const choice: IQuickItemEx<string> | undefined = await vscode.window.showQuickPick(parseListsToPicks(lists), {
+        matchOnDetail: true,
+        placeHolder: "Search for a list",
+    });
+    if (!choice) {
+        return;
+    }
+    const node = explorerNodeManager.getNodeById(`${Category.Lists}.${choice.value}`);
+    leetcodeTreeView.reveal(node, { select: true, focus: true, expand: 2 });
 }
 
 export async function showSolution(input: LeetCodeNode | vscode.Uri): Promise<void> {
@@ -237,6 +308,69 @@ async function parseProblemsToPicks(p: Promise<IProblem[]>): Promise<Array<IQuic
         );
         resolve(picks);
     });
+}
+
+async function parseCompaniesToPicks(companyTags: CompanyTags) {
+    const lenMap = {};
+    Object.keys(companyTags).forEach((key) => {
+        lenMap[key] = companyTags[key][ALL_TIME] ? companyTags[key][ALL_TIME].length : (companyTags[key] as string[]).length;
+    });
+    const picks: Array<IQuickItemEx<string>> = Object.keys(companyTags).sort((a, b) => lenMap[b] - lenMap[a]).map((company: string) =>
+        Object.assign(
+            {},
+            {
+                label: company,
+                description: "",
+                detail: `No of Problems: ${companyTags[company][ALL_TIME] ? companyTags[company][ALL_TIME].length : (companyTags[company] as string[]).length}`,
+                value: company,
+            }
+        )
+    );
+    return picks;
+}
+
+async function parseSheetsToPicks(sheets: Sheets) {
+    const picks: Array<IQuickItemEx<string>> = Object.keys(sheets).map((sheet: string) =>
+        Object.assign(
+            {},
+            {
+                label: sheet,
+                description: "",
+                detail: `No of Problems: ${extractArrayElements(sheets[sheet]).length}`,
+                value: sheet,
+            }
+        )
+    );
+    return picks;
+}
+
+async function parseTagsToPicks(tags: TopicTags) {
+    const picks: Array<IQuickItemEx<string>> = Object.keys(tags).map((tag: string) =>
+        Object.assign(
+            {},
+            {
+                label: tag,
+                description: "",
+                detail: `No of Problems: ${tags[tag].length}`,
+                value: tag,
+            }
+        )
+    );
+    return picks;
+}
+
+async function parseListsToPicks(lists: Lists) {
+    const picks: Array<IQuickItemEx<string>> = lists.map((list) =>
+        Object.assign(
+            {},
+            {
+                label: list.name,
+                description: "",
+                value: list.name,
+            }
+        )
+    );
+    return picks;
 }
 
 function parseProblemDecorator(state: ProblemState, locked: boolean): string {

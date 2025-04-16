@@ -79,6 +79,10 @@ export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<LeetCod
         }
     }
 
+    public getParent(element: LeetCodeNode): vscode.ProviderResult<LeetCodeNode> {
+        return explorerNodeManager.getParentNode(element.id);
+    }
+
     private getChildrenByElementId(id: string, isProblem = false) {
         if(isProblem) {
             return [];
@@ -145,9 +149,9 @@ export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<LeetCod
     }
 
     private getSolvedDetailsOfList(id: string) {
-        const data = explorerNodeManager.getProblemsDataById(id);
+        const data = explorerNodeManager.getExplorerDataById(id);
         if(!data) {
-            return undefined;
+            return { acceptedNum: 0, failedNum: 0, totalNum: 0 };
         }
         const problemIds = Array.from(new Set(extractArrayElements(data)));
         const problems = explorerNodeManager.getProblemNodesByIds(problemIds);

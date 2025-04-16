@@ -43,7 +43,23 @@ export function getQuestionCompanyTags(): QuestionCompanyTags {
     return fsExtra.readJSONSync(path.join(__dirname, questionCompanyTagsPath)) as QuestionCompanyTags;
 }
 
-export async function getTopicTags(): Promise<TopicTags> {
+export async function getTopicTags(): Promise<Record<string, string[]>> {
+    const topicTags = {};
+    const questionTopicTags = await getQuestionTopicTags();
+    for(const problem of Object.keys(questionTopicTags)) {
+        const tags = questionTopicTags[problem];
+        for(const tag of tags) {
+            if(topicTags[tag]) {
+                topicTags[tag].push(problem);
+            } else {
+                topicTags[tag] = [problem];
+            }
+        }
+    }
+    return topicTags;
+}
+
+export async function getQuestionTopicTags(): Promise<TopicTags> {
     let topicTags = globalState.getTopicTags();
 
     if (!topicTags) {

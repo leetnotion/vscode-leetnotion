@@ -96,6 +96,30 @@
                 "category": "Leetnotion"
             },
             {
+                "command": "leetnotion.searchCompany",
+                "title": "Search Company",
+                "category": "Leetnotion",
+                "icon": "$(search)"
+            },
+            {
+                "command": "leetnotion.searchList",
+                "title": "Search List",
+                "category": "Leetnotion",
+                "icon": "$(search)"
+            },
+            {
+                "command": "leetnotion.searchTag",
+                "title": "Search Tag",
+                "category": "Leetnotion",
+                "icon": "$(search)"
+            },
+            {
+                "command": "leetnotion.searchSheets",
+                "title": "Search Sheets",
+                "category": "Leetnotion",
+                "icon": "$(search)"
+            },
+            {
                 "command": "leetnotion.addFavorite",
                 "title": "Add to Favorite List",
                 "category": "Leetnotion",
@@ -229,6 +253,26 @@
                 {
                     "command": "leetnotion.removeFavorite",
                     "when": "view == leetnotionExplorer && viewItem == problem-favorite",
+                    "group": "inline"
+                },
+                {
+                    "command": "leetnotion.searchCompany",
+                    "when": "view == leetnotionExplorer && viewItem == company",
+                    "group": "inline"
+                },
+                {
+                    "command": "leetnotion.searchList",
+                    "when": "view == leetnotionExplorer && viewItem == lists",
+                    "group": "inline"
+                },
+                {
+                    "command": "leetnotion.searchTag",
+                    "when": "view == leetnotionExplorer && viewItem == tag",
+                    "group": "inline"
+                },
+                {
+                    "command": "leetnotion.searchSheets",
+                    "when": "view == leetnotionExplorer && viewItem == sheets",
                     "group": "inline"
                 }
             ],
