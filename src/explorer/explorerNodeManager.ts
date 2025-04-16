@@ -88,23 +88,23 @@ class ExplorerNodeManager implements Disposable {
     public getChildrenNodesById(id: string): LeetCodeNode[] {
         const metaInfo: string[] = id.split(".");
         let data = this.dataTree;
-        for(const key of metaInfo) {
+        for (const key of metaInfo) {
             if (data[key] === undefined) {
                 return [];
             }
             data = data[key];
         }
         if (Array.isArray(data)) {
-            return this.getProblemNodesByIds(data);
+            return this.applySortingStrategy(this.getProblemNodesByIds(data));
         } else {
-            const res: LeetCodeNode[] = [];
+            let res: LeetCodeNode[] = [];
             for (const key of Object.keys(data)) {
                 res.push(new LeetCodeNode(Object.assign({}, defaultProblem, {
                     id: `${id}.${key}`,
                     name: key,
                 }), false));
             }
-            this.sortSubCategoryNodes(res, metaInfo[0] as Category);
+            res = this.applySortingStrategy(res, id);
             return res;
         }
     }
@@ -122,64 +122,37 @@ class ExplorerNodeManager implements Disposable {
                 res.push(node);
             }
         }
-        return this.applySortingStrategy(res);
+        return res;
     }
 
-    private sortSubCategoryNodes(subCategoryNodes: LeetCodeNode[], category: Category): void {
-        switch (category) {
-            case Category.Difficulty:
-                subCategoryNodes.sort((a: LeetCodeNode, b: LeetCodeNode): number => {
-                    function getValue(input: LeetCodeNode): number {
-                        switch (input.name.toLowerCase()) {
-                            case "easy":
-                                return 1;
-                            case "medium":
-                                return 2;
-                            case "hard":
-                                return 3;
-                            default:
-                                return Number.MAX_SAFE_INTEGER;
-                        }
-                    }
-                    return getValue(a) - getValue(b);
-                });
-                break;
-            case Category.Tag:
-            case Category.Company:
-            case Category.Lists:
-            default:
-                break;
+    private applySortingStrategy(nodes: LeetCodeNode[], id?: string): LeetCodeNode[] {
+        if (!id) {
+            const strategy: SortingStrategy = getSortingStrategy();
+            switch (strategy) {
+                case SortingStrategy.AcceptanceRateAsc: return nodes.sort((x: LeetCodeNode, y: LeetCodeNode) => Number(x.acceptanceRate) - Number(y.acceptanceRate));
+                case SortingStrategy.AcceptanceRateDesc: return nodes.sort((x: LeetCodeNode, y: LeetCodeNode) => Number(y.acceptanceRate) - Number(x.acceptanceRate));
+                default: return nodes;
+            }
         }
-    }
-
-    private applySortingStrategy(nodes: LeetCodeNode[]): LeetCodeNode[] {
-        const strategy: SortingStrategy = getSortingStrategy();
-        switch (strategy) {
-            case SortingStrategy.AcceptanceRateAsc: return nodes.sort((x: LeetCodeNode, y: LeetCodeNode) => Number(x.acceptanceRate) - Number(y.acceptanceRate));
-            case SortingStrategy.AcceptanceRateDesc: return nodes.sort((x: LeetCodeNode, y: LeetCodeNode) => Number(y.acceptanceRate) - Number(x.acceptanceRate));
-            default: return nodes;
+        if (id === Category.Company) {
+            return this.applyCompanySortingStrategy(nodes);
         }
+        if (id === Category.Tag || id === Category.Lists) {
+            return nodes.sort((a: LeetCodeNode, b: LeetCodeNode) => a.name.localeCompare(b.name));
+        }
+        return nodes;
     }
 
     private applyCompanySortingStrategy(nodes: LeetCodeNode[]): LeetCodeNode[] {
         const strategy: CompanySortingStrategy = getCompaniesSortingStrategy();
         switch (strategy) {
             case CompanySortingStrategy.Alphabetical: {
-                return nodes.sort((a: LeetCodeNode, b: LeetCodeNode): number => {
-                    if (a.name === 'Unknown') {
-                        return 1;
-                    }
-                    if (b.name === 'Unknown') {
-                        return -1;
-                    }
-                    return Number(a.name > b.name) - Number(a.name < b.name);
-                });
+                return nodes.sort((a: LeetCodeNode, b: LeetCodeNode): number => a.name.localeCompare(b.name));
             }
             case CompanySortingStrategy.Popularity: {
                 const companyPopularityMapping = getCompanyPopularity();
-                return nodes.sort(
-                    (a: LeetCodeNode, b: LeetCodeNode): number => companyPopularityMapping[b.id] - companyPopularityMapping[a.id]
-                );
+                console.log(companyPopularityMapping);
+                return nodes.sort((a: LeetCodeNode, b: LeetCodeNode): number => companyPopularityMapping[b.name] - companyPopularityMapping[a.name]);
             }
             default:
                 return nodes;

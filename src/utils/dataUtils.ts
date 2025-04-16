@@ -29,7 +29,6 @@ export function getCompanyTags() {
         } else {
             finalCompanyTags[company] = {}
             for(const timeframe of Object.keys(details)) {
-                console.log(details);
                 finalCompanyTags[company][timeframe] = details[timeframe].map(item => item.id);
             }
         }
@@ -53,15 +52,10 @@ export async function getTopicTags(): Promise<TopicTags> {
 }
 
 export function getCompanyPopularity(): Record<string, number> {
-    const companyTags = getQuestionCompanyTags();
+    const companyTags = fsExtra.readJSONSync(path.join(__dirname, companyTagsPath)) as CompanyTags;
     const companyPoularityMapping: Record<string, number> = {};
-    for (const problemId of Object.keys(companyTags)) {
-        for (const company of companyTags[problemId]) {
-            if (companyPoularityMapping[company] === undefined) {
-                companyPoularityMapping[company] = 0;
-            }
-            companyPoularityMapping[company] += 1;
-        }
+    for(const company of Object.keys(companyTags)) {
+        companyPoularityMapping[company] = companyTags[company][ALL_TIME].length;
     }
     return companyPoularityMapping;
 }
