@@ -79,29 +79,10 @@ export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<LeetCod
     }
 
     private getChildrenByElementId(id: string, isProblem = false) {
-        switch (id) {
-            case Category.All:
-                return explorerNodeManager.getAllNodes();
-            case Category.Favorite:
-                return explorerNodeManager.getFavoriteNodes();
-            case Category.Difficulty:
-                return explorerNodeManager.getAllDifficultyNodes();
-            case Category.Tag:
-                return explorerNodeManager.getAllTagNodes();
-            case Category.Company:
-                return explorerNodeManager.getAllCompanyNodes();
-            case Category.Daily:
-                return explorerNodeManager.getDailyNode();
-            case Category.Sheets:
-                return explorerNodeManager.getSheetNodes();
-            case Category.Lists:
-                return explorerNodeManager.getListNodes();
-            default:
-                if (isProblem) {
-                    return [];
-                }
-                return explorerNodeManager.getChildrenNodesById(id);
+        if(isProblem) {
+            return [];
         }
+        return explorerNodeManager.getChildrenNodesById(id);
     }
 
     private parseIconPathFromProblemState(element: LeetCodeNode): string {

@@ -189,3 +189,9 @@ export const defaultFooters = {
     "cpp": ``,
     "java": ``
 }
+
+export const LAST_30_DAYS = "Last 30 Days";
+export const LAST_3_MONTHS = "Last 3 Months";
+export const LAST_6_MONTHS = "Last 6 Months";
+export const MORE_THAN_6_MONTHS = "More Than 6 Months";
+export const ALL_TIME = "All Time";

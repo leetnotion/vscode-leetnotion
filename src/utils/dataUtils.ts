@@ -6,22 +6,39 @@ import * as path from 'path';
 import { leetcodeClient } from '../leetCodeClient';
 import { globalState } from '../globalState';
 import { leetCodeChannel } from '../leetCodeChannel';
-import { CompanyTags, Lists, Mapping, QuestionsOfList, Sheets, TopicTags } from '../types';
+import { QuestionCompanyTags, Lists, Mapping, QuestionsOfList, Sheets, TopicTags, CompanyTags } from '../types';
 import Bottleneck from 'bottleneck';
 import { sleep } from './toolUtils';
-import { leetCodeTreeDataProvider } from '@/explorer/LeetCodeTreeDataProvider';
+import { ALL_TIME } from '@/shared';
 
 const sheetsPath = '../../data/sheets.json';
 const companyTagsPath = '../../data/companyTags.json';
+const questionCompanyTagsPath = '../../data/questionCompanyTags.json';
 
 export function getSheets(): Sheets {
     const sheets = fsExtra.readJSONSync(path.join(__dirname, sheetsPath)) as Sheets;
     return sheets;
 }
 
-export function getCompanyTags(): CompanyTags {
+export function getCompanyTags() {
     const companyTags = fsExtra.readJSONSync(path.join(__dirname, companyTagsPath)) as CompanyTags;
-    return companyTags;
+    let finalCompanyTags = {};
+    for(const [company, details] of Object.entries(companyTags)) {
+        if(Object.keys(details).length === 1) {
+            finalCompanyTags[company] = details[ALL_TIME].map(item => item.id);
+        } else {
+            finalCompanyTags[company] = {}
+            for(const timeframe of Object.keys(details)) {
+                console.log(details);
+                finalCompanyTags[company][timeframe] = details[timeframe].map(item => item.id);
+            }
+        }
+    }
+    return finalCompanyTags;
+}
+
+export function getQuestionCompanyTags(): QuestionCompanyTags {
+    return fsExtra.readJSONSync(path.join(__dirname, questionCompanyTagsPath)) as QuestionCompanyTags;
 }
 
 export async function getTopicTags(): Promise<TopicTags> {
@@ -36,7 +53,7 @@ export async function getTopicTags(): Promise<TopicTags> {
 }
 
 export function getCompanyPopularity(): Record<string, number> {
-    const companyTags = getCompanyTags();
+    const companyTags = getQuestionCompanyTags();
     const companyPoularityMapping: Record<string, number> = {};
     for (const problemId of Object.keys(companyTags)) {
         for (const company of companyTags[problemId]) {

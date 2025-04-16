@@ -69,7 +69,6 @@ class LeetCodePreviewProvider extends LeetCodeWebview {
         const { title, url, category, difficulty, likes, dislikes, body } = this.description;
         const head: string = markdownEngine.render(`# [${title}](${url})`);
         let info: string;
-        console.log(this.node);
         if(!this.node.rating) {
             info = markdownEngine.render(
                 [
@@ -105,7 +104,7 @@ class LeetCodePreviewProvider extends LeetCodeWebview {
             <html>
             <head>
                 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https:; script-src vscode-resource: 'unsafe-inline'; style-src vscode-resource: 'unsafe-inline';"/>
-                ${markdownEngine.getStyles()}
+                ${markdownEngine.getStyles(this.getPanel().webview)}
                 ${!this.sideMode ? button.style : ""}
                 <style>
                     code { white-space: pre-wrap; }
