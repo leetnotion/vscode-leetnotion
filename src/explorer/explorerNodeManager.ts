@@ -22,7 +22,7 @@ class ExplorerNodeManager implements Disposable {
         const ratingsMap = await leetcodeClient.getProblemRatingsMap();
 
         let problems = await list.listProblems()
-        // problems = problems.filter(item => shouldHideSolved && item.state !== ProblemState.AC)
+        problems = problems.filter(item => !shouldHideSolved || item.state !== ProblemState.AC)
 
         const tagProblems = {};
         for (const problem of problems) {
@@ -86,13 +86,9 @@ class ExplorerNodeManager implements Disposable {
     }
 
     public getChildrenNodesById(id: string): LeetCodeNode[] {
-        const metaInfo: string[] = id.split(".");
-        let data = this.dataTree;
-        for (const key of metaInfo) {
-            if (data[key] === undefined) {
-                return [];
-            }
-            data = data[key];
+        const data = this.getProblemsDataById(id);
+        if (!data) {
+            return []
         }
         if (Array.isArray(data)) {
             return this.applySortingStrategy(this.getProblemNodesByIds(data));
@@ -114,7 +110,23 @@ class ExplorerNodeManager implements Disposable {
         this.dataTree = {};
     }
 
-    private getProblemNodesByIds(ids: string[]): LeetCodeNode[] {
+    public getProblemsDataById(id: string) {
+        let data = this.dataTree;
+        if(!id || id === "") {
+            return data;
+        }
+        const metaInfo: string[] = id.split(".");
+        for (const key of metaInfo) {
+            if (data[key] === undefined) {
+                console.log(key);
+                return null;
+            }
+            data = data[key];
+        }
+        return data;
+    }
+
+    public getProblemNodesByIds(ids: string[]): LeetCodeNode[] {
         const res: LeetCodeNode[] = [];
         for (const id of ids) {
             const node = this.explorerNodeMap.get(id);
@@ -151,7 +163,6 @@ class ExplorerNodeManager implements Disposable {
             }
             case CompanySortingStrategy.Popularity: {
                 const companyPopularityMapping = getCompanyPopularity();
-                console.log(companyPopularityMapping);
                 return nodes.sort((a: LeetCodeNode, b: LeetCodeNode): number => companyPopularityMapping[b.name] - companyPopularityMapping[a.name]);
             }
             default:

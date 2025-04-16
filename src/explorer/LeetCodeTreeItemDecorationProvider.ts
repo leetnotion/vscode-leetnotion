@@ -15,11 +15,11 @@ export class LeetCodeTreeItemDecorationProvider implements FileDecorationProvide
     };
 
     public provideFileDecoration(uri: Uri): ProviderResult<FileDecoration>  {
-        if (!this.isDifficultyBadgeEnabled()) {
+        if (uri.scheme !== "leetcode" && uri.authority !== "problems") {
             return;
         }
 
-        if (uri.scheme !== "leetcode" && uri.authority !== "problems") {
+        if (!this.isDifficultyBadgeEnabled()) {
             return;
         }
 

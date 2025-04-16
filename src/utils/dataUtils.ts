@@ -24,6 +24,9 @@ export function getCompanyTags() {
     const companyTags = fsExtra.readJSONSync(path.join(__dirname, companyTagsPath)) as CompanyTags;
     let finalCompanyTags = {};
     for(const [company, details] of Object.entries(companyTags)) {
+        if(Object.keys(details).length === 0) {
+            continue;
+        }
         if(Object.keys(details).length === 1) {
             finalCompanyTags[company] = details[ALL_TIME].map(item => item.id);
         } else {
@@ -113,4 +116,20 @@ export async function setQuestionsOfAllLists() {
             leetCodeChannel.appendLine(`Failed to update questions of list: ${error}`);
         }
     }
+}
+
+export function extractArrayElements(data) {
+    const result = [];
+
+    function recurse(value) {
+        if (Array.isArray(value)) {
+            result.push(...value);
+            value.forEach(item => recurse(item));
+        } else if (typeof value === 'object' && value !== null) {
+            Object.values(value).forEach(val => recurse(val));
+        }
+    }
+
+    recurse(data);
+    return result;
 }
