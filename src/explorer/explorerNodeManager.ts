@@ -6,9 +6,9 @@ import { Category, CompanySortingStrategy, defaultProblem, ProblemRating, Proble
 import { getCompaniesSortingStrategy, shouldHideSolvedProblem } from "../utils/settingUtils";
 import { LeetCodeNode } from "./LeetCodeNode";
 import { globalState } from "../globalState";
-import { getCompanyPopularity, getCompanyTags, getLists, getSheets, getTopicTags } from "../utils/dataUtils";
-import { leetcodeClient } from "@/leetCodeClient";
+import { getCompanyPopularity, getCompanyTags, getLists, getListsWithQuestions, getSheets, getTopicTags } from "../utils/dataUtils";
 import { LeetnotionTree } from "@/types";
+import { leetcodeTreeView } from "@/extension";
 
 class ExplorerNodeManager implements Disposable {
     private explorerNodeMap: Map<string, LeetCodeNode> = new Map<string, LeetCodeNode>();
@@ -18,55 +18,13 @@ class ExplorerNodeManager implements Disposable {
         this.dispose();
         const shouldHideSolved: boolean = shouldHideSolvedProblem();
         const dailyProblem = globalState.getDailyProblem();
-        const ratingsMap = await leetcodeClient.getProblemRatingsMap();
 
         let problems = await list.listProblems()
         problems = problems.filter(item => !shouldHideSolved || item.state !== ProblemState.AC)
 
-        const companyTags = getCompanyTags();
-        const sheets = getSheets();
-        const topicTags = await getTopicTags();
-
         for (const problem of problems) {
-            const id = problem.id;
-            if (ratingsMap[id]) {
-                problem.rating = ratingsMap[id].Rating;
-                problem.problemIndex = ratingsMap[id].ProblemIndex;
-            }
             this.explorerNodeMap.set(problem.id, new LeetCodeNode(problem));
         }
-        for (const company of Object.keys(companyTags)) {
-            this.explorerNodeMap.set(`${Category.Company}.${company}`, new LeetCodeNode(Object.assign({}, defaultProblem, {
-                id: `${Category.Company}.${company}`,
-                name: company
-            }), false))
-        }
-        for (const tag of Object.keys(topicTags)) {
-            this.explorerNodeMap.set(`${Category.Tag}.${tag}`, new LeetCodeNode(Object.assign({}, defaultProblem, {
-                id: `${Category.Tag}.${tag}`,
-                name: tag
-            }), false))
-        }
-        for (const sheet of Object.keys(sheets)) {
-            this.explorerNodeMap.set(`${Category.Sheets}.${sheet}`, new LeetCodeNode(Object.assign({}, defaultProblem, {
-                id: `${Category.Sheets}.${sheet}`,
-                name: sheet
-            }), false))
-        }
-
-        const listsDetails: Record<string, string[]> = {};
-        const lists = await getLists();
-        if (lists) {
-            for (const list of lists) {
-                const questions = await globalState.getQuestionsOfList(list.slug);
-                listsDetails[list.name] = questions.map(item => item.questionFrontendId);
-                this.explorerNodeMap.set(`${Category.Lists}.${list.name}`, new LeetCodeNode(Object.assign({}, defaultProblem, {
-                    id: `${Category.Lists}.${list.name}`,
-                    name: list.name
-                }), false))
-            }
-        }
-
         this.dataTree = {
             [Category.All]: problems.map(problem => problem.id),
             [Category.Difficulty]: {
@@ -74,21 +32,14 @@ class ExplorerNodeManager implements Disposable {
                 Medium: problems.filter(({ difficulty }) => difficulty === "Medium").map(problem => problem.id),
                 Hard: problems.filter(({ difficulty }) => difficulty === "Hard").map(problem => problem.id),
             },
-            [Category.Tag]: topicTags,
-            [Category.Company]: companyTags,
+            [Category.Tag]: await getTopicTags(),
+            [Category.Company]: getCompanyTags(),
             [Category.Favorite]: problems.filter(({ isFavorite }) => isFavorite).map(problem => problem.id),
             [Category.Daily]: [dailyProblem],
             [Category.Sheets]: getSheets(),
-            [Category.Lists]: listsDetails,
+            [Category.Lists]: await getListsWithQuestions(),
         }
-
-        for (const category of Object.keys(this.dataTree)) {
-            const node = new LeetCodeNode(Object.assign({}, defaultProblem, {
-                id: category,
-                name: category
-            }), false)
-            this.explorerNodeMap.set(category, node);
-        }
+        this.storeLeetCodeNodes();
     }
 
     public getRootNodes(): LeetCodeNode[] {
@@ -116,12 +67,12 @@ class ExplorerNodeManager implements Disposable {
         } else {
             let res: LeetCodeNode[] = [];
             for (const key of Object.keys(data)) {
-                if(this.explorerNodeMap.has(`${id}.${key}`)) {
-                    const node = this.explorerNodeMap.get(`${id}.${key}`);
+                if(this.explorerNodeMap.has(`${id}#${key}`)) {
+                    const node = this.explorerNodeMap.get(`${id}#${key}`);
                     res.push(node);
                 } else {
                     res.push(new LeetCodeNode(Object.assign({}, defaultProblem, {
-                        id: `${id}.${key}`,
+                        id: `${id}#${key}`,
                         name: key,
                     }), false));
                 }
@@ -140,11 +91,8 @@ class ExplorerNodeManager implements Disposable {
         if(!childId || childId === "") {
             return undefined;
         }
-        const meta = childId.split(".");
-        if(meta.length === 2) {
-            return this.explorerNodeMap.get(meta[0]);
-        }
-        return undefined;
+        const meta = childId.split("#");
+        return this.explorerNodeMap.get(meta.slice(0, meta.length - 1).join("#"));
     }
 
     public getExplorerDataById(id: string) {
@@ -152,7 +100,7 @@ class ExplorerNodeManager implements Disposable {
         if (!id || id === "") {
             return data;
         }
-        const metaInfo: string[] = id.split(".");
+        const metaInfo: string[] = id.split("#");
         for (const key of metaInfo) {
             if (data[key] === undefined) {
                 return null;
@@ -171,6 +119,13 @@ class ExplorerNodeManager implements Disposable {
             }
         }
         return res;
+    }
+
+    public revealNode(id: string) {
+        const node = this.explorerNodeMap.get(id);
+        if (node && leetcodeTreeView) {
+            leetcodeTreeView.reveal(node, { select: true, focus: true, expand: true });
+        }
     }
 
     private applySortingStrategy(nodes: LeetCodeNode[], id?: string): LeetCodeNode[] {
@@ -204,6 +159,30 @@ class ExplorerNodeManager implements Disposable {
             default:
                 return nodes;
         }
+    }
+
+    private storeLeetCodeNodes() {
+        function dfs(data, curr, map: Map<string, LeetCodeNode>) {
+            if(!data || Array.isArray(data)) {
+                return;
+            }
+            if (typeof data === "object") {
+                for (const key of Object.keys(data)) {
+                    let id = "";
+                    if(curr === "") {
+                        id = key;
+                    } else {
+                        id = curr + "#" + key;
+                    }
+                    map.set(id, new LeetCodeNode(Object.assign({}, defaultProblem, {
+                        id,
+                        name: key,
+                    }), false));
+                    dfs(data[key], id, map);
+                }
+            }
+        }
+        dfs(this.dataTree, "", this.explorerNodeMap);
     }
 }
 

@@ -6,7 +6,7 @@ import { globalState } from "./globalState";
 import { extractCookie } from "./utils/toolUtils";
 import { DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";
 import { leetCodeChannel } from "./leetCodeChannel";
-import { LeetcodeProblem } from "./types";
+import { LeetcodeProblem, ProblemRatingMap } from "./types";
 import axios from "axios";
 import { ProblemRating } from "./shared";
 import _ from "lodash";
@@ -121,14 +121,15 @@ class LeetcodeClient {
         }
     }
 
-    public async getProblemRatingsMap(): Promise<Record<string, ProblemRating>> {
+    public async getProblemRatingsMap(): Promise<ProblemRatingMap> {
         try {
             const { data } = await axios.get("https://zerotrac.github.io/leetcode_problem_rating/data.json")
-            const ratingsMap: Record<string, ProblemRating> = {};
+            const ratingsMap: ProblemRatingMap = {};
             for(const rating of data as ProblemRating[]) {
                 rating.Rating = _.floor(rating.Rating);
                 ratingsMap[rating.ID.toString()] = rating;
             }
+
             return ratingsMap;
         } catch (error) {
             throw new Error(`Error getting problem ratings: ${error}`);

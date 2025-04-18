@@ -26,7 +26,7 @@ import type {
     MutationUrl,
     PrimaryColor,
 } from '@leetnotion/notion-api';
-import { ALL_TIME, LAST_30_DAYS, LAST_3_MONTHS, LAST_6_MONTHS, MORE_THAN_6_MONTHS } from './shared';
+import { ALL_TIME, LAST_30_DAYS, LAST_3_MONTHS, LAST_6_MONTHS, MORE_THAN_6_MONTHS, ProblemRating } from './shared';
 
 export interface LeetcodeSubmission {
     code: string;
@@ -155,19 +155,17 @@ export type Lists = Array<List>;
 export type QuestionsOfList = Array<QuestionOfList>;
 
 export type Sheets = Record<string, Record<string, string[]>>;
+export type ListsWithQuestions = Record<string, string[]>;
 
-export type CompanyProblem = {
-    id: string;
-    frequency: number;
-}
+export type CompanyProblem = string;
 
 export type CompanyDetails = {
-    [LAST_30_DAYS]?: Problem[];
-    [LAST_3_MONTHS]?: Problem[];
-    [LAST_6_MONTHS]?: Problem[];
-    [MORE_THAN_6_MONTHS]?: Problem[];
-    [ALL_TIME]?: Problem[];
-} | Problem[]
+    [LAST_30_DAYS]?: CompanyProblem[];
+    [LAST_3_MONTHS]?: CompanyProblem[];
+    [LAST_6_MONTHS]?: CompanyProblem[];
+    [MORE_THAN_6_MONTHS]?: CompanyProblem[];
+    [ALL_TIME]?: CompanyProblem[];
+} | CompanyProblem[]
 
 export type CompanyTags = {
     [key: string]: CompanyDetails;
@@ -249,9 +247,11 @@ export type LeetnotionTree = {
         Hard: string[];
     };
     Tag?: Record<string, string[]>;
-    Company?: Record<string, string[]> | Record<string, Record<string, string[]>>;
+    Company?: CompanyTags
     Favorite?: string[];
     Daily?: string[];
     Sheets?: Sheets;
     Lists?: Record<string, string[]>;
 }
+
+export type ProblemRatingMap = Record<string, ProblemRating>;

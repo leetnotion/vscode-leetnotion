@@ -108,8 +108,7 @@ export async function searchCompany(): Promise<void> {
     if (!choice) {
         return;
     }
-    const companyNode = explorerNodeManager.getNodeById(`${Category.Company}.${choice.value}`);
-    leetcodeTreeView.reveal(companyNode, { select: true, focus: true, expand: 2 });
+    explorerNodeManager.revealNode(`${Category.Company}#${choice.value}`);
 }
 
 export async function searchTag(): Promise<void> {
@@ -125,8 +124,7 @@ export async function searchTag(): Promise<void> {
     if (!choice) {
         return;
     }
-    const node = explorerNodeManager.getNodeById(`${Category.Tag}.${choice.value}`);
-    leetcodeTreeView.reveal(node, { select: true, focus: true, expand: 2 });
+    explorerNodeManager.revealNode(`${Category.Tag}#${choice.value}`);
 }
 
 export async function searchSheets(): Promise<void> {
@@ -142,8 +140,7 @@ export async function searchSheets(): Promise<void> {
     if (!choice) {
         return;
     }
-    const node = explorerNodeManager.getNodeById(`${Category.Sheets}.${choice.value}`);
-    leetcodeTreeView.reveal(node, { select: true, focus: true, expand: 2 });
+    explorerNodeManager.revealNode(`${Category.Sheets}#${choice.value}`);
 }
 
 export async function searchLists(): Promise<void> {
@@ -159,8 +156,7 @@ export async function searchLists(): Promise<void> {
     if (!choice) {
         return;
     }
-    const node = explorerNodeManager.getNodeById(`${Category.Lists}.${choice.value}`);
-    leetcodeTreeView.reveal(node, { select: true, focus: true, expand: 2 });
+    explorerNodeManager.revealNode(`${Category.Lists}#${choice.value}`);
 }
 
 export async function showSolution(input: LeetCodeNode | vscode.Uri): Promise<void> {

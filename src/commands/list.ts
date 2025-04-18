@@ -5,7 +5,7 @@ import { leetCodeChannel } from "../leetCodeChannel";
 import { leetCodeExecutor } from "../leetCodeExecutor";
 import { leetCodeManager } from "../leetCodeManager";
 import { IProblem, ProblemState, UserStatus } from "../shared";
-import { getQuestionCompanyTags, getQuestionTopicTags } from "../utils/dataUtils";
+import { getProblemRatingMap, getQuestionCompanyTags, getQuestionTopicTags } from "../utils/dataUtils";
 import * as settingUtils from "../utils/settingUtils";
 import { DialogType, promptForOpenOutputChannel } from "../utils/uiUtils";
 
@@ -20,8 +20,9 @@ export async function listProblems(): Promise<IProblem[]> {
         const problems: IProblem[] = [];
         const lines: string[] = result.split("\n");
         const reg: RegExp = /^(.)\s(.{1,2})\s(.)\s\[\s*(\d*)\s*\]\s*(.*)\s*(Easy|Medium|Hard)\s*\((\s*\d+\.\d+ %)\)/;
-        const problemCompanies = getQuestionCompanyTags();
+        const companies = getQuestionCompanyTags();
         const tags = await getQuestionTopicTags();
+        const problemRatingMap = await getProblemRatingMap();
         for (const line of lines) {
             const match: RegExpMatchArray | null = line.match(reg);
             if (match && match.length === 8) {
@@ -34,8 +35,10 @@ export async function listProblems(): Promise<IProblem[]> {
                     name: match[5].trim(),
                     difficulty: match[6].trim(),
                     passRate: match[7].trim(),
-                    companies: problemCompanies[id] || ["Unknown"],
+                    companies: companies[id] || ["Unknown"],
                     tags: tags[id] || ["Unknown"],
+                    rating: problemRatingMap[id]?.Rating,
+                    problemIndex: problemRatingMap[id]?.ProblemIndex,
                 });
             }
         }

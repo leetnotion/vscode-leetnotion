@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { Lists, Mapping, PendingSessionDetails, QuestionsOfList, TopicTags } from "./types";
+import { Lists, Mapping, PendingSessionDetails, ProblemRatingMap, QuestionsOfList, TopicTags } from "./types";
 
 export const CookieKey = "leetcode-cookie";
 export const UserStatusKey = "leetcode-user-status";
@@ -15,6 +15,7 @@ export const UserQuestionTagsKey = "notion-user-question-tags";
 export const PendingSessionKey = "leetnotion-template-update-pending-session";
 export const LeetcodeListsKey = "leetcode-lists";
 export const QuestionsOfListKey = "leetcode-questions-of-list";
+export const ProblemRatingMapKey = "leetcode-problem-rating-map";
 
 export type UserDataType = {
     isSignedIn: boolean;
@@ -45,6 +46,7 @@ class GlobalState {
     private _pendingSession?: PendingSessionDetails;
     private _lists?: Lists;
     private _questionsOfList?: Record<string, QuestionsOfList>;
+    private _problemRatingMap?: ProblemRatingMap;
 
     public initialize(context: vscode.ExtensionContext): void {
         this.context = context;
@@ -186,7 +188,7 @@ class GlobalState {
 
     public async setQuestionsOfList(questions: QuestionsOfList, listId: string): Promise<void> {
         if (!this._questionsOfList) {
-            await this._initializeQuestionsOfList();
+            this._initializeQuestionsOfList();
         }
         this._questionsOfList[listId] = questions;
         await this._state.update(QuestionsOfListKey, this._questionsOfList);
@@ -202,6 +204,15 @@ class GlobalState {
     private async _initializeQuestionsOfList(): Promise<void> {
         const savedState = this._state.get<Record<string, QuestionsOfList>>(QuestionsOfListKey) || {};
         this._questionsOfList = { ...savedState };
+    }
+
+    public getProblemRatingMap() {
+        return this._problemRatingMap ?? this._state.get(ProblemRatingMapKey);
+    }
+
+    public setProblemRatingMap(problemRatingMap: ProblemRatingMap) {
+        this._problemRatingMap = problemRatingMap;
+        return this._state.update(ProblemRatingMapKey, problemRatingMap);
     }
 
     public clearAllNotionDetails(): void {

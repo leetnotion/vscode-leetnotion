@@ -6,10 +6,8 @@ import * as path from 'path';
 import { leetcodeClient } from '../leetCodeClient';
 import { globalState } from '../globalState';
 import { leetCodeChannel } from '../leetCodeChannel';
-import { QuestionCompanyTags, Lists, Mapping, QuestionsOfList, Sheets, TopicTags, CompanyTags } from '../types';
-import Bottleneck from 'bottleneck';
+import { QuestionCompanyTags, Lists, Mapping, QuestionsOfList, Sheets, TopicTags, CompanyTags, ProblemRatingMap, ListsWithQuestions } from '../types';
 import { sleep } from './toolUtils';
-import { ALL_TIME } from '@/shared';
 
 const sheetsPath = '../../data/sheets.json';
 const companyTagsPath = '../../data/companyTags.json';
@@ -20,23 +18,9 @@ export function getSheets(): Sheets {
     return sheets;
 }
 
-export function getCompanyTags() {
+export function getCompanyTags(): CompanyTags {
     const companyTags = fsExtra.readJSONSync(path.join(__dirname, companyTagsPath)) as CompanyTags;
-    let finalCompanyTags = {};
-    for(const [company, details] of Object.entries(companyTags)) {
-        if(Object.keys(details).length === 0) {
-            continue;
-        }
-        if(Object.keys(details).length === 1) {
-            finalCompanyTags[company] = details[ALL_TIME].map(item => item.id);
-        } else {
-            finalCompanyTags[company] = {}
-            for(const timeframe of Object.keys(details)) {
-                finalCompanyTags[company][timeframe] = details[timeframe].map(item => item.id);
-            }
-        }
-    }
-    return finalCompanyTags;
+    return companyTags;
 }
 
 export function getQuestionCompanyTags(): QuestionCompanyTags {
@@ -70,11 +54,23 @@ export async function getQuestionTopicTags(): Promise<TopicTags> {
     return topicTags;
 }
 
+export async function getProblemRatingMap(): Promise<ProblemRatingMap> {
+    let problemRatingMap = globalState.getProblemRatingMap();
+
+    if (!problemRatingMap) {
+        problemRatingMap = await leetcodeClient.getProblemRatingsMap();
+        globalState.setProblemRatingMap(problemRatingMap);
+    }
+
+    return problemRatingMap;
+}
+
 export function getCompanyPopularity(): Record<string, number> {
-    const companyTags = fsExtra.readJSONSync(path.join(__dirname, companyTagsPath)) as CompanyTags;
+    const companyTags = getCompanyTags();
     const companyPoularityMapping: Record<string, number> = {};
-    for(const company of Object.keys(companyTags)) {
-        companyPoularityMapping[company] = companyTags[company][ALL_TIME].length;
+    for(const [company, data] of Object.entries(companyTags)) {
+        const problems = extractArrayElements(data);
+        companyPoularityMapping[company] = problems.length;
     }
     return companyPoularityMapping;
 }
@@ -95,17 +91,6 @@ export function getTitleSlugPageIdMapping() {
     return mapping;
 }
 
-const limiter = new Bottleneck({
-    maxConcurrent: 1,
-    minTime: 1000,
-});
-
-const rateLimitedGetQuestionsOfList = limiter.wrap(
-    async (slug: string): Promise<QuestionsOfList> => {
-        return leetcodeClient.getQuestionsOfList(slug);
-    }
-);
-
 export async function getLists(): Promise<Lists> {
     let lists = globalState.getLists();
     if (!lists) {
@@ -113,6 +98,18 @@ export async function getLists(): Promise<Lists> {
         globalState.setLists(lists);
     }
     return lists;
+}
+
+export async function getListsWithQuestions(): Promise<ListsWithQuestions> {
+    const lists = await getLists();
+    const listsDetails: ListsWithQuestions = {};
+    if (lists) {
+        for (const list of lists) {
+            const questions = await globalState.getQuestionsOfList(list.slug);
+            listsDetails[list.name] = questions.map(item => item.questionFrontendId);
+        }
+    }
+    return listsDetails;
 }
 
 export async function setLists() {
@@ -135,7 +132,7 @@ export async function setQuestionsOfAllLists() {
 }
 
 export function extractArrayElements(data) {
-    const result = [];
+    let result = [];
 
     function recurse(value) {
         if (Array.isArray(value)) {
@@ -147,5 +144,6 @@ export function extractArrayElements(data) {
     }
 
     recurse(data);
+    result = [...new Set(result)];
     return result;
 }
