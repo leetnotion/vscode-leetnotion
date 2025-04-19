@@ -52,6 +52,7 @@ export function clearIntervals(intervals: NodeJS.Timeout[]) {
     intervals.forEach(interval => {
         clearInterval(interval);
     });
+    return [];
 }
 
 export function getQuestionNumber(filePath: string): string | null {

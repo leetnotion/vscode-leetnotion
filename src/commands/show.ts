@@ -32,7 +32,7 @@ import { getLeetCodeEndpoint } from "./plugin";
 import { globalState } from "../globalState";
 import { extractArrayElements, getCompanyTags, getLists, getSheets, getTopicTags } from "@/utils/dataUtils";
 import { CompanyTags, Lists, Sheets, TopicTags } from "@/types";
-import { leetcodeTreeView } from "@/extension";
+import TrackData from "../utils/trackingUtils";
 
 export async function previewProblem(input: IProblem | vscode.Uri, isSideMode: boolean = false): Promise<void> {
     let node: IProblem;
@@ -61,6 +61,15 @@ export async function previewProblem(input: IProblem | vscode.Uri, isSideMode: b
             return;
         }
     }
+
+    TrackData.report({
+        event_key: `vscode_open_problem`,
+        type: "click",
+        extra: JSON.stringify({
+            problem_id: node.id,
+            problem_name: node.name,
+        }),
+    });
 
     const needTranslation: boolean = settingUtils.shouldUseEndpointTranslation();
     const descString: string = await leetCodeExecutor.getDescription(node.id, needTranslation);

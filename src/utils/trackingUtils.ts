@@ -1,16 +1,18 @@
 import * as vscode from "vscode";
-import axios from "axios";
 import { getLeetCodeEndpoint } from "../commands/plugin";
 import { Endpoint } from "../shared";
 import { leetCodeManager } from "../leetCodeManager";
+import mixpanel from "mixpanel";
+
+const MIXPANEL_TOKEN = "3306db013b2f21d4df00a4554c381c1a";
+
+const mixpanelClient = mixpanel.init(MIXPANEL_TOKEN, {
+    protocol: "https",
+});
 
 const getTimeZone = (): string => {
     const endPoint: string = getLeetCodeEndpoint();
-    if (endPoint === Endpoint.LeetCodeCN) {
-        return "Asia/Shanghai";
-    } else {
-        return "UTC";
-    }
+    return endPoint === Endpoint.LeetCodeCN ? "Asia/Shanghai" : "UTC";
 };
 
 interface IReportData {
@@ -18,7 +20,7 @@ interface IReportData {
     type?: "click" | "expose" | string;
     anonymous_id?: string;
     tid?: number;
-    ename?: string; // event name
+    ename?: string;
     href?: string;
     referer?: string;
     extra?: string;
@@ -29,19 +31,7 @@ interface ITrackData {
     reportCache: IReportData[];
     isSubmit: boolean;
     report: (reportItems: IReportData | IReportData[]) => void;
-    submitReport: (useSendBeason: boolean) => Promise<void>;
-    reportUrl: string;
-}
-
-const testReportUrl = "https://analysis.lingkou.xyz/i/event";
-const prodReportUrl = "https://analysis.leetcode.cn/i/event";
-
-function getReportUrl() {
-    if (process.env.NODE_ENV === "production") {
-        return prodReportUrl;
-    } else {
-        return testReportUrl;
-    }
+    submitReport: () => Promise<void>;
 }
 
 const _charStr = "abacdefghjklmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+=";
@@ -59,9 +49,8 @@ function getRandomString(len: number) {
     const min = 0;
     const max = _charStr.length - 1;
     let _str = "";
-    len = len || 15;
-    for (let i = 0, index; i < len; i++) {
-        index = RandomIndex(min, max, i);
+    for (let i = 0; i < len; i++) {
+        const index = RandomIndex(min, max, i);
         _str += _charStr[index];
     }
     return _str;
@@ -69,8 +58,7 @@ function getRandomString(len: number) {
 
 function getAllowReportDataConfig() {
     const leetCodeConfig = vscode.workspace.getConfiguration("leetnotion");
-    const allowReportData = !!leetCodeConfig.get<boolean>("allowReportData");
-    return allowReportData;
+    return !!leetCodeConfig.get<boolean>("allowReportData");
 }
 
 class TrackData implements ITrackData {
@@ -78,49 +66,55 @@ class TrackData implements ITrackData {
 
     public isSubmit: boolean = false;
 
-    public reportUrl: string = getReportUrl();
-
     private sendTimer: NodeJS.Timeout | undefined;
 
     public report = (reportItems: IReportData | IReportData[]) => {
         if (!getAllowReportDataConfig()) return;
 
-        this.sendTimer && clearTimeout(this.sendTimer);
-
         if (!Array.isArray(reportItems)) {
             reportItems = [reportItems];
         }
+
         const randomId = getRandomString(60);
         reportItems.forEach((item) => {
             this.reportCache.push({
                 ...item,
                 referer: "vscode",
-                target: leetCodeManager.getUser() ?? "",
-                anonymous_id: item.anonymous_id ?? (randomId as string),
+                target: leetCodeManager.getUser() ?? "anonymous",
+                anonymous_id: item.anonymous_id ?? randomId,
             });
         });
+
+        if (this.sendTimer) clearTimeout(this.sendTimer);
         this.sendTimer = setTimeout(this.submitReport, 800);
     };
 
     public submitReport = async () => {
         if (!getAllowReportDataConfig()) return;
-        const dataList = JSON.stringify(this.reportCache);
 
-        if (!this.reportCache.length || this.isSubmit) {
-            return;
-        }
+        if (!this.reportCache.length || this.isSubmit) return;
+
+        const eventsToSend = this.reportCache;
         this.reportCache = [];
+
         try {
             this.isSubmit = true;
-            axios.defaults.withCredentials = true;
-            await axios.post(this.reportUrl, `dataList=${encodeURIComponent(dataList)}`, {
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "x-timezone": getTimeZone(),
-                },
-            });
-        } catch (e) {
-            this.reportCache = this.reportCache.concat(JSON.parse(dataList));
+            const timezone = getTimeZone();
+
+            for (const event of eventsToSend) {
+                const distinct_id = event.target || "anonymous";
+                const eventName = event.ename || event.event_key;
+
+                mixpanelClient.track(eventName, {
+                    distinct_id,
+                    ...event,
+                    timezone,
+                    timestamp: new Date().toISOString(),
+                });
+            }
+        } catch (err) {
+            // fallback: push events back if failed
+            this.reportCache = this.reportCache.concat(eventsToSend);
         } finally {
             this.isSubmit = false;
         }

@@ -753,9 +753,9 @@
                     },
                     "leetnotion.allowReportData": {
                         "type": "boolean",
-                        "default": false,
+                        "default": true,
                         "scope": "application",
-                        "description": "Allow LeetCode to report anonymous usage data to improve the product."
+                        "description": "Allow Leetnotion to report anonymous usage data to improve the product."
                     },
                     "leetnotion.enableNotionIntegration": {
                         "type": "boolean",
@@ -829,6 +829,7 @@
         "highlight.js": "^10.7.2",
         "lodash": "^4.17.21",
         "markdown-it": "^8.4.2",
+        "mixpanel": "^0.18.1",
         "require-from-string": "^2.0.2",
         "unescape-js": "^1.1.4",
         "vsc-leetcode-cli": "2.8.1"

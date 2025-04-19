@@ -145,7 +145,6 @@ class LeetCodePreviewProvider extends LeetCodeWebview {
     }
 
     protected async onDidReceiveMessage(message: IWebViewMessage): Promise<void> {
-        console.log("Received message:", message);
         switch (message.command) {
             case "ShowProblem": {
                 await commands.executeCommand("leetnotion.showProblem", this.node);
