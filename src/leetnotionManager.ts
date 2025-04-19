@@ -26,12 +26,12 @@ class LeetnotionManager {
                 this.disableNotionIntegration();
                 return;
             }
-            globalState.setNotionAccessToken(accessToken);
+            await globalState.setNotionAccessToken(accessToken);
             leetnotionClient.initialize();
             const previousQuestionsDatabaseId = globalState.getQuestionsDatabaseId();
             await leetnotionClient.setDatabaseIds();
-            globalState.setNotionIntegrationStatus("pending");
-            if (!previousQuestionsDatabaseId || previousQuestionsDatabaseId === globalState.getQuestionsDatabaseId()) {
+            if (!previousQuestionsDatabaseId || previousQuestionsDatabaseId !== globalState.getQuestionsDatabaseId()) {
+                globalState.setNotionIntegrationStatus("pending");
                 await this.updateNotionInfo();
             }
             globalState.setNotionIntegrationStatus("done");

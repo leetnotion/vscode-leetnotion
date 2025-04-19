@@ -26,14 +26,13 @@ import { markdownEngine } from "./webview/markdownEngine";
 import TrackData from "./utils/trackingUtils";
 import { globalState } from "./globalState";
 import { leetcodeClient } from "./leetCodeClient";
-import { clearInterval } from "timers";
-import { repeatAction } from "./utils/toolUtils";
+import { clearIntervals, repeatAction } from "./utils/toolUtils";
 import { leetnotionManager } from "./leetnotionManager";
 import { leetnotionClient } from "./leetnotionClient";
 import { templateUpdater } from "./modules/leetnotion/template-updater";
-import { setLists, setQuestionsOfAllLists } from "./utils/dataUtils";
+import { setLists, setProblemRatingMap, setQuestionsOfAllLists } from "./utils/dataUtils";
 
-let interval: NodeJS.Timeout;
+let intervals: NodeJS.Timeout[] = [];
 export let leetcodeTreeView: vscode.TreeView<LeetCodeNode> | undefined;
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
@@ -53,21 +52,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         leetcodeClient.initialize();
         leetnotionClient.initialize();
 
-        interval = repeatAction(async () => {
-            try {
-                await Promise.all([
-                    leetcodeClient.checkIn(),
-                    leetcodeClient.collectEasterEgg(),
-                    leetcodeClient.setDailyProblem(),
-                    leetnotionClient.setUserQuestionTags(),
-                    setLists(),
-                    setQuestionsOfAllLists()
-                ])
-                leetCodeTreeDataProvider.refresh();
-            } catch (error) {
-                leetCodeChannel.appendLine(`Failed to perform repeated actions: ${error}`);
-            }
-        })
+        startRecurringTasks();
 
         leetcodeClient.setTitleSlugQuestionNumberMapping();
         if (globalState.getNotionIntegrationStatus() === "pending") {
@@ -142,7 +127,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             vscode.commands.registerCommand("leetnotion.updateTemplate", () => templateUpdater.updateTemplate()),
             vscode.commands.registerCommand("leetnotion.addSubmissions", () => leetnotionManager.uploadSubmissions()),
             {
-                dispose: () => clearInterval(interval)
+                dispose: () => clearIntervals(intervals)
             }
         );
 
@@ -156,6 +141,38 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 }
 
 export function deactivate(): void {
-    clearInterval(interval);
+    clearIntervals(intervals);
+}
+
+function startRecurringTasks() {
+    intervals.push(
+        repeatAction(async () => {
+            try {
+                await Promise.all([
+                    leetcodeClient.checkIn(),
+                    leetcodeClient.collectEasterEgg(),
+                    leetcodeClient.setDailyProblem(),
+                    leetnotionClient.setUserQuestionTags(),
+                ]);
+                leetCodeTreeDataProvider.refresh();
+            } catch (error) {
+                leetCodeChannel.appendLine(`Failed to perform 30-min interval tasks: ${error}`);
+            }
+        }, 1000 * 60 * 30)
+    );
+
+    intervals.push(
+        repeatAction(async () => {
+            try {
+                await Promise.all([
+                    setLists(),
+                    setQuestionsOfAllLists(),
+                    setProblemRatingMap(),
+                ]);
+            } catch (error) {
+                leetCodeChannel.appendLine(`Failed to perform 2-hour interval tasks: ${error}`);
+            }
+        }, 1000 * 60 * 60 * 2)
+    );
 }
 

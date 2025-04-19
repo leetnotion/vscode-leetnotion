@@ -65,6 +65,11 @@ export async function getProblemRatingMap(): Promise<ProblemRatingMap> {
     return problemRatingMap;
 }
 
+export async function setProblemRatingMap() {
+    const problemRatingMap = await leetcodeClient.getProblemRatingsMap();
+    globalState.setProblemRatingMap(problemRatingMap);
+}
+
 export function getCompanyPopularity(): Record<string, number> {
     const companyTags = getCompanyTags();
     const companyPoularityMapping: Record<string, number> = {};

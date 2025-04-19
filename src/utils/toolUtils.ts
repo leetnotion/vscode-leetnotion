@@ -48,6 +48,12 @@ export function repeatAction(fn: () => void, time = 180000): NodeJS.Timeout {
     return setInterval(fn, time)
 }
 
+export function clearIntervals(intervals: NodeJS.Timeout[]) {
+    intervals.forEach(interval => {
+        clearInterval(interval);
+    });
+}
+
 export function getQuestionNumber(filePath: string): string | null {
     const regexMatch = filePath.match(/[\\/](\d+)\./);
     if (!regexMatch || !regexMatch[1]) {

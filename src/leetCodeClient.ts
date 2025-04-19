@@ -68,7 +68,7 @@ class LeetcodeClient {
     public async setDailyProblem() {
         try {
             const { question: { questionFrontendId } } = await this.leetcode.daily();
-            globalState.setDailyProblem(questionFrontendId);
+            await globalState.setDailyProblem(questionFrontendId);
         } catch (error) {
             leetCodeChannel.appendLine(`Error getting daily question: ${error}`);
         }

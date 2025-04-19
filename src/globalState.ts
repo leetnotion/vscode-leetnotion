@@ -92,18 +92,18 @@ class GlobalState {
         return this._topicTags ?? this._state.get(TopicTagsKey);
     }
 
-    public setDailyProblem(dailyProblemId: string): any {
+    public async setDailyProblem(dailyProblemId: string): Promise<any> {
         this._dailyProblemId = dailyProblemId;
-        return this._state.update(DailyProblemKey, dailyProblemId);
+        return await this._state.update(DailyProblemKey, dailyProblemId);
     }
 
     public getDailyProblem(): string | undefined {
         return this._dailyProblemId ?? this._state.get(DailyProblemKey);
     }
 
-    public setNotionAccessToken(accessToken: string): any {
+    public async setNotionAccessToken(accessToken: string): Promise<any> {
         this._notionAccessToken = accessToken;
-        return this._state.update(NotionAccessTokenKey, accessToken);
+        return await this._state.update(NotionAccessTokenKey, accessToken);
     }
 
     public getNotionAccessToken(): string | undefined {
@@ -236,6 +236,7 @@ class GlobalState {
         this._state.update(PendingSessionKey, undefined);
         this._state.update(LeetcodeListsKey, undefined);
         this._state.update(QuestionsOfListKey, undefined);
+        this._state.update(ProblemRatingMapKey, undefined);
     }
 
     public get(key: string) {
