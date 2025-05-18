@@ -53,6 +53,12 @@ Access popular problem sets, such as NeetCode sheets, LeetCode study sheets, and
 
 ---
 
+### 🏆 Contests
+
+View all past contests and their leetcode problems
+
+![all-past-contests](./docs/imgs/all-past-contests.png)
+
 ### 🎯 Auto Check-In
 
 Automatically collects one LeetCode coin every day by checking in, so you won’t miss out on daily rewards.
