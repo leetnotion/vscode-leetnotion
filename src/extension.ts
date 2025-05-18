@@ -95,6 +95,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             vscode.commands.registerCommand("leetnotion.searchCompany", () => show.searchCompany()),
             vscode.commands.registerCommand("leetnotion.searchTag", () => show.searchTag()),
             vscode.commands.registerCommand("leetnotion.searchSheets", () => show.searchSheets()),
+            vscode.commands.registerCommand("leetnotion.searchContests", () => show.searchContests()),
             vscode.commands.registerCommand("leetnotion.searchList", () => show.searchLists()),
             vscode.commands.registerCommand("leetnotion.showSolution", (input: LeetCodeNode | vscode.Uri) => show.showSolution(input)),
             vscode.commands.registerCommand("leetnotion.refreshExplorer", () => leetCodeTreeDataProvider.refresh()),

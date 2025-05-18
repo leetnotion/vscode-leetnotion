@@ -120,6 +120,12 @@
                 "icon": "$(search)"
             },
             {
+                "command": "leetnotion.searchContests",
+                "title": "Search Contests",
+                "category": "Leetnotion",
+                "icon": "$(search)"
+            },
+            {
                 "command": "leetnotion.addFavorite",
                 "title": "Add to Favorite List",
                 "category": "Leetnotion",
@@ -273,6 +279,11 @@
                 {
                     "command": "leetnotion.searchSheets",
                     "when": "view == leetnotionExplorer && viewItem == sheets",
+                    "group": "inline"
+                },
+                {
+                    "command": "leetnotion.searchContests",
+                    "when": "view == leetnotionExplorer && viewItem == contests",
                     "group": "inline"
                 }
             ],

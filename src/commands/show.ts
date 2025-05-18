@@ -136,6 +136,26 @@ export async function searchTag(): Promise<void> {
     explorerNodeManager.revealNode(`${Category.Tag}#${choice.value}`);
 }
 
+export async function searchContests(): Promise<void> {
+    if (!leetCodeManager.getUser()) {
+        promptForSignIn();
+        return;
+    }
+    const sheets = globalState.get("leetcodeContests") as Record<string, string[]>;
+    if(!sheets) {
+        leetCodeChannel.appendLine("Failed to get leetcode contests");
+        return;
+    }
+    const choice: IQuickItemEx<string> | undefined = await vscode.window.showQuickPick(parseContestsToPicks(sheets), {
+        matchOnDetail: true,
+        placeHolder: "Search for a contest",
+    });
+    if (!choice) {
+        return;
+    }
+    explorerNodeManager.revealNode(`${Category.Contests}#${choice.value}`);
+}
+
 export async function searchSheets(): Promise<void> {
     if (!leetCodeManager.getUser()) {
         promptForSignIn();
@@ -342,6 +362,21 @@ async function parseSheetsToPicks(sheets: Sheets) {
                 label: sheet,
                 description: "",
                 detail: `No of Problems: ${extractArrayElements(sheets[sheet]).length}`,
+                value: sheet,
+            }
+        )
+    );
+    return picks;
+}
+
+async function parseContestsToPicks(contests: Record<string, string[]>) {
+    const picks: Array<IQuickItemEx<string>> = Object.keys(contests).map((sheet: string) =>
+        Object.assign(
+            {},
+            {
+                label: sheet,
+                description: "",
+                detail: `No of Problems: ${extractArrayElements(contests[sheet]).length}`,
                 value: sheet,
             }
         )
