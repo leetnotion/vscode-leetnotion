@@ -248,6 +248,7 @@ export type LeetnotionTree = {
     };
     Tag?: Record<string, string[]>;
     Company?: CompanyTags
+    Contests?: Record<string, string[]>;
     Favorite?: string[];
     Daily?: string[];
     Sheets?: Sheets;

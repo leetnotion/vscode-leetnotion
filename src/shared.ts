@@ -114,6 +114,7 @@ export enum Category {
     Sheets = "Sheets",
     Sublist = "Sublist",
     Lists = "Lists",
+    Contests = "Contests"
 }
 
 export const supportedPlugins: string[] = ["company", "solution.discuss", "leetcode.cn"];

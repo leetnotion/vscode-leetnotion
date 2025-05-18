@@ -6,7 +6,7 @@ import { Category, CompanySortingStrategy, defaultProblem, ProblemRating, Proble
 import { getCompaniesSortingStrategy, shouldHideSolvedProblem } from "../utils/settingUtils";
 import { LeetCodeNode } from "./LeetCodeNode";
 import { globalState } from "../globalState";
-import { getCompanyPopularity, getCompanyTags, getLists, getListsWithQuestions, getSheets, getTopicTags } from "../utils/dataUtils";
+import { getCompanyPopularity, getCompanyTags, getContests, getLists, getListsWithQuestions, getSheets, getTopicTags } from "../utils/dataUtils";
 import { LeetnotionTree } from "@/types";
 import { leetcodeTreeView } from "@/extension";
 
@@ -34,6 +34,7 @@ class ExplorerNodeManager implements Disposable {
             },
             [Category.Tag]: await getTopicTags(),
             [Category.Company]: getCompanyTags(),
+            [Category.Contests]: await getContests(),
             [Category.Favorite]: problems.filter(({ isFavorite }) => isFavorite).map(problem => problem.id),
             [Category.Daily]: [dailyProblem],
             [Category.Sheets]: getSheets(),

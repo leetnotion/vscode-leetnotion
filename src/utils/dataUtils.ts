@@ -8,6 +8,7 @@ import { globalState } from '../globalState';
 import { leetCodeChannel } from '../leetCodeChannel';
 import { QuestionCompanyTags, Lists, Mapping, QuestionsOfList, Sheets, TopicTags, CompanyTags, ProblemRatingMap, ListsWithQuestions } from '../types';
 import { sleep } from './toolUtils';
+import axios from 'axios';
 
 const sheetsPath = '../../data/sheets.json';
 const companyTagsPath = '../../data/companyTags.json';
@@ -25,6 +26,23 @@ export function getCompanyTags(): CompanyTags {
 
 export function getQuestionCompanyTags(): QuestionCompanyTags {
     return fsExtra.readJSONSync(path.join(__dirname, questionCompanyTagsPath)) as QuestionCompanyTags;
+}
+
+export async function getContests(): Promise<Record<string, string[]>> {
+    try {
+        return await globalState.getWithBackgroundRefresh<Record<string, string[]>>(
+            "leetcodeContests",
+            async () => {
+                const { data } = await axios.get(
+                    "https://raw.githubusercontent.com/codewithsathya/leetcode-contests/refs/heads/main/contestData.json"
+                );
+                return data;
+            }
+        );
+    } catch (error) {
+        console.error(`Failed to fetch contests: ${error}`);
+        return {};
+    }
 }
 
 export async function getTopicTags(): Promise<Record<string, string[]>> {

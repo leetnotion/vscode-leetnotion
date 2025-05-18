@@ -215,6 +215,23 @@ class GlobalState {
         return this._state.update(ProblemRatingMapKey, problemRatingMap);
     }
 
+    public async getWithBackgroundRefresh<T>(
+        key: string,
+        fetchFn: () => Promise<T>,
+    ): Promise<any> {
+        const cached = this.get(key);
+        if (cached) {
+            fetchFn()
+                .then((fresh) => this.update(key, fresh))
+                .catch(() => {});
+            return cached;
+        } else {
+            const fresh = await fetchFn();
+            await this.update(key, fresh);
+            return fresh;
+        }
+    }
+
     public clearAllNotionDetails(): void {
         this._topicTags = undefined;
         this._dailyProblemId = undefined;
