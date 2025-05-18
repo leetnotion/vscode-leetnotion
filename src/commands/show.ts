@@ -141,12 +141,12 @@ export async function searchContests(): Promise<void> {
         promptForSignIn();
         return;
     }
-    const sheets = globalState.get("leetcodeContests") as Record<string, string[]>;
-    if(!sheets) {
+    const contests = globalState.get("leetcodeContests") as Record<string, string[]>;
+    if(!contests) {
         leetCodeChannel.appendLine("Failed to get leetcode contests");
         return;
     }
-    const choice: IQuickItemEx<string> | undefined = await vscode.window.showQuickPick(parseContestsToPicks(sheets), {
+    const choice: IQuickItemEx<string> | undefined = await vscode.window.showQuickPick(parseContestsToPicks(contests), {
         matchOnDetail: true,
         placeHolder: "Search for a contest",
     });
@@ -370,14 +370,14 @@ async function parseSheetsToPicks(sheets: Sheets) {
 }
 
 async function parseContestsToPicks(contests: Record<string, string[]>) {
-    const picks: Array<IQuickItemEx<string>> = Object.keys(contests).map((sheet: string) =>
+    const picks: Array<IQuickItemEx<string>> = Object.keys(contests).map((contest: string) =>
         Object.assign(
             {},
             {
-                label: sheet,
+                label: contest,
                 description: "",
-                detail: `No of Problems: ${extractArrayElements(contests[sheet]).length}`,
-                value: sheet,
+                detail: `No of Problems: ${extractArrayElements(contests[contest]).length}`,
+                value: contest,
             }
         )
     );
