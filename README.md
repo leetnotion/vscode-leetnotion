@@ -210,9 +210,10 @@ When you meet any problem, you can check out the [Troubleshooting](https://githu
 
 LeetNotion builds upon the fantastic work of the open-source [LeetCode VS Code extension](https://github.com/LeetCode-OpenSource/vscode-leetcode). This project wouldn’t be possible without the foundation provided by the original developers. Thank you to the contributors of the LeetCode extension for their work and dedication in creating such a useful tool for the developer community.
 
-
-
-<p align="center">
-  <a href="https://www.buymeacoffee.com/codewithsathya" target="_blank">		<img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="50" width="200">
-  </a>
-</p>
+<div align="center">
+    <a href="https://www.buymeacoffee.com/codewithsathya" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="41px"></a>
+    <a href="https://paypal.me/myselfsathya"><img src="https://raw.githubusercontent.com/codewithsathya/vscode-codeforces/refs/heads/main/resources/paypal.png" alt="PayPal" height="41px" width="220"></a>
+    <a href="https://donate.codewithsathya.com/">
+        <img src="https://raw.githubusercontent.com/codewithsathya/vscode-codeforces/refs/heads/main/resources/upi.png" alt="UPI Pay" height="41" width="220">
+    </a> <br>
+</div>
