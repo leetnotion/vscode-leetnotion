@@ -33,6 +33,7 @@ class LeetnotionManager {
             if (!previousQuestionsDatabaseId || previousQuestionsDatabaseId !== globalState.getQuestionsDatabaseId()) {
                 globalState.setNotionIntegrationStatus("pending");
                 await this.updateNotionInfo();
+                await window.showInformationMessage("Notion integration enabled successfully 🎉")
             }
             globalState.setNotionIntegrationStatus("done");
         } catch (error) {

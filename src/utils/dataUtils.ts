@@ -135,6 +135,20 @@ export async function getListsWithQuestions(): Promise<ListsWithQuestions> {
     return listsDetails;
 }
 
+export async function syncLists() {
+    await setLists();
+    await setQuestionsOfAllLists();
+    globalState.setListsSyncTimestamp(Date.now());
+}
+
+export async function syncListsIfNeeded(intervalMs: number) {
+    const lastSync = globalState.getListsSyncTimestamp();
+    if (lastSync && Date.now() - lastSync < intervalMs) {
+        return;
+    }
+    await syncLists();
+}
+
 export async function setLists() {
     const lists = await leetcodeClient.getLists();
     globalState.setLists(lists);

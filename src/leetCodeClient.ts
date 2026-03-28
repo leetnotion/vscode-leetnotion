@@ -32,10 +32,12 @@ class LeetcodeClient {
         this.leetcode = new LeetCodeAdvanced();
     }
 
+    // TODO: cache the topic tags and invalidate the cache after some time
     public async getTopicTags() {
         return await this.leetcode.topicTags();
     }
 
+    // TODO: cache the titleSlug to question number mapping and invalidate the cache after some time
     public async setTitleSlugQuestionNumberMapping() {
         const mapping = await this.leetcode.getTitleSlugQuestionNumberMapping();
         globalState.setTitleSlugQuestionNumberMapping(mapping);
@@ -89,7 +91,7 @@ class LeetcodeClient {
     public async getLeetcodeProblems(progressCallback: (problems: LeetcodeProblem[]) => void = () => { }): Promise<LeetcodeProblem[]> {
         try {
             if (!this.isSignedIn) throw new Error(`not-signed-in-to-leetcode`);
-            const problems = await this.leetcode.getLeetcodeProblems(500, progressCallback);
+            const problems = await this.leetcode.getLeetcodeProblems(100, progressCallback);
             const problemTypes = await this.leetcode.getProblemTypes();
             const typedProblems = problems.map(problem => ({
                 ...problem,
@@ -117,7 +119,7 @@ class LeetcodeClient {
             const questions = await this.leetcode.getQuestionsOfList(slug);
             return questions;
         } catch (error) {
-            throw new Error(`Error getting leetcode lists: ${error}`);
+            throw new Error(`Error getting leetcode questions of list ${slug}: ${error}`);
         }
     }
 

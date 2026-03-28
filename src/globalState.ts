@@ -16,6 +16,7 @@ export const PendingSessionKey = "leetnotion-template-update-pending-session";
 export const LeetcodeListsKey = "leetcode-lists";
 export const QuestionsOfListKey = "leetcode-questions-of-list";
 export const ProblemRatingMapKey = "leetcode-problem-rating-map";
+export const ListsSyncTimestampKey = "leetcode-lists-sync-timestamp";
 
 export type UserDataType = {
     isSignedIn: boolean;
@@ -204,6 +205,14 @@ class GlobalState {
     private async _initializeQuestionsOfList(): Promise<void> {
         const savedState = this._state.get<Record<string, QuestionsOfList>>(QuestionsOfListKey) || {};
         this._questionsOfList = { ...savedState };
+    }
+
+    public setListsSyncTimestamp(timestamp: number): any {
+        return this._state.update(ListsSyncTimestampKey, timestamp);
+    }
+
+    public getListsSyncTimestamp(): number | undefined {
+        return this._state.get(ListsSyncTimestampKey);
     }
 
     public getProblemRatingMap() {

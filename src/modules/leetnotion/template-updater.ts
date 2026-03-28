@@ -19,8 +19,11 @@ export class TemplateUpdater {
             }
             await templateUpdateSession.init();
             await this.retrieveLeetcodeProblems();
+            leetCodeChannel.appendLine(`Finished retrieving leetcode problems.`);
             await this.addNewProblems();
+            leetCodeChannel.appendLine(`Finished adding new problems to notion.`);
             await this.updateProblems();
+            leetCodeChannel.appendLine(`Finished updating existing problems in notion.`);
             promptForOpenOutputChannel(`Updated leetnotion template successfully 🥳.`, DialogType.completed);
             await templateUpdateSession.close();
         } catch (error) {
@@ -54,9 +57,9 @@ export class TemplateUpdater {
                             increment: (problems.length - noOfProblemsCollected) * 100 / noOfProblems
                         })
                         noOfProblemsCollected = problems.length;
+                        leetCodeChannel.appendLine(`Fetched ${problems.length}/${noOfProblems} problems from leetcode.`)
                     });
                 }
-
             );
             await templateUpdateSession.update(LEETCODE_PROBLEMS, problems);
             await templateUpdateSession.update(IS_PROBLEMS_RETRIEVED, true);

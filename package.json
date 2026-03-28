@@ -60,6 +60,12 @@
                 "icon": "$(refresh)"
             },
             {
+                "command": "leetnotion.syncLists",
+                "title": "Sync Lists",
+                "category": "Leetnotion",
+                "icon": "$(sync)"
+            },
+            {
                 "command": "leetnotion.pickOne",
                 "title": "Pick One",
                 "category": "Leetnotion"
@@ -233,6 +239,11 @@
                     "command": "leetnotion.problems.sort",
                     "when": "view == leetnotionExplorer",
                     "group": "overflow@3"
+                },
+                {
+                    "command": "leetnotion.syncLists",
+                    "when": "view == leetnotionExplorer",
+                    "group": "overflow@4"
                 }
             ],
             "view/item/context": [

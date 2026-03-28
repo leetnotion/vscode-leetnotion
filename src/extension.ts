@@ -30,7 +30,7 @@ import { clearIntervals, repeatAction } from "./utils/toolUtils";
 import { leetnotionManager } from "./leetnotionManager";
 import { leetnotionClient } from "./leetnotionClient";
 import { templateUpdater } from "./modules/leetnotion/template-updater";
-import { setLists, setProblemRatingMap, setQuestionsOfAllLists } from "./utils/dataUtils";
+import { syncLists, syncListsIfNeeded, setProblemRatingMap } from "./utils/dataUtils";
 import { UserStatus } from "./shared";
 
 let intervals: NodeJS.Timeout[] = [];
@@ -99,6 +99,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             vscode.commands.registerCommand("leetnotion.searchList", () => show.searchLists()),
             vscode.commands.registerCommand("leetnotion.showSolution", (input: LeetCodeNode | vscode.Uri) => show.showSolution(input)),
             vscode.commands.registerCommand("leetnotion.refreshExplorer", () => leetCodeTreeDataProvider.refresh()),
+            vscode.commands.registerCommand("leetnotion.syncLists", async () => {
+                await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: "Syncing LeetCode lists..." }, async () => {
+                    await syncLists();
+                    await leetCodeTreeDataProvider.refresh();
+                });
+            }),
             vscode.commands.registerCommand("leetnotion.testSolution", (uri?: vscode.Uri) => {
                 TrackData.report({
                     event_key: `vscode_runCode`,
@@ -165,18 +171,18 @@ function startRecurringTasks() {
         }, 1000 * 60 * 30)
     );
 
+    const twoHoursMs = 1000 * 60 * 60 * 2;
     intervals.push(
         repeatAction(async () => {
             try {
                 await Promise.all([
-                    setLists(),
-                    setQuestionsOfAllLists(),
+                    syncListsIfNeeded(twoHoursMs),
                     setProblemRatingMap(),
                 ]);
             } catch (error) {
                 leetCodeChannel.appendLine(`Failed to perform 2-hour interval tasks: ${error}`);
             }
-        }, 1000 * 60 * 60 * 2)
+        }, twoHoursMs)
     );
 }
 
