@@ -2,15 +2,18 @@
 // Licensed under the MIT license.
 
 import * as fse from "fs-extra";
+import * as path from "path";
 import * as vscode from "vscode";
-import { leetCodeExecutor } from "../leetCodeExecutor";
+import _ from "lodash";
+import { leetCodeChannel } from "../leetCodeChannel";
+import { leetcodeClient } from "../leetCodeClient";
 import { leetCodeManager } from "../leetCodeManager";
-import { IQuickItemEx, UserStatus } from "../shared";
-import { isWindows, usingCmd } from "../utils/osUtils";
+import { IQuickItemEx, langExt, UserStatus } from "../shared";
 import { DialogType, promptForOpenOutputChannel, showFileSelectDialog } from "../utils/uiUtils";
 import { getActiveFilePath } from "../utils/workspaceUtils";
-import * as wsl from "../utils/wslUtils";
 import { leetCodeSubmissionProvider } from "../webview/leetCodeSubmissionProvider";
+import { extractCode, getLangFromFile, getNodeIdFromFile } from "../utils/problemUtils";
+import { explorerNodeManager } from "../explorer/explorerNodeManager";
 
 export async function testSolution(uri?: vscode.Uri): Promise<void> {
     try {
@@ -48,55 +51,102 @@ export async function testSolution(uri?: vscode.Uri): Promise<void> {
             return;
         }
 
-        let result: string | undefined;
+        const rawCode = await fse.readFile(filePath, "utf-8");
+        const code = extractCode(rawCode);
+        const { slug, lang, questionId, sampleTestCase } = await extractTestMeta(filePath, rawCode);
+
+        leetCodeChannel.appendLine(`[Test] file: ${filePath}`);
+        leetCodeChannel.appendLine(`[Test] slug: ${slug}, lang: ${lang}, questionId: ${questionId}`);
+        leetCodeChannel.appendLine(`[Test] rawCode lines: ${rawCode.split("\n").length}, code lines: ${code.split("\n").length}`);
+        leetCodeChannel.appendLine(`[Test] code being sent:\n${code}`);
+
+        if (!slug || !lang || questionId === null) {
+            vscode.window.showErrorMessage("Could not determine problem metadata from file.");
+            return;
+        }
+
+        let dataInput: string = sampleTestCase;
         switch (choice.value) {
             case ":default":
-                result = await leetCodeExecutor.testSolution(filePath);
                 break;
-            case ":direct":
+            case ":direct": {
                 const testString: string | undefined = await vscode.window.showInputBox({
                     prompt: "Enter the test cases.",
-                    validateInput: (s: string): string | undefined => s && s.trim() ? undefined : "Test case must not be empty.",
+                    validateInput: (s: string): string | undefined =>
+                        s && s.trim() ? undefined : "Test case must not be empty.",
                     placeHolder: "Example: [1,2,3]\\n4",
                     ignoreFocusOut: true,
                 });
-                if (testString) {
-                    result = await leetCodeExecutor.testSolution(filePath, parseTestString(testString));
-                }
+                if (!testString) return;
+                dataInput = testString.replace(/\\n/g, "\n");
                 break;
-            case ":file":
+            }
+            case ":file": {
                 const testFile: vscode.Uri[] | undefined = await showFileSelectDialog(filePath);
                 if (testFile && testFile.length) {
                     const input: string = (await fse.readFile(testFile[0].fsPath, "utf-8")).trim();
                     if (input) {
-                        result = await leetCodeExecutor.testSolution(filePath, parseTestString(input.replace(/\r?\n/g, "\\n")));
+                        dataInput = input;
                     } else {
                         vscode.window.showErrorMessage("The selected test file must not be empty.");
+                        return;
                     }
+                } else {
+                    return;
                 }
                 break;
+            }
             default:
-                break;
+                return;
         }
-        if (!result) {
+
+        const results = await vscode.window.withProgress(
+            { location: vscode.ProgressLocation.Notification, title: "Testing solution..." },
+            () => leetcodeClient.testCode(slug, lang, questionId, code, dataInput),
+        );
+
+        if (!results || results.length === 0) {
             return;
         }
-        leetCodeSubmissionProvider.show(result);
+        leetCodeSubmissionProvider.show(results[0], true, dataInput);
     } catch (error) {
-        await promptForOpenOutputChannel("Failed to test the solution. Please open the output channel for details.", DialogType.error);
+        await promptForOpenOutputChannel(
+            "Failed to test the solution. Please open the output channel for details.",
+            DialogType.error,
+        );
     }
 }
 
-function parseTestString(test: string): string {
-    if (wsl.useWsl() || !isWindows()) {
-        return `'${test}'`;
+async function extractTestMeta(
+    filePath: string,
+    fileContent: string,
+): Promise<{ slug: string | null; lang: string | null; questionId: number | null; sampleTestCase: string }> {
+    const nodeId = await getNodeIdFromFile(filePath);
+    const node = explorerNodeManager.getNodeById(nodeId);
+    const slug = node ? node.slug : null;
+    const questionId = node ? Number(node.id) : null;
+
+    let sampleTestCase = "";
+    if (slug) {
+        try {
+            const problem = await leetcodeClient.leetcode.problem(slug);
+            sampleTestCase = problem.exampleTestcases || problem.sampleTestCase || "";
+        } catch {
+            // Fall through with empty test case
+        }
     }
 
-    // In windows and not using WSL
-    if (usingCmd()) {
-        return `"${test.replace(/"/g, '\\"')}"`;
-    } else {
-        // Assume using PowerShell
-        return `'${test.replace(/"/g, '\\"')}'`;
+    // Prefer lang from @lc header, fall back to file extension
+    let lang: string | null = getLangFromFile(fileContent);
+    if (!lang) {
+        const ext = path.extname(filePath).slice(1);
+        for (const [langName, langExtVal] of langExt.entries()) {
+            if (langExtVal === ext) {
+                lang = langName;
+                break;
+            }
+        }
     }
+
+    return { slug, lang, questionId, sampleTestCase };
 }

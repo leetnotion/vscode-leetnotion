@@ -265,6 +265,25 @@ class GlobalState {
         this._state.update(ProblemRatingMapKey, undefined);
     }
 
+    public deleteLeetCodeCache(): void {
+        // Clear leetcode-specific cached data, preserving Notion state
+        this._cookie = undefined;
+        this._userStatus = undefined;
+        this._lists = undefined;
+        this._questionsOfList = undefined;
+        this._problemRatingMap = undefined;
+        this._topicTags = undefined;
+        this._dailyProblemId = undefined;
+        this._state.update(CookieKey, undefined);
+        this._state.update(UserStatusKey, undefined);
+        this._state.update(LeetcodeListsKey, undefined);
+        this._state.update(QuestionsOfListKey, undefined);
+        this._state.update(ProblemRatingMapKey, undefined);
+        this._state.update(TopicTagsKey, undefined);
+        this._state.update(DailyProblemKey, undefined);
+        this._state.update(ListsSyncTimestampKey, undefined);
+    }
+
     public get(key: string) {
         return this._state.get(key);
     }

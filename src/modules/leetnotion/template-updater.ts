@@ -79,6 +79,7 @@ export class TemplateUpdater {
             throw new Error(`question-number-page-id-mapping-not-found`);
         }
         const newProblems = problems.filter(({ questionFrontendId }) => !(questionFrontendId in questionNumberPageIdMapping))
+        leetCodeChannel.appendLine(`No of new problems to add: ${newProblems.length}`);
         let responses: ProblemPageResponse[] = [];
         let count = 0;
         let noOfPages = newProblems.length;
@@ -107,6 +108,7 @@ export class TemplateUpdater {
                 })
             }
         );
+        leetCodeChannel.appendLine(`Finished adding new problems to notion.`);
         return responses;
     }
 

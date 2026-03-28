@@ -15,7 +15,7 @@ export function genFileExt(language: string): string {
 }
 
 export function genFileName(node: IProblem, language: string): string {
-    const slug: string = _.kebabCase(node.name);
+    const slug: string = node.slug || _.kebabCase(node.name);
     const ext: string = genFileExt(language);
     return `${node.id}.${slug}.${ext}`;
 }
@@ -33,4 +33,19 @@ export async function getNodeIdFromFile(fsPath: string): Promise<string> {
     }
 
     return id;
+}
+
+export function getLangFromFile(fileContent: string): string | null {
+    const match = fileContent.match(/@lc\s+app=\S+\s+id=\S+\s+lang=(\S+)/);
+    return match ? match[1] : null;
+}
+
+export function extractCode(fileContent: string): string {
+    const lines = fileContent.split(/\r?\n/);
+    const start = lines.findIndex((x) => x.indexOf("@lc code=start") !== -1);
+    const end = lines.findIndex((x) => x.indexOf("@lc code=end") !== -1);
+    if (start !== -1 && end !== -1 && start + 1 <= end) {
+        return lines.slice(start + 1, end).join("\n");
+    }
+    return fileContent;
 }

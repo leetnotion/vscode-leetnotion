@@ -1,5 +1,6 @@
 // Copyright (c) jdneo. All rights reserved.
 // Licensed under the MIT license.
+import { JudgeResult } from "@leetnotion/leetcode-api";
 import { ViewColumn } from "vscode";
 import { DialogType, openKeybindingsEditor, promptForOpenOutputChannel, promptHintMessage } from "../utils/uiUtils";
 import { ILeetCodeWebviewOption, LeetCodeWebview } from "./LeetCodeWebview";
@@ -18,8 +19,8 @@ class LeetCodeSubmissionProvider extends LeetCodeWebview {
     protected readonly viewType: string = "leetnotion.submission";
     private result: IResult;
 
-    public show(resultString: string): void {
-        this.result = this.parseResult(resultString);
+    public show(result: JudgeResult, isTest: boolean = false, testInput?: string): void {
+        this.result = isTest ? this.formatTestResult(result, testInput) : this.formatSubmitResult(result);
         this.showWebviewInternal();
         this.showKeybindingsHint();
     }
@@ -102,30 +103,81 @@ class LeetCodeSubmissionProvider extends LeetCodeWebview {
         );
     }
 
-    private parseResult(raw: string): IResult {
-        raw = raw.concat("  √ "); // Append a dummy sentinel to the end of raw string
-        const regSplit: RegExp = /  [√×✔✘vx] ([^]+?)\n(?=  [√×✔✘vx] )/g;
-        const regKeyVal: RegExp = /(.+?): ([^]*)/;
+    private formatTestResult(judge: JudgeResult, testInput?: string): IResult {
         const result: IResult = { messages: [] };
-        let entry: RegExpExecArray | null;
-        do {
-            entry = regSplit.exec(raw);
-            if (!entry) {
-                continue;
+
+        if (judge.ok) {
+            result.messages.push("Finished");
+        } else if (judge.error && judge.error.length > 0) {
+            const state = judge.state === "Accepted" ? "Error" : (judge.state || "Error");
+            result.messages.push(state);
+        } else {
+            // LeetCode API returns "Accepted" even when answers differ during test
+            const state = judge.state === "Accepted" ? "Wrong Answer" : (judge.state || "Wrong Answer");
+            result.messages.push(state);
+        }
+
+        if (judge.error && judge.error.length > 0) {
+            result["Error"] = judge.error;
+        }
+
+        const yourInput = testInput || judge.testcase || "";
+        if (yourInput) {
+            result["Your Input"] = [yourInput];
+        }
+
+        if (judge.stdout) {
+            result["Stdout"] = [judge.stdout];
+        }
+
+        const answerStr = Array.isArray(judge.answer) ? judge.answer.join("\n") : (judge.answer || "");
+        if (answerStr) {
+            result[`Output (${judge.runtime || "N/A"})`] = [answerStr];
+        }
+
+        const expectedStr = Array.isArray(judge.expected_answer) ? judge.expected_answer.join("\n") : (judge.expected_answer || "");
+        if (expectedStr) {
+            result["Expected Answer"] = [expectedStr];
+        }
+
+        return result;
+    }
+
+    private formatSubmitResult(judge: JudgeResult): IResult {
+        const result: IResult = { messages: [] };
+
+        if (judge.ok) {
+            result.messages.push("Accepted");
+            result.messages.push(`${judge.passed}/${judge.total} cases passed (${judge.runtime || "N/A"})`);
+            if (judge.runtime_percentile) {
+                result.messages.push(
+                    `Your runtime beats ${parseFloat(Number(judge.runtime_percentile).toFixed(2))} % of ${judge.lang} submissions`,
+                );
             }
-            const kvMatch: RegExpExecArray | null = regKeyVal.exec(entry[1]);
-            if (kvMatch) {
-                const [key, value] = kvMatch.slice(1);
-                if (value) { // Do not show empty string
-                    if (!result[key]) {
-                        result[key] = [];
-                    }
-                    result[key].push(value);
-                }
-            } else {
-                result.messages.push(entry[1]);
+            if (judge.memory && judge.memory_percentile) {
+                result.messages.push(
+                    `Your memory usage beats ${parseFloat(Number(judge.memory_percentile).toFixed(2))} % of ${judge.lang} submissions (${judge.memory})`,
+                );
             }
-        } while (entry);
+        } else {
+            result.messages.push(judge.state || "Wrong Answer");
+            result.messages.push(`${judge.passed}/${judge.total} cases passed`);
+
+            if (judge.error && judge.error.length > 0) {
+                result["Error"] = judge.error;
+            }
+            if (judge.stdout) {
+                result["Stdout"] = [judge.stdout];
+            }
+            if (judge.testcase) {
+                result["Testcase"] = [judge.testcase];
+            }
+            const answerStr = Array.isArray(judge.answer) ? judge.answer.join("\n") : (judge.answer || "");
+            if (answerStr) result["Answer"] = [answerStr];
+            const expectedStr = Array.isArray(judge.expected_answer) ? judge.expected_answer.join("\n") : (judge.expected_answer || "");
+            if (expectedStr) result["Expected Answer"] = [expectedStr];
+        }
+
         return result;
     }
 

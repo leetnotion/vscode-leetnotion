@@ -15,6 +15,10 @@ export class LeetCodeNode {
         return this.data.name;
     }
 
+    public get slug(): string {
+        return this.data.slug;
+    }
+
     public get state(): ProblemState {
         return this.data.state;
     }
@@ -31,6 +35,10 @@ export class LeetCodeNode {
         return this.data.difficulty;
     }
 
+    public get category(): string {
+        return this.data.category;
+    }
+
     public get tags(): string[] {
         return this.data.tags;
     }
@@ -41,6 +49,10 @@ export class LeetCodeNode {
 
     public get isFavorite(): boolean {
         return this.data.isFavorite;
+    }
+
+    public set isFavorite(value: boolean) {
+        this.data.isFavorite = value;
     }
 
     public get isProblem(): boolean {

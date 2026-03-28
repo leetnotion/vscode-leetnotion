@@ -15,7 +15,7 @@ import { LeetCodeNode } from "./explorer/LeetCodeNode";
 import { leetCodeTreeDataProvider } from "./explorer/LeetCodeTreeDataProvider";
 import { leetCodeTreeItemDecorationProvider } from "./explorer/LeetCodeTreeItemDecorationProvider";
 import { leetCodeChannel } from "./leetCodeChannel";
-import { leetCodeExecutor } from "./leetCodeExecutor";
+
 import { leetCodeManager } from "./leetCodeManager";
 import { leetCodeStatusBarController } from "./statusbar/leetCodeStatusBarController";
 import { DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";
@@ -38,10 +38,6 @@ export let leetcodeTreeView: vscode.TreeView<LeetCodeNode> | undefined;
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
     try {
-        if (!(await leetCodeExecutor.meetRequirements(context))) {
-            throw new Error("The environment doesn't meet requirements.");
-        }
-
         leetCodeManager.on("statusChanged", () => {
             leetCodeStatusBarController.updateStatusBar(leetCodeManager.getStatus(), leetCodeManager.getUser());
             leetCodeTreeDataProvider.refresh();
@@ -78,14 +74,16 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             leetCodePreviewProvider,
             leetCodeSubmissionProvider,
             leetCodeSolutionProvider,
-            leetCodeExecutor,
+
             markdownEngine,
             codeLensController,
             explorerNodeManager,
             vscode.window.registerFileDecorationProvider(leetCodeTreeItemDecorationProvider),
             leetcodeTreeView,
             vscode.commands.registerCommand("leetnotion.deleteCache", () => cache.deleteCache()),
-            vscode.commands.registerCommand("leetnotion.toggleLeetCodeCn", () => plugin.switchEndpoint()),
+            vscode.commands.registerCommand("leetnotion.toggleLeetCodeCn", () => {
+                vscode.window.showInformationMessage("Endpoint switching is not currently supported.");
+            }),
             vscode.commands.registerCommand("leetnotion.signin", () => leetCodeManager.signIn()),
             vscode.commands.registerCommand("leetnotion.signout", () => leetCodeManager.signOut()),
             vscode.commands.registerCommand("leetnotion.previewProblem", (node: vscode.Uri) => show.previewProblem(node)),
@@ -141,7 +139,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             }
         );
 
-        await leetCodeExecutor.switchEndpoint(plugin.getLeetCodeEndpoint());
         await leetCodeManager.getLoginStatus();
         vscode.window.registerUriHandler({ handleUri: leetCodeManager.handleUriSignIn });
     } catch (error) {

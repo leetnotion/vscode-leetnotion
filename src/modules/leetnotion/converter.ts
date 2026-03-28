@@ -2,6 +2,7 @@ import { OfficialSolution, ProblemDifficulty, SimilarQuestion, Stats, TopicTag }
 import { CreateProblemPageProperties, LeetcodeProblem, LeetnotionSubmission, UpdateProblemPageProperties } from "../../types";
 import { getTitleSlugPageIdMapping } from "../../utils/dataUtils";
 import { getISODate, getNotionLang, startCase } from "../../utils/toolUtils";
+import { leetCodeChannel } from "@/leetCodeChannel";
 
 export class LeetCodeToNotionConverter {
     static convertProblemToCreatePage(problem: LeetcodeProblem) {
@@ -13,82 +14,88 @@ export class LeetCodeToNotionConverter {
             videoSolutionAvailable = (problem.solution as OfficialSolution).hasVideoSolution;
         }
 
-        const problemPageProperties: CreateProblemPageProperties = {
-            Name: {
-                title: [
-                    {
-                        text: {
-                            content: problem.title as string,
+        leetCodeChannel.appendLine(`DEBUG: problem: ${JSON.stringify(problem)}}`);
+        try {
+            const problemPageProperties: CreateProblemPageProperties = {
+                Name: {
+                    title: [
+                        {
+                            text: {
+                                content: problem.title as string,
+                            },
                         },
-                    },
-                ],
-            },
-            Difficulty: {
-                select: {
-                    name: problem.difficulty as ProblemDifficulty,
+                    ],
                 },
-            },
-            'Question Tags': {
-                multi_select: (problem.topicTags as TopicTag[]).map(topicTag => ({
-                    name: topicTag.name,
-                })),
-            },
-            'Company Tags': {
-                multi_select: [],
-            },
-            Slug: {
-                rich_text: [
-                    {
-                        text: {
-                            content: problem.titleSlug as string,
+                Difficulty: {
+                    select: {
+                        name: problem.difficulty as ProblemDifficulty,
+                    },
+                },
+                'Question Tags': {
+                    multi_select: (problem.topicTags as TopicTag[]).map(topicTag => ({
+                        name: topicTag.name,
+                    })),
+                },
+                'Company Tags': {
+                    multi_select: [],
+                },
+                Slug: {
+                    rich_text: [
+                        {
+                            text: {
+                                content: problem.titleSlug as string,
+                            },
                         },
+                    ],
+                },
+                URL: {
+                    url: `https://leetcode.com/problems/${problem.titleSlug}`,
+                },
+                Frequency: {
+                    number: 0,
+                },
+                'Question Number': {
+                    number: parseInt(problem.questionFrontendId as string, 10),
+                },
+                Solution: {
+                    url: `https://leetcode.com/problems/${problem.titleSlug}/editorial`,
+                },
+                'Free or Paid': {
+                    select: {
+                        name: (problem.isPaidOnly as boolean) ? 'Paid' : 'Free',
                     },
-                ],
-            },
-            URL: {
-                url: `https://leetcode.com/problems/${problem.titleSlug}`,
-            },
-            Frequency: {
-                number: 0,
-            },
-            'Question Number': {
-                number: parseInt(problem.questionFrontendId as string, 10),
-            },
-            Solution: {
-                url: `https://leetcode.com/problems/${problem.titleSlug}/editorial`,
-            },
-            'Free or Paid': {
-                select: {
-                    name: (problem.isPaidOnly as boolean) ? 'Paid' : 'Free',
                 },
-            },
-            'Solution Free or Paid': {
-                select: {
-                    name: solutionFreeOrPaid,
+                'Solution Free or Paid': {
+                    select: {
+                        name: solutionFreeOrPaid,
+                    },
                 },
-            },
-            'Video Solution': {
-                checkbox: videoSolutionAvailable,
-            },
-            Likes: {
-                number: problem.likes as number,
-            },
-            Dislikes: {
-                number: problem.dislikes as number,
-            },
-            'Total Submissions': {
-                number: (problem.stats as Stats).totalSubmissionRaw,
-            },
-            'Total Accepted': {
-                number: (problem.stats as Stats).totalAcceptedRaw,
-            },
-            Type: {
-                multi_select: (problem.type as string[]).map(type => ({
-                    name: type,
-                })),
-            },
-        };
-        return problemPageProperties;
+                'Video Solution': {
+                    checkbox: videoSolutionAvailable,
+                },
+                Likes: {
+                    number: problem.likes as number,
+                },
+                Dislikes: {
+                    number: problem.dislikes as number,
+                },
+                'Total Submissions': {
+                    number: (problem.stats as Stats).totalSubmissionRaw,
+                },
+                'Total Accepted': {
+                    number: (problem.stats as Stats).totalAcceptedRaw,
+                },
+                Type: {
+                    multi_select: [{
+                        name: problem.type as string,
+                    }],
+                },
+            };
+            return problemPageProperties;
+
+        } catch (error) {
+            throw new Error(`error-converting-problem-to-notion-page: ${error}`);
+        }
     }
 
     static convertProblemToUpdatePage(
@@ -167,9 +174,9 @@ export class LeetCodeToNotionConverter {
                 number: (problem.stats as Stats).totalAcceptedRaw,
             },
             Type: {
-                multi_select: (problem.type as string[]).map(type => ({
-                    name: type,
-                })),
+                multi_select: [{
+                    name: problem.type as string,
+                }],
             },
             'Similar Questions': {
                 relation: (problem.similarQuestions as SimilarQuestion[]).map(question => ({

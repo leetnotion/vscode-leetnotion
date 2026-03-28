@@ -8,6 +8,7 @@ import { ILeetCodeWebviewOption, LeetCodeWebview } from "./LeetCodeWebview";
 import { markdownEngine } from "./markdownEngine";
 import * as _ from "lodash"
 import { explorerNodeManager } from "@/explorer/explorerNodeManager";
+import { Problem } from "@leetnotion/leetcode-api";
 
 class LeetCodePreviewProvider extends LeetCodeWebview {
     protected readonly viewType: string = "leetnotion.preview";
@@ -19,8 +20,8 @@ class LeetCodePreviewProvider extends LeetCodeWebview {
         return this.sideMode;
     }
 
-    public show(descString: string, node: IProblem, isSideMode: boolean = false): void {
-        this.description = this.parseDescription(descString, node);
+    public show(problemData: Problem, node: IProblem, isSideMode: boolean = false): void {
+        this.description = this.parseDescription(problemData, node);
         this.node = node;
         this.sideMode = isSideMode;
         this.showWebviewInternal();
@@ -166,36 +167,20 @@ class LeetCodePreviewProvider extends LeetCodeWebview {
     //     await commands.executeCommand("workbench.action.toggleSidebarVisibility");
     // }
 
-    private parseDescription(descString: string, problem: IProblem): IDescription {
-        const [
-            ,
-            ,
-            /* title */ url,
-            ,
-            ,
-            ,
-            ,
-            ,
-            /* tags */ /* langs */ category,
-            difficulty,
-            likes,
-            dislikes,
-            ,
-            ,
-            ,
-            ,
-            /* accepted */ /* submissions */ /* testcase */ ...body
-        ] = descString.split("\n");
+    private parseDescription(problemData: Problem, problem: IProblem): IDescription {
+        const url = `https://leetcode.com/problems/${problemData.titleSlug}/description/`;
+        const body = (problemData.content || "")
+            .replace(/<pre>[\r\n]*([^]+?)[\r\n]*<\/pre>/g, "<pre><code>$1</code></pre>");
         return {
             title: problem.name,
             url,
             tags: problem.tags,
             companies: problem.companies,
-            category: category.slice(2),
-            difficulty: difficulty.slice(2),
-            likes: likes.split(": ")[1].trim(),
-            dislikes: dislikes.split(": ")[1].trim(),
-            body: body.join("\n").replace(/<pre>[\r\n]*([^]+?)[\r\n]*<\/pre>/g, "<pre><code>$1</code></pre>"),
+            category: problem.category,
+            difficulty: `${problemData.difficulty} (${problem.passRate}%)`,
+            likes: String(problemData.likes || 0),
+            dislikes: String(problemData.dislikes || 0),
+            body,
         };
     }
 

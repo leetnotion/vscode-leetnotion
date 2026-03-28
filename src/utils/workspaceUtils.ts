@@ -8,7 +8,7 @@ import * as vscode from "vscode";
 import { IQuickItemEx } from "../shared";
 import { getWorkspaceConfiguration, getWorkspaceFolder } from "./settingUtils";
 import { showDirectorySelectDialog } from "./uiUtils";
-import * as wsl from "./wslUtils";
+
 
 export async function selectWorkspaceFolder(): Promise<string> {
     let workspaceFolderSetting: string = getWorkspaceFolder();
@@ -56,7 +56,7 @@ export async function selectWorkspaceFolder(): Promise<string> {
         }
     }
 
-    return wsl.useWsl() ? wsl.toWslPath(workspaceFolderSetting) : workspaceFolderSetting;
+    return workspaceFolderSetting;
 }
 
 export async function getActiveFilePath(uri?: vscode.Uri): Promise<string | undefined> {
@@ -74,7 +74,7 @@ export async function getActiveFilePath(uri?: vscode.Uri): Promise<string | unde
         vscode.window.showWarningMessage("Please save the solution file first.");
         return undefined;
     }
-    return wsl.useWsl() ? wsl.toWslPath(textEditor.document.uri.fsPath) : textEditor.document.uri.fsPath;
+    return textEditor.document.uri.fsPath;
 }
 
 function isSubFolder(from: string, to: string): boolean {

@@ -57,7 +57,7 @@ export type PartialProblemPage = {
     Slug: QueryRichText;
 };
 
-export type LeetcodeProblem = { type: string[] } & Problem;
+export type LeetcodeProblem = { type: string } & Problem;
 
 export type Mapping = Record<string, string>;
 

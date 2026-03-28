@@ -12,13 +12,6 @@ export enum UserStatus {
     SignedOut = 2,
 }
 
-export const loginArgsMapping: Map<string, string> = new Map([
-    ["LeetCode", "-l"],
-    ["Cookie", "-c"],
-    ["GitHub", "-g"],
-    ["LinkedIn", "-i"],
-]);
-
 export const languages: string[] = [
     "bash",
     "c",
@@ -77,6 +70,8 @@ export interface IProblem {
     state: ProblemState;
     id: string;
     name: string;
+    slug: string;
+    category: string;
     difficulty: string;
     passRate: string;
     companies: string[];
@@ -98,6 +93,8 @@ export const defaultProblem: IProblem = {
     state: ProblemState.Unknown,
     id: "",
     name: "",
+    slug: "",
+    category: "",
     difficulty: "",
     passRate: "",
     companies: [] as string[],
@@ -117,16 +114,12 @@ export enum Category {
     Contests = "Contests"
 }
 
-export const supportedPlugins: string[] = ["company", "solution.discuss", "leetcode.cn"];
-
 export enum DescriptionConfiguration {
     InWebView = "In Webview",
     InFileComment = "In File Comment",
     Both = "Both",
     None = "None",
 }
-
-export const leetcodeHasInited: string = "leetcode.hasInited";
 
 export enum SortingStrategy {
     None = "None",

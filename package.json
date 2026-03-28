@@ -841,7 +841,7 @@
         "typescript": "^5.6.3"
     },
     "dependencies": {
-        "@leetnotion/leetcode-api": "^1.10.0",
+        "@leetnotion/leetcode-api": "file:../leetcode-api",
         "@leetnotion/notion-api": "^0.0.2",
         "@vscode/webview-ui-toolkit": "^1.4.0",
         "axios": "^1.6.8",
@@ -853,7 +853,6 @@
         "markdown-it": "^8.4.2",
         "mixpanel": "^0.18.1",
         "require-from-string": "^2.0.2",
-        "unescape-js": "^1.1.4",
-        "vsc-leetcode-cli": "2.8.1"
+        "unescape-js": "^1.1.4"
     }
 }
