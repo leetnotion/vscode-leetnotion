@@ -10,11 +10,9 @@ export class LeetCodeToNotionConverter {
         let solutionFreeOrPaid: 'Free' | 'Paid' | 'Not available' = 'Not available';
         let videoSolutionAvailable = false;
         if (solution !== null) {
-            solutionFreeOrPaid = (problem.solution as OfficialSolution).paidOnly ? 'Free' : 'Paid';
+            solutionFreeOrPaid = (problem.solution as OfficialSolution).paidOnly ? 'Paid' : 'Free';
             videoSolutionAvailable = (problem.solution as OfficialSolution).hasVideoSolution;
-        }
-
-        leetCodeChannel.appendLine(`DEBUG: problem: ${JSON.stringify(problem)}}`);
+        };
         try {
             const problemPageProperties: CreateProblemPageProperties = {
                 Name: {
@@ -106,7 +104,7 @@ export class LeetCodeToNotionConverter {
         let solutionFreeOrPaid: 'Free' | 'Paid' | 'Not available' = 'Not available';
         let videoSolutionAvailable = false;
         if (solution !== null) {
-            solutionFreeOrPaid = (problem.solution as OfficialSolution).paidOnly ? 'Free' : 'Paid';
+            solutionFreeOrPaid = (problem.solution as OfficialSolution).paidOnly ? 'Paid' : 'Free';
             videoSolutionAvailable = (problem.solution as OfficialSolution).hasVideoSolution;
         }
 
