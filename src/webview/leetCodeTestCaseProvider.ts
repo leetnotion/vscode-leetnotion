@@ -78,9 +78,6 @@ class LeetCodeTestCaseProvider extends LeetCodeWebview {
                         border-color: var(--vscode-focusBorder);
                     }
                     #testBtn {
-                        position: fixed;
-                        bottom: 1rem;
-                        right: 1rem;
                         border: 0;
                         margin: 1rem 0;
                         padding: 0.2rem 1rem;
