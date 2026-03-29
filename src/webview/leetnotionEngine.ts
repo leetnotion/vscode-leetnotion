@@ -1,40 +1,41 @@
-import * as path from "path";
-import * as vscode from "vscode";
-import { hasNotionIntegrationEnabled } from "../utils/settingUtils";
-import { globalState } from "../globalState";
+import * as vscode from 'vscode';
+import { globalState } from '../globalState';
+import { hasNotionIntegrationEnabled } from '../utils/settingUtils';
 
 class LeetnotionEngine implements vscode.Disposable {
+	private notionIntegrationEnabled: boolean;
+	private listener: vscode.Disposable;
 
-    private notionIntegrationEnabled: boolean;
-    private listener: vscode.Disposable;
+	public constructor() {
+		this.reload();
+		this.listener = vscode.workspace.onDidChangeConfiguration(
+			(event: vscode.ConfigurationChangeEvent) => {
+				if (event.affectsConfiguration('leetnotion.enableNotionIntegration')) {
+					this.reload();
+				}
+			},
+			this,
+		);
+	}
 
-    public constructor() {
-        this.reload();
-        this.listener = vscode.workspace.onDidChangeConfiguration((event: vscode.ConfigurationChangeEvent) => {
-            if (event.affectsConfiguration("leetnotion.enableNotionIntegration")) {
-                this.reload();
-            }
-        }, this);
-    }
+	public get localResourceRoots(): vscode.Uri[] {
+		return [
+			vscode.Uri.joinPath(globalState.getExtensionUri(), 'public'),
+			vscode.Uri.joinPath(globalState.getExtensionUri(), 'out', 'src'),
+		];
+	}
 
-    public get localResourceRoots(): vscode.Uri[] {
-        return [
-            vscode.Uri.joinPath(globalState.getExtensionUri(), "public"),
-            vscode.Uri.joinPath(globalState.getExtensionUri(), "out", "src")
-        ];
-    }
+	public dispose(): void {
+		this.listener.dispose();
+	}
 
-    public dispose(): void {
-        this.listener.dispose();
-    }
+	public reload(): void {
+		this.notionIntegrationEnabled = hasNotionIntegrationEnabled();
+	}
 
-    public reload(): void {
-        this.notionIntegrationEnabled = hasNotionIntegrationEnabled();
-    }
-
-    public render(webview: vscode.Webview): string {
-        if(!this.notionIntegrationEnabled) return "";
-        return `<div id="setPropertiesSection">
+	public render(webview: vscode.Webview): string {
+		if (!this.notionIntegrationEnabled) return '';
+		return `<div id="setPropertiesSection">
                     <div id="setPropertiesInputSection">
                         <vscode-text-area autofocus cols="50" rows="10" resize="both" id="notes-input">
                             <div id="notes-label">Notes</div>
@@ -57,28 +58,28 @@ class LeetnotionEngine implements vscode.Disposable {
                     <vscode-button id="setPropertiesButton" appearance="primary">Set Properties</vscode-button>
                 </div>
                 <script type="module" src="${this.getLeetnotionScript(webview)}"></script>
-                <script type="module" src="${this.getVscodeComponentsUri(webview)}"></script>`
-    }
+                <script type="module" src="${this.getVscodeComponentsUri(webview)}"></script>`;
+	}
 
-    private getLeetnotionScript(webview: vscode.Webview): string {
-        const onDiskPath = vscode.Uri.joinPath(
-            globalState.getExtensionUri(),
-            "public",
-            "scripts",
-            "script.js",
-        );
-        return webview.asWebviewUri(onDiskPath).toString();
-    }
+	private getLeetnotionScript(webview: vscode.Webview): string {
+		const onDiskPath = vscode.Uri.joinPath(
+			globalState.getExtensionUri(),
+			'public',
+			'scripts',
+			'script.js',
+		);
+		return webview.asWebviewUri(onDiskPath).toString();
+	}
 
-    private getVscodeComponentsUri(webview: vscode.Webview): string {
-        const onDiskPath = vscode.Uri.joinPath(
-            globalState.getExtensionUri(),
-            "public",
-            "scripts",
-            "vscode-components.js",
-        );
-        return webview.asWebviewUri(onDiskPath).toString();
-    }
+	private getVscodeComponentsUri(webview: vscode.Webview): string {
+		const onDiskPath = vscode.Uri.joinPath(
+			globalState.getExtensionUri(),
+			'public',
+			'scripts',
+			'vscode-components.js',
+		);
+		return webview.asWebviewUri(onDiskPath).toString();
+	}
 }
 
 export const leetnotionEngine: LeetnotionEngine = new LeetnotionEngine();

@@ -1,6 +1,6 @@
-import { UserDataType } from "../globalState";
-import { getUrl } from "../shared";
-import { LcAxios } from "../utils/httpUtils";
+import { UserDataType } from '../globalState';
+import { getUrl } from '../shared';
+import { LcAxios } from '../utils/httpUtils';
 
 const graphqlStr = `
     query globalData {
@@ -15,11 +15,11 @@ const graphqlStr = `
 `;
 
 export const queryUserData = async (): Promise<UserDataType> => {
-    return LcAxios(getUrl("userGraphql"), {
-        method: "POST",
-        data: {
-            query: graphqlStr,
-            variables: {},
-        },
-    }).then((res) => res.data.data.userStatus);
+	return LcAxios(getUrl('userGraphql'), {
+		method: 'POST',
+		data: {
+			query: graphqlStr,
+			variables: {},
+		},
+	}).then((res) => res.data.data.userStatus);
 };

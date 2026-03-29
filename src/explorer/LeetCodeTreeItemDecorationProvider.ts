@@ -1,40 +1,49 @@
-import { URLSearchParams } from "url";
-import { FileDecoration, FileDecorationProvider, ProviderResult, ThemeColor, Uri, workspace, WorkspaceConfiguration } from "vscode";
+import { URLSearchParams } from 'url';
+import {
+	FileDecoration,
+	FileDecorationProvider,
+	ProviderResult,
+	ThemeColor,
+	Uri,
+	workspace,
+	WorkspaceConfiguration,
+} from 'vscode';
 
 export class LeetCodeTreeItemDecorationProvider implements FileDecorationProvider {
-    private readonly DIFFICULTY_BADGE_LABEL: { [key: string]: string } = {
-        easy: "E",
-        medium: "M",
-        hard: "H",
-    };
+	private readonly DIFFICULTY_BADGE_LABEL: { [key: string]: string } = {
+		easy: 'E',
+		medium: 'M',
+		hard: 'H',
+	};
 
-    private readonly ITEM_COLOR: { [key: string]: ThemeColor } = {
-        easy: new ThemeColor("charts.green"),
-        medium: new ThemeColor("charts.yellow"),
-        hard: new ThemeColor("charts.red"),
-    };
+	private readonly ITEM_COLOR: { [key: string]: ThemeColor } = {
+		easy: new ThemeColor('charts.green'),
+		medium: new ThemeColor('charts.yellow'),
+		hard: new ThemeColor('charts.red'),
+	};
 
-    public provideFileDecoration(uri: Uri): ProviderResult<FileDecoration>  {
-        if (uri.scheme !== "leetcode" && uri.authority !== "problems") {
-            return;
-        }
+	public provideFileDecoration(uri: Uri): ProviderResult<FileDecoration> {
+		if (uri.scheme !== 'leetcode' && uri.authority !== 'problems') {
+			return;
+		}
 
-        if (!this.isDifficultyBadgeEnabled()) {
-            return;
-        }
+		if (!this.isDifficultyBadgeEnabled()) {
+			return;
+		}
 
-        const params: URLSearchParams = new URLSearchParams(uri.query);
-        const difficulty: string = params.get("difficulty")!.toLowerCase();
-        return {
-            badge: this.DIFFICULTY_BADGE_LABEL[difficulty],
-            color: this.ITEM_COLOR[difficulty],
-        };
-    }
+		const params: URLSearchParams = new URLSearchParams(uri.query);
+		const difficulty: string = params.get('difficulty')!.toLowerCase();
+		return {
+			badge: this.DIFFICULTY_BADGE_LABEL[difficulty],
+			color: this.ITEM_COLOR[difficulty],
+		};
+	}
 
-    private isDifficultyBadgeEnabled(): boolean {
-        const configuration: WorkspaceConfiguration = workspace.getConfiguration();
-        return configuration.get<boolean>("leetnotion.colorizeProblems", false);
-    }
+	private isDifficultyBadgeEnabled(): boolean {
+		const configuration: WorkspaceConfiguration = workspace.getConfiguration();
+		return configuration.get<boolean>('leetnotion.colorizeProblems', false);
+	}
 }
 
-export const leetCodeTreeItemDecorationProvider: LeetCodeTreeItemDecorationProvider = new LeetCodeTreeItemDecorationProvider();
+export const leetCodeTreeItemDecorationProvider: LeetCodeTreeItemDecorationProvider =
+	new LeetCodeTreeItemDecorationProvider();

@@ -1,21 +1,21 @@
 {
-    "compilerOptions": {
-        "target": "ES6",
-        "module": "Node16",
-        "rootDir": "src",
-        "outDir": "out",
-        "resolveJsonModule": true,
-        "moduleResolution": "Node16",
-        "baseUrl": ".",
-        "paths": {
-            "@/*": ["src/*"]
-        },
-        "noImplicitAny": false,
-        "removeComments": true,
-        "esModuleInterop": true,
-        "forceConsistentCasingInFileNames": true,
-        "skipLibCheck": true
-    },
-    "include": ["src/**/*.ts"],
-    "exclude": ["node_modules", "dist", "out", "build", "coverage", "__tests__"]
+	"compilerOptions": {
+		"target": "ES6",
+		"module": "Node16",
+		"rootDir": "src",
+		"outDir": "out",
+		"resolveJsonModule": true,
+		"moduleResolution": "Node16",
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["src/*"]
+		},
+		"noImplicitAny": false,
+		"removeComments": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"skipLibCheck": true
+	},
+	"include": ["src/**/*.ts"],
+	"exclude": ["node_modules", "dist", "out", "build", "coverage", "__tests__"]
 }

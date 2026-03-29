@@ -13,3 +13,12 @@ ACKNOWLEDGEMENTS.md
 docs
 .github
 public/scripts/.gitignore
+.npmrc
+.DS_Store
+esbuild.js
+_config.yml
+CLAUDE.md
+thirdpartynotice.txt
+**/*.vsix
+scripts/**
+node_modules/**
