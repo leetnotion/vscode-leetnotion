@@ -37,10 +37,6 @@ export class LeetCodeNode {
 		return this.data.difficulty;
 	}
 
-	public get category(): string {
-		return this.data.category;
-	}
-
 	public get tags(): string[] {
 		return this.data.tags;
 	}

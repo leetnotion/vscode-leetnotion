@@ -2,53 +2,53 @@
 // Licensed under the MIT license.
 
 import { explorerNodeManager } from '@/explorer/explorerNodeManager';
-import { QuestionDetail, SimilarQuestion, NextChallenge } from '@leetnotion/leetcode-api';
+import { globalState } from '@/globalState';
+import { NextChallenge, QuestionDetail, SimilarQuestion } from '@leetnotion/leetcode-api';
 import { commands, ViewColumn } from 'vscode';
 import { Category, IProblem } from '../shared';
 import { ILeetCodeWebviewOption, LeetCodeWebview } from './LeetCodeWebview';
 import { markdownEngine } from './markdownEngine';
-import { leetCodeChannel } from '@/leetCodeChannel';
 
 class LeetCodePreviewProvider extends LeetCodeWebview {
-    protected readonly viewType: string = 'leetnotion.preview';
-    private node: IProblem;
-    private description: IDescription;
-    private sideMode: boolean = false;
+	protected readonly viewType: string = 'leetnotion.preview';
+	private node: IProblem;
+	private description: IDescription;
+	private sideMode: boolean = false;
 
-    public isSideMode(): boolean {
-        return this.sideMode;
-    }
+	public isSideMode(): boolean {
+		return this.sideMode;
+	}
 
-    public show(problemData: QuestionDetail, node: IProblem, isSideMode: boolean = false): void {
-        this.description = this.parseDescription(problemData, node);
-        this.node = node;
-        this.sideMode = isSideMode;
-        this.showWebviewInternal();
-    }
+	public show(problemData: QuestionDetail, node: IProblem, isSideMode: boolean = false): void {
+		this.description = this.parseDescription(problemData, node);
+		this.node = node;
+		this.sideMode = isSideMode;
+		this.showWebviewInternal();
+	}
 
-    protected getWebviewOption(): ILeetCodeWebviewOption {
-        if (!this.sideMode) {
-            return {
-                title: `${this.node.name}: Preview`,
-                viewColumn: ViewColumn.One,
-            };
-        } else {
-            return {
-                title: 'Description',
-                viewColumn: ViewColumn.Two,
-                preserveFocus: true,
-            };
-        }
-    }
+	protected getWebviewOption(): ILeetCodeWebviewOption {
+		if (!this.sideMode) {
+			return {
+				title: `${this.node.name}: Preview`,
+				viewColumn: ViewColumn.One,
+			};
+		} else {
+			return {
+				title: 'Description',
+				viewColumn: ViewColumn.Two,
+				preserveFocus: true,
+			};
+		}
+	}
 
-    protected getWebviewContent(): string {
-        const button: { element: string; script: string; style: string } = {
-            element: `<button id="solve">Code Now</button>`,
-            script: `const button = document.getElementById('solve');
+	protected getWebviewContent(): string {
+		const button: { element: string; script: string; style: string } = {
+			element: `<button id="solve">Code Now</button>`,
+			script: `const button = document.getElementById('solve');
                     button.onclick = () => vscode.postMessage({
                         command: 'ShowProblem',
                     });`,
-            style: `<style>
+			style: `<style>
                 #solve {
                     position: fixed;
                     bottom: 1rem;
@@ -67,78 +67,86 @@ class LeetCodePreviewProvider extends LeetCodeWebview {
                     border: 0;
                 }
                 </style>`,
-        };
-        const { title, url, category, difficulty, likes, dislikes, body } = this.description;
-        const head: string = markdownEngine.render(`# [${title}](${url})`);
-        let info: string;
-        if (!this.node.rating) {
-            info = markdownEngine.render(
-                [
-                    `| Category | Difficulty | Likes | Dislikes |`,
-                    `| :------: | :--------: | :---: | :------: |`,
-                    `| ${category} | ${difficulty} | ${likes} | ${dislikes} |`,
-                ].join('\n'),
-            );
-        } else {
-            info = markdownEngine.render(
-                [
-                    `| Category | Difficulty | Likes | Dislikes | Rating | Index |`,
-                    `| :------: | :--------: | :---: | :------: | :----: | :---: |`,
-                    `| ${category} | ${difficulty} | ${likes} | ${dislikes} | ${this.node.rating} | ${this.node.problemIndex}`,
-                ].join('\n'),
-            );
-        }
-        const tags: string = [
-            `<details>`,
-            `<summary><strong>🏷️&nbsp;&nbsp;Topics</strong></summary>`,
-            this.description.tags
-                .map((t: string) => `<a href="#" onclick="onTagClick('${t}')"><code>${t}</code></a>`)
-                .join(' | '),
-            `</details>`,
-        ].join('\n');
-        const companies: string = [
-            `<details>`,
-            `<summary><strong>🏢&nbsp;&nbsp;Companies</strong></summary>`,
-            this.description.companies
-                .map((c: string) => `<a href="#" onclick="onCompanyClick('${c}')"><code>${c}</code></a>`)
-                .join(' | '),
-            `</details>`,
-        ].join('\n');
+		};
+		const { title, url, category, difficulty, likes, dislikes, body } = this.description;
+		const head: string = markdownEngine.render(`# [${title}](${url})`);
+		let info: string;
+		if (!this.node.rating) {
+			info = markdownEngine.render(
+				[
+					`| Category | Difficulty | Likes | Dislikes |`,
+					`| :------: | :--------: | :---: | :------: |`,
+					`| ${category} | ${difficulty} | ${likes} | ${dislikes} |`,
+				].join('\n'),
+			);
+		} else {
+			info = markdownEngine.render(
+				[
+					`| Category | Difficulty | Likes | Dislikes | Rating | Index |`,
+					`| :------: | :--------: | :---: | :------: | :----: | :---: |`,
+					`| ${category} | ${difficulty} | ${likes} | ${dislikes} | ${this.node.rating} | ${this.node.problemIndex}`,
+				].join('\n'),
+			);
+		}
+		const tags: string = [
+			`<details>`,
+			`<summary><strong>🏷️&nbsp;&nbsp;Topics</strong></summary>`,
+			this.description.tags
+				.map((t: string) => `<a href="#" onclick="onTagClick('${t}')"><code>${t}</code></a>`)
+				.join(' | '),
+			`</details>`,
+		].join('\n');
+		const companies: string = [
+			`<details>`,
+			`<summary><strong>🏢&nbsp;&nbsp;Companies</strong></summary>`,
+			this.description.companies
+				.map((c: string) => `<a href="#" onclick="onCompanyClick('${c}')"><code>${c}</code></a>`)
+				.join(' | '),
+			`</details>`,
+		].join('\n');
 
-        const hints: string = this.description.hints.map((h: string, i: number) => `<details>
+		const hints: string = this.description.hints
+			.map(
+				(h: string, i: number) => `<details>
             <summary><strong>💡&nbsp;&nbsp;Hint ${i + 1}</strong></summary><p>${h}</p>
-        </details><hr />`).join('\n');
+        </details><hr />`,
+			)
+			.join('\n');
 
-        const similarQuestions: string = this.description.similarQuestions.map((q: SimilarQuestion) => {
-            const colorVar: Record<string, string> = {
-                easy: 'var(--vscode-charts-green)',
-                medium: 'var(--vscode-charts-yellow)',
-                hard: 'var(--vscode-charts-red)',
-            };
-            const color = colorVar[q.difficulty.toLowerCase()] || 'inherit';
-            return `<li class="similar-question" style="color: ${color}; display: flex; justify-content: space-between;"><span>${q.title}</span><span>${q.difficulty}</span></li>`;
-        }).join('\n');
-        const similar: string = `<details>
+		const similarQuestions: string = this.description.similarQuestions
+			.map((q: SimilarQuestion) => {
+				const colorVar: Record<string, string> = {
+					easy: 'var(--vscode-charts-green)',
+					medium: 'var(--vscode-charts-yellow)',
+					hard: 'var(--vscode-charts-red)',
+				};
+				const color = colorVar[q.difficulty.toLowerCase()] || 'inherit';
+				return `<li class="similar-question" onclick="onQuestionClick('${q.titleSlug}')" style="color: ${color}; display: flex; justify-content: space-between;"><span>${q.title}</span><span>${q.difficulty}</span></li>`;
+			})
+			.join('\n');
+		const similar: string = `<details>
             <summary><strong>☑️&nbsp;&nbsp;Similar Questions</strong></summary><ul>${similarQuestions}</ul>
         </details><hr />`;
 
-        const nextChallenges: string = this.description.nextChallengeQuestions.map((q: NextChallenge) => {
-            const colorVar: Record<string, string> = {
-                easy: 'var(--vscode-charts-green)',
-                medium: 'var(--vscode-charts-yellow)',
-                hard: 'var(--vscode-charts-red)',
-            };
-            const color = colorVar[q.difficulty.toLowerCase()] || 'inherit';
-            return `<li class="similar-question" style="color: ${color}; display: flex; justify-content: space-between;"><span>${q.title}</span><span>${q.difficulty}</span></li>`;
-        }).join('\n');
-        const nextChallenge: string = `<details>
+		const nextChallenges: string = this.description.nextChallengeQuestions
+			.map((q: NextChallenge) => {
+				const colorVar: Record<string, string> = {
+					easy: 'var(--vscode-charts-green)',
+					medium: 'var(--vscode-charts-yellow)',
+					hard: 'var(--vscode-charts-red)',
+				};
+				const color = colorVar[q.difficulty.toLowerCase()] || 'inherit';
+				return `<li class="similar-question" onclick="onQuestionClick('${q.titleSlug}')" style="color: ${color}; display: flex; justify-content: space-between;"><span>${q.title}</span><span>${q.difficulty}</span></li>`;
+			})
+			.join('\n');
+		const nextChallenge: string = `<details>
             <summary><strong>💪🏻&nbsp;&nbsp;Next Challenges</strong></summary><ul>${nextChallenges}</ul>
         </details><hr />`;
 
-        const links: string = markdownEngine.render(
-            `[Submissions](${this.getSubmissionsLink(url)}) | [Solution](${this.getSolutionsLink(url)})`,
-        );
-        return `
+		const links: string = markdownEngine.render(
+			`[Submissions](${this.getSubmissionsLink(url)}) | [Solution](${this.getSolutionsLink(url)})`,
+		);
+		return `
             <!DOCTYPE html>
             <html>
             <head>
@@ -177,92 +185,108 @@ class LeetCodePreviewProvider extends LeetCodeWebview {
                     function onCompanyClick(company) {
                         vscode.postMessage({ command: 'CompanyClick', company });
                     }
+                    function onQuestionClick(slug) {
+                        vscode.postMessage({ command: 'QuestionClick', slug });
+                    }
                 </script>
             </body>
             </html>
         `;
-    }
+	}
 
-    protected onDidDisposeWebview(): void {
-        super.onDidDisposeWebview();
-        this.sideMode = false;
-    }
+	protected onDidDisposeWebview(): void {
+		super.onDidDisposeWebview();
+		this.sideMode = false;
+	}
 
-    protected async onDidReceiveMessage(message: IWebViewMessage): Promise<void> {
-        switch (message.command) {
-            case 'ShowProblem': {
-                await commands.executeCommand('leetnotion.showProblem', this.node);
-                break;
-            }
-            case 'TagClick': {
-                explorerNodeManager.revealNode(`${Category.Tag}#${message.tag}`);
-                break;
-            }
-            case 'CompanyClick': {
-                explorerNodeManager.revealNode(`${Category.Company}#${message.company}`);
-                break;
-            }
-        }
-    }
+	protected async onDidReceiveMessage(message: IWebViewMessage): Promise<void> {
+		switch (message.command) {
+			case 'ShowProblem': {
+				await commands.executeCommand('leetnotion.showProblem', this.node);
+				break;
+			}
+			case 'TagClick': {
+				explorerNodeManager.revealNode(`${Category.Tag}#${message.tag}`);
+				break;
+			}
+			case 'CompanyClick': {
+				explorerNodeManager.revealNode(`${Category.Company}#${message.company}`);
+				break;
+			}
+			case 'QuestionClick': {
+				const mapping = globalState.getTitleSlugQuestionNumberMapping();
+				const id = mapping?.[message.slug];
+				if (id) {
+					const node = explorerNodeManager.getNodeById(id);
+					if (node) {
+						await commands.executeCommand('leetnotion.previewProblem', node);
+						explorerNodeManager.revealNode(id);
+					}
+				}
+				break;
+			}
+		}
+	}
 
-    // private async hideSideBar(): Promise<void> {
-    //     await commands.executeCommand("workbench.action.focusSideBar");
-    //     await commands.executeCommand("workbench.action.toggleSidebarVisibility");
-    // }
+	// private async hideSideBar(): Promise<void> {
+	//     await commands.executeCommand("workbench.action.focusSideBar");
+	//     await commands.executeCommand("workbench.action.toggleSidebarVisibility");
+	// }
 
-    private parseDescription(problemData: QuestionDetail, problem: IProblem): IDescription {
-        const url = `https://leetcode.com/problems/${problemData.question.titleSlug}/description/`;
-        const body = (problemData.question.content || '').replace(
-            /<pre>[\r\n]*([^]+?)[\r\n]*<\/pre>/g,
-            '<pre><code>$1</code></pre>',
-        );
-        const similarQuestions: SimilarQuestion[] = problemData.question.similarQuestionList;
-        const stats = problemData.question.stats ? JSON.parse(problemData.question.stats) : {};
-        return {
-            id: problemData.question.questionFrontendId,
-            title: `${problemData.question.questionFrontendId}. ${problemData.question.title}`,
-            url,
-            tags: problem.tags,
-            companies: problem.companies,
-            category: problemData.question.categoryTitle,
-            difficulty: `${problemData.question.difficulty} ${stats.acRate ? `(${stats.acRate})` : ''}`,
-            likes: String(problemData.question.likes || 0),
-            dislikes: String(problemData.question.dislikes || 0),
-            body,
-            hints: problemData.question.hints || [],
-            similarQuestions: similarQuestions,
-            nextChallengeQuestions: problemData.question.nextChallenges || [],
-        };
-    }
+	private parseDescription(problemData: QuestionDetail, problem: IProblem): IDescription {
+		const url = `https://leetcode.com/problems/${problemData.question.titleSlug}/description/`;
+		const body = (problemData.question.content || '').replace(
+			/<pre>[\r\n]*([^]+?)[\r\n]*<\/pre>/g,
+			'<pre><code>$1</code></pre>',
+		);
+		const similarQuestions: SimilarQuestion[] = problemData.question.similarQuestionList;
+		const stats = problemData.question.stats ? JSON.parse(problemData.question.stats) : {};
+		return {
+			id: problemData.question.questionFrontendId,
+			title: `${problemData.question.questionFrontendId}. ${problemData.question.title}`,
+			url,
+			tags: problem.tags,
+			companies: problem.companies,
+			category: problemData.question.categoryTitle,
+			difficulty: `${problemData.question.difficulty} ${stats.acRate ? `(${stats.acRate})` : ''}`,
+			likes: String(problemData.question.likes || 0),
+			dislikes: String(problemData.question.dislikes || 0),
+			body,
+			hints: problemData.question.hints || [],
+			similarQuestions: similarQuestions,
+			nextChallengeQuestions: problemData.question.nextChallenges || [],
+		};
+	}
 
-    private getSolutionsLink(url: string): string {
-        return url.replace('/description/', '/solutions/') + '?source=vscode';
-    }
-    private getSubmissionsLink(url: string): string {
-        return url.replace('/description/', '/submissions/') + '?source=vscode';
-    }
+	private getSolutionsLink(url: string): string {
+		return url.replace('/description/', '/solutions/') + '?source=vscode';
+	}
+	private getSubmissionsLink(url: string): string {
+		return url.replace('/description/', '/submissions/') + '?source=vscode';
+	}
 }
 
 interface IDescription {
-    id: string;
-    title: string;
-    url: string;
-    tags: string[];
-    companies: string[];
-    category: string;
-    difficulty: string;
-    likes: string;
-    dislikes: string;
-    body: string;
-    hints: string[];
-    similarQuestions: SimilarQuestion[];
-    nextChallengeQuestions: NextChallenge[];
+	id: string;
+	title: string;
+	url: string;
+	tags: string[];
+	companies: string[];
+	category: string;
+	difficulty: string;
+	likes: string;
+	dislikes: string;
+	body: string;
+	hints: string[];
+	similarQuestions: SimilarQuestion[];
+	nextChallengeQuestions: NextChallenge[];
 }
 
 interface IWebViewMessage {
-    command: string;
-    tag?: string;
-    company?: string;
+	command: string;
+	tag?: string;
+	company?: string;
+	slug?: string;
 }
 
 export const leetCodePreviewProvider: LeetCodePreviewProvider = new LeetCodePreviewProvider();

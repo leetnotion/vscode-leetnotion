@@ -218,7 +218,7 @@ class LeetcodeClient {
 	public async listProblems(): Promise<IProblem[]> {
 		let start = Date.now();
 		leetCodeChannel.appendLine('[listProblems] Fetching all category problems...');
-		const problems: CategoryProblem[] = await this.cli.allCategoryProblems();
+		const problems: CategoryProblem[] = await this.cli.categoryProblems('all');
 		leetCodeChannel.appendLine(
 			`[listProblems] Fetched ${problems.length} category problems (${Date.now() - start}ms)`,
 		);
@@ -237,12 +237,15 @@ class LeetcodeClient {
 		);
 
 		start = Date.now();
+		const slugToIdMapping: Record<string, string> = {};
 		const result = problems
 			.map((p): IProblem => {
 				const id = String(p.fid);
 				const companies = questionCompanyTags[id] || [];
 				const tags = questionTopicTags[id] || [];
 				const ratingEntry = problemRatingMap ? problemRatingMap[id] : undefined;
+
+				slugToIdMapping[p.slug] = id;
 
 				let state: ProblemState;
 				if (p.state === 'ac') {
@@ -257,7 +260,6 @@ class LeetcodeClient {
 					id,
 					name: p.name,
 					slug: p.slug,
-					category: p.category,
 					difficulty: p.level,
 					passRate: p.percent.toFixed(2),
 					state,
@@ -270,6 +272,7 @@ class LeetcodeClient {
 				};
 			})
 			.sort((a, b) => Number(a.id) - Number(b.id));
+		globalState.setTitleSlugQuestionNumberMapping(slugToIdMapping);
 		leetCodeChannel.appendLine(
 			`[listProblems] Mapped and sorted ${result.length} problems (${Date.now() - start}ms)`,
 		);

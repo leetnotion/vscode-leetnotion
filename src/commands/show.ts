@@ -101,7 +101,9 @@ export async function previewProblem(
 	leetCodePreviewProvider.show(problem, node, isSideMode);
 
 	const totalTime = Date.now() - totalStart;
-	leetCodeChannel.appendLine(`[${node.id}] ${node.name}: Total time to show problem ${totalTime}ms (API: ${apiTime}ms, Render: ${totalTime - apiTime}ms)`);
+	leetCodeChannel.appendLine(
+		`[${node.id}] ${node.name}: Total time to show problem ${totalTime}ms (API: ${apiTime}ms, Render: ${totalTime - apiTime}ms)`,
+	);
 }
 
 export async function pickOne(): Promise<void> {

@@ -50,10 +50,10 @@ export const langExt: Map<string, string> = new Map([
 	['scala', 'scala'],
 	['swift', 'swift'],
 	['typescript', 'ts'],
-    ['dart', 'dart'],
-    ['elixir', 'ex'],
-    ['erlang', 'erl'],
-    ['racket', 'rkt'],
+	['dart', 'dart'],
+	['elixir', 'ex'],
+	['erlang', 'erl'],
+	['racket', 'rkt'],
 ]);
 
 export enum ProblemState {
@@ -75,7 +75,6 @@ export interface IProblem {
 	id: string;
 	name: string;
 	slug: string;
-	category: string;
 	difficulty: string;
 	passRate: string;
 	companies: string[];
@@ -98,7 +97,6 @@ export const defaultProblem: IProblem = {
 	id: '',
 	name: '',
 	slug: '',
-	category: '',
 	difficulty: '',
 	passRate: '',
 	companies: [] as string[],

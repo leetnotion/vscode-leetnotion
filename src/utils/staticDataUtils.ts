@@ -27,7 +27,6 @@ export function getStaticProblems(): IProblem[] {
 			id: p.id,
 			name: p.name,
 			slug: p.slug,
-			category: p.category,
 			difficulty: p.difficulty,
 			passRate: p.passRate,
 			locked: p.locked,
