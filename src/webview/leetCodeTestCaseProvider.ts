@@ -77,33 +77,30 @@ class LeetCodeTestCaseProvider extends LeetCodeWebview {
                         outline: 1px solid var(--vscode-focusBorder);
                         border-color: var(--vscode-focusBorder);
                     }
-                    .actions {
-                        margin-top: 12px;
-                        display: flex;
-                        justify-content: flex-end;
-                    }
-                    .test-btn {
-                        background: var(--vscode-button-background);
-                        color: var(--vscode-button-foreground);
-                        border: none;
+                    #testBtn {
+                        position: fixed;
+                        bottom: 1rem;
+                        right: 1rem;
+                        border: 0;
+                        margin: 1rem 0;
                         padding: 0.2rem 1rem;
-                        border-radius: 4px;
+                        color: white;
+                        background-color: var(--vscode-button-background);
                         cursor: pointer;
-                        font-size: 13px;
                     }
-                    .test-btn:hover {
-                        background: var(--vscode-button-hoverBackground);
+                    #testBtn:hover {
+                        background-color: var(--vscode-button-hoverBackground);
+                    }
+                    #testBtn:active {
+                        border: 0;
                     }
                 </style>
             </head>
             <body class="vscode-body 'scrollBeyondLastLine' 'wordWrap' 'showEditorSelection'" style="tab-size:4">
                 ${title}
-                <hr />
                 ${label}
                 <textarea id="testcases" spellcheck="false">${escapedTestCase}</textarea>
-                <div class="actions">
-                    <button class="test-btn" id="testBtn">Test</button>
-                </div>
+                <button id="testBtn">Test</button>
                 <script>
                     const vscode = acquireVsCodeApi();
                     const textarea = document.getElementById('testcases');
