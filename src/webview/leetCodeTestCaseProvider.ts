@@ -10,7 +10,6 @@ import { leetcodeClient } from '@/leetCodeClient';
 import { IProblem, langExt } from '../shared';
 import { extractCode, getLangFromFile } from '../utils/problemUtils';
 import { DialogType, promptForOpenOutputChannel } from '../utils/uiUtils';
-import { getActiveFilePath } from '../utils/workspaceUtils';
 import { ILeetCodeWebviewOption, LeetCodeWebview } from './LeetCodeWebview';
 import { leetCodeSubmissionProvider } from './leetCodeSubmissionProvider';
 import { markdownEngine } from './markdownEngine';
@@ -19,10 +18,12 @@ class LeetCodeTestCaseProvider extends LeetCodeWebview {
     protected readonly viewType: string = 'leetnotion.testcase';
     private node: IProblem;
     private sampleTestCase: string = '';
+    private filePath: string = '';
 
-    public show(node: IProblem, sampleTestCase: string): void {
+    public show(node: IProblem, sampleTestCase: string, filePath: string): void {
         this.node = node;
         this.sampleTestCase = sampleTestCase;
+        this.filePath = filePath;
         this.showWebviewInternal();
     }
 
@@ -145,17 +146,11 @@ class LeetCodeTestCaseProvider extends LeetCodeWebview {
         switch (message.command) {
             case 'test': {
                 try {
-                    const filePath = await getActiveFilePath();
-                    if (!filePath) {
-                        vscode.window.showErrorMessage('Please open a solution file first.');
-                        return;
-                    }
-
-                    const rawCode = await fse.readFile(filePath, 'utf-8');
+                    const rawCode = await fse.readFile(this.filePath, 'utf-8');
                     const code = extractCode(rawCode);
                     let lang: string | null = getLangFromFile(rawCode);
                     if (!lang) {
-                        const ext = path.extname(filePath).slice(1);
+                        const ext = path.extname(this.filePath).slice(1);
                         for (const [langName, langExtVal] of langExt.entries()) {
                             if (langExtVal === ext) {
                                 lang = langName;
@@ -171,7 +166,7 @@ class LeetCodeTestCaseProvider extends LeetCodeWebview {
                         return;
                     }
 
-                    leetCodeChannel.appendLine(`[Test] file: ${filePath}`);
+                    leetCodeChannel.appendLine(`[Test] file: ${this.filePath}`);
                     leetCodeChannel.appendLine(`[Test] slug: ${slug}, lang: ${lang}, questionId: ${questionId}`);
 
                     const results = await vscode.window.withProgress(

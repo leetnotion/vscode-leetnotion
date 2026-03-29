@@ -79,7 +79,7 @@ export async function testSolution(uri?: vscode.Uri): Promise<void> {
 					vscode.window.showErrorMessage('Could not find problem node.');
 					return;
 				}
-				leetCodeTestCaseProvider.show(node, sampleTestCase);
+				leetCodeTestCaseProvider.show(node, sampleTestCase, filePath);
 				return;
 			}
 			case ':file': {
