@@ -13,6 +13,7 @@ import { extractCode, getLangFromFile, getNodeIdFromFile } from '../utils/proble
 import { DialogType, promptForOpenOutputChannel, showFileSelectDialog } from '../utils/uiUtils';
 import { getActiveFilePath } from '../utils/workspaceUtils';
 import { leetCodeSubmissionProvider } from '../webview/leetCodeSubmissionProvider';
+import { leetCodeTestCaseProvider } from '../webview/leetCodeTestCaseProvider';
 
 export async function testSolution(uri?: vscode.Uri): Promise<void> {
 	try {
@@ -33,9 +34,9 @@ export async function testSolution(uri?: vscode.Uri): Promise<void> {
 				value: ':default',
 			},
 			{
-				label: '$(pencil) Write directly...',
+				label: '$(edit) Open test case editor...',
 				description: '',
-				detail: 'Write test cases in input box',
+				detail: 'Edit test cases in a webview panel',
 				value: ':direct',
 			},
 			{
@@ -71,16 +72,15 @@ export async function testSolution(uri?: vscode.Uri): Promise<void> {
 			case ':default':
 				break;
 			case ':direct': {
-				const testString: string | undefined = await vscode.window.showInputBox({
-					prompt: 'Enter the test cases.',
-					validateInput: (s: string): string | undefined =>
-						s && s.trim() ? undefined : 'Test case must not be empty.',
-					placeHolder: 'Example: [1,2,3]\\n4',
-					ignoreFocusOut: true,
-				});
-				if (!testString) return;
-				dataInput = testString.replace(/\\n/g, '\n');
-				break;
+				const node = explorerNodeManager.getNodeById(
+					await getNodeIdFromFile(filePath),
+				);
+				if (!node) {
+					vscode.window.showErrorMessage('Could not find problem node.');
+					return;
+				}
+				leetCodeTestCaseProvider.show(node, sampleTestCase);
+				return;
 			}
 			case ':file': {
 				const testFile: vscode.Uri[] | undefined = await showFileSelectDialog(filePath);
