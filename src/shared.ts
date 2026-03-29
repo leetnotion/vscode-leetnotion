@@ -50,6 +50,10 @@ export const langExt: Map<string, string> = new Map([
 	['scala', 'scala'],
 	['swift', 'swift'],
 	['typescript', 'ts'],
+    ['dart', 'dart'],
+    ['elixir', 'ex'],
+    ['erlang', 'erl'],
+    ['racket', 'rkt'],
 ]);
 
 export enum ProblemState {

@@ -91,8 +91,17 @@ export async function previewProblem(
 		}),
 	});
 
-	const problem = await leetcodeClient.leetcode.problem(node.slug);
+	const totalStart = Date.now();
+
+	const apiStart = Date.now();
+	const problem = await leetcodeClient.leetcode.getQuestionDetailsByTitleSlug(node.slug);
+	const apiTime = Date.now() - apiStart;
+	leetCodeChannel.appendLine(`[${node.id}] ${node.name}: API call took ${apiTime}ms`);
+
 	leetCodePreviewProvider.show(problem, node, isSideMode);
+
+	const totalTime = Date.now() - totalStart;
+	leetCodeChannel.appendLine(`[${node.id}] ${node.name}: Total time to show problem ${totalTime}ms (API: ${apiTime}ms, Render: ${totalTime - apiTime}ms)`);
 }
 
 export async function pickOne(): Promise<void> {
