@@ -1,11 +1,13 @@
-// src/webview/leetCodeTestCaseProvider.ts
+// Copyright (c) jdneo. All rights reserved.
+// Licensed under the MIT license.
+
 import * as fse from 'fs-extra';
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { ViewColumn } from 'vscode';
-import { explorerNodeManager } from '@/explorer/explorerNodeManager';
 import { leetCodeChannel } from '@/leetCodeChannel';
 import { leetcodeClient } from '@/leetCodeClient';
-import { IProblem } from '../shared';
+import { IProblem, langExt } from '../shared';
 import { extractCode, getLangFromFile } from '../utils/problemUtils';
 import { DialogType, promptForOpenOutputChannel } from '../utils/uiUtils';
 import { getActiveFilePath } from '../utils/workspaceUtils';
@@ -35,6 +37,9 @@ class LeetCodeTestCaseProvider extends LeetCodeWebview {
     protected getWebviewContent(): string {
         const webview = this.panel!.webview;
         const styles = markdownEngine.getStyles(webview);
+        const escapeHtml = (s: string) =>
+            s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const escapedTitle = escapeHtml(this.node.name);
         const escapedTestCase = this.sampleTestCase
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
@@ -114,7 +119,7 @@ class LeetCodeTestCaseProvider extends LeetCodeWebview {
             </head>
             <body>
                 <div class="container">
-                    <div class="title">${this.node.name}</div>
+                    <div class="title">${escapedTitle}</div>
                     <div class="label">Test Cases</div>
                     <textarea id="testcases" spellcheck="false">${escapedTestCase}</textarea>
                     <div class="actions">
@@ -148,11 +153,20 @@ class LeetCodeTestCaseProvider extends LeetCodeWebview {
 
                     const rawCode = await fse.readFile(filePath, 'utf-8');
                     const code = extractCode(rawCode);
-                    const lang = getLangFromFile(rawCode);
+                    let lang: string | null = getLangFromFile(rawCode);
+                    if (!lang) {
+                        const ext = path.extname(filePath).slice(1);
+                        for (const [langName, langExtVal] of langExt.entries()) {
+                            if (langExtVal === ext) {
+                                lang = langName;
+                                break;
+                            }
+                        }
+                    }
                     const slug = this.node.slug;
                     const questionId = Number(this.node.id);
 
-                    if (!slug || !lang || questionId === null) {
+                    if (!slug || !lang || isNaN(questionId)) {
                         vscode.window.showErrorMessage('Could not determine problem metadata.');
                         return;
                     }
