@@ -55,7 +55,8 @@ class LeetCodePreviewProvider extends LeetCodeWebview {
                     right: 1rem;
                     border: 0;
                     margin: 1rem 0;
-                    padding: 0.2rem 1rem;
+                    padding: 0.4rem 1.5rem;
+                    font-size: 14px;
                     color: white;
                     background-color: var(--vscode-button-background);
                     cursor: pointer;
