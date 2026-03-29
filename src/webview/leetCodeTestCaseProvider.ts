@@ -38,9 +38,8 @@ class LeetCodeTestCaseProvider extends LeetCodeWebview {
     protected getWebviewContent(): string {
         const webview = this.panel!.webview;
         const styles = markdownEngine.getStyles(webview);
-        const escapeHtml = (s: string) =>
-            s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-        const escapedTitle = escapeHtml(this.node.name);
+        const title: string = markdownEngine.render(`## ${this.node.name}`);
+        const label: string = markdownEngine.render(`### Test Cases`);
         const escapedTestCase = this.sampleTestCase
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
@@ -61,27 +60,6 @@ class LeetCodeTestCaseProvider extends LeetCodeWebview {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 ${styles}
                 <style>
-                    body {
-                        padding: 0;
-                        margin: 0;
-                    }
-                    .container {
-                        padding: 12px 16px;
-                    }
-                    .title {
-                        font-size: 16px;
-                        font-weight: 600;
-                        padding-bottom: 12px;
-                        border-bottom: 1px solid var(--vscode-panel-border);
-                        margin-bottom: 12px;
-                    }
-                    .label {
-                        font-size: 12px;
-                        text-transform: uppercase;
-                        letter-spacing: 0.5px;
-                        color: var(--vscode-descriptionForeground);
-                        margin-bottom: 6px;
-                    }
                     textarea {
                         width: 100%;
                         min-height: 200px;
@@ -108,7 +86,7 @@ class LeetCodeTestCaseProvider extends LeetCodeWebview {
                         background: var(--vscode-button-background);
                         color: var(--vscode-button-foreground);
                         border: none;
-                        padding: 8px 28px;
+                        padding: 0.2rem 1rem;
                         border-radius: 4px;
                         cursor: pointer;
                         font-size: 13px;
@@ -118,14 +96,13 @@ class LeetCodeTestCaseProvider extends LeetCodeWebview {
                     }
                 </style>
             </head>
-            <body>
-                <div class="container">
-                    <div class="title">${escapedTitle}</div>
-                    <div class="label">Test Cases</div>
-                    <textarea id="testcases" spellcheck="false">${escapedTestCase}</textarea>
-                    <div class="actions">
-                        <button class="test-btn" id="testBtn">Test</button>
-                    </div>
+            <body class="vscode-body 'scrollBeyondLastLine' 'wordWrap' 'showEditorSelection'" style="tab-size:4">
+                ${title}
+                <hr />
+                ${label}
+                <textarea id="testcases" spellcheck="false">${escapedTestCase}</textarea>
+                <div class="actions">
+                    <button class="test-btn" id="testBtn">Test</button>
                 </div>
                 <script>
                     const vscode = acquireVsCodeApi();
