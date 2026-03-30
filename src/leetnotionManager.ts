@@ -43,11 +43,14 @@ class LeetnotionManager {
 				!previousQuestionsDatabaseId ||
 				previousQuestionsDatabaseId !== globalState.getQuestionsDatabaseId()
 			) {
-				globalState.setNotionIntegrationStatus('pending');
+				await templateUpdateSession.close();
+				await globalState.setNotionIntegrationStatus('pending');
 				await this.updateNotionInfo();
-				await window.showInformationMessage('Notion integration enabled successfully 🎉');
+				await window.showInformationMessage(
+					'Notion integration completed 🎉',
+				);
 			}
-			globalState.setNotionIntegrationStatus('done');
+			await globalState.setNotionIntegrationStatus('done');
 		} catch (error) {
 			leetCodeChannel.appendLine(`Error enabling notion integration: ${error}`);
 		}

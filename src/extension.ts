@@ -66,9 +66,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
 		leetcodeClient.setTitleSlugQuestionNumberMapping();
 		if (globalState.getNotionIntegrationStatus() === 'pending') {
-			leetnotionManager
-				.updateNotionInfo()
-				.then(() => globalState.setNotionIntegrationStatus('done'));
+			leetnotionManager.updateNotionInfo().then(async () => {
+				await globalState.setNotionIntegrationStatus('done');
+				vscode.window.showInformationMessage(
+					'Notion integration completed 🎉',
+				);
+			});
 		}
 
 		leetcodeTreeView = vscode.window.createTreeView('leetnotionExplorer', {

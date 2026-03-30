@@ -37,6 +37,26 @@ class LeetnotionClient {
 	private limiter = new Bottleneck({
 		minTime: 334,
 	});
+	private static MAX_RETRIES = 7;
+	private static BASE_DELAY_MS = 1000;
+
+	private async retryWithBackoff<T>(operation: () => Promise<T>, label: string): Promise<T> {
+		for (let attempt = 0; attempt <= LeetnotionClient.MAX_RETRIES; attempt++) {
+			try {
+				return await operation();
+			} catch (error) {
+				if (attempt === LeetnotionClient.MAX_RETRIES) {
+					throw error;
+				}
+				const delay = LeetnotionClient.BASE_DELAY_MS * Math.pow(2, attempt);
+				leetCodeChannel.appendLine(
+					`Retrying ${label} (attempt ${attempt + 1}/${LeetnotionClient.MAX_RETRIES}) after ${delay}ms: ${error.message}`,
+				);
+				await new Promise((resolve) => setTimeout(resolve, delay));
+			}
+		}
+		throw new Error(`Unreachable`);
+	}
 
 	public initialize() {
 		const accessToken = globalState.getNotionAccessToken();
@@ -107,6 +127,7 @@ class LeetnotionClient {
 
 	public async submitSolution(questionNumber: string) {
 		if (!hasNotionIntegrationEnabled()) return;
+		if (!this.isSignedIn || !this.notion) return;
 		try {
 			const updateResponse = await this.updateStatusOfQuestion(questionNumber);
 			const submission = await leetcodeClient.getRecentSubmission();
@@ -234,6 +255,7 @@ class LeetnotionClient {
 		const hasNotes = message.notes && message.notes.length > 0;
 		const questionPageProperties: UpdatePageProperties = {};
 		if (hasReviewDate) {
+			// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 			((questionPageProperties['Review Date'] = {
 				date: {
 					start: message.reviewDate,
@@ -335,14 +357,23 @@ class LeetnotionClient {
 			if (!databaseId) {
 				throw new Error(`questions-database-id-not-found`);
 			}
-			const problemPages = problems.map((problem) =>
-				LeetCodeToNotionConverter.convertProblemToCreatePage(problem),
-			);
-			return (await this.notion.addPagesToDatabase(
-				databaseId,
-				problemPages,
-				callbackFn,
-			)) as ProblemPageResponse[];
+			const responses: ProblemPageResponse[] = [];
+			for (const problem of problems) {
+				const properties = LeetCodeToNotionConverter.convertProblemToCreatePage(problem);
+				const response = await this.limiter.schedule(() =>
+					this.retryWithBackoff(
+						() =>
+							this.notion!.pages.create({
+								parent: { database_id: databaseId },
+								properties,
+							}),
+						`add problem ${problem.questionFrontendId}`,
+					),
+				);
+				responses.push(response as ProblemPageResponse);
+				await callbackFn(response as ProblemPageResponse);
+			}
+			return responses;
 		} catch (error) {
 			throw new Error(`Failed to add problems: ${error}`);
 		}
@@ -364,11 +395,24 @@ class LeetnotionClient {
 			if (!questionNumberPageIdMapping) {
 				throw new Error(`question-number-page-id-mapping`);
 			}
-			const updateProperties = problems.map((problem) => {
+			const responses: ProblemPageResponse[] = [];
+			for (const problem of problems) {
 				const properties = LeetCodeToNotionConverter.convertProblemToUpdatePage(problem);
-				return { pageId: questionNumberPageIdMapping[problem.questionFrontendId], properties };
-			});
-			return (await this.notion.updatePages(updateProperties, callbackFn)) as ProblemPageResponse[];
+				const pageId = questionNumberPageIdMapping[problem.questionFrontendId];
+				const response = await this.limiter.schedule(() =>
+					this.retryWithBackoff(
+						() =>
+							this.notion!.pages.update({
+								page_id: pageId,
+								properties,
+							}),
+						`update problem ${problem.questionFrontendId}`,
+					),
+				);
+				responses.push(response as ProblemPageResponse);
+				await callbackFn(response as ProblemPageResponse);
+			}
+			return responses;
 		} catch (error) {
 			throw new Error(`Failed to update problems: ${error}`);
 		}
@@ -424,19 +468,27 @@ class LeetnotionClient {
 					continue;
 				}
 				if (shouldUpdateStatusWhenUploadingSubmissions()) {
-					await this.limiter.schedule(
-						async () => await this.updateStatusOfQuestion(questionNumber),
+					await this.limiter.schedule(() =>
+						this.retryWithBackoff(
+							() => this.updateStatusOfQuestion(questionNumber),
+							`update status ${submission.title_slug}`,
+						),
 					);
 					leetCodeChannel.appendLine(`Updated status of question: ${submission.title_slug}`);
 				}
-				const submissionPageId = await this.limiter.schedule(
-					async () => await this.createSubmissionPage(questionNumber, submission),
+				const submissionPageId = await this.limiter.schedule(() =>
+					this.retryWithBackoff(
+						() => this.createSubmissionPage(questionNumber, submission),
+						`create submission ${submission.id}`,
+					),
 				);
 				leetCodeChannel.appendLine(`Created submission page for ${submission.id} submission`);
 				if (shouldAddCodeToSubmissionPage()) {
-					await this.limiter.schedule(
-						async () =>
-							await this.addCodeToPage(submissionPageId, submission.lang, submission.code),
+					await this.limiter.schedule(() =>
+						this.retryWithBackoff(
+							() => this.addCodeToPage(submissionPageId, submission.lang, submission.code),
+							`add code ${submission.title_slug}`,
+						),
 					);
 					leetCodeChannel.appendLine(
 						`Added code to submission page for ${submission.title_slug} question`,

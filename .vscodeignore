@@ -6,6 +6,11 @@ src/**
 **/*.map
 .gitignore
 package-lock.json
+pnpm-lock.yaml
+pnpm-workspace.yaml
+eslint.config.mjs
+.prettierrc.yml
+.prettierignore
 tsconfig.json
 tslint.json
 **/*.gif

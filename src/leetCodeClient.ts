@@ -157,7 +157,6 @@ class LeetcodeClient {
 				...problem,
 				type: problemTypes[problem.questionFrontendId],
 			}));
-			leetCodeChannel.appendLine(`DEBUG: typedProblems: ${JSON.stringify(typedProblems[0])}`);
 			return typedProblems;
 		} catch (error) {
 			throw new Error(`Error getting leetcode problems: ${error}`);
