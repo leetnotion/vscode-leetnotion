@@ -6,90 +6,87 @@ import { leetCodePreviewProvider } from './leetCodePreviewProvider';
 import { ILeetCodeWebviewOption, LeetCodeWebview } from './LeetCodeWebview';
 import { markdownEngine } from './markdownEngine';
 
+interface SolutionData {
+    title: string;
+    url: string;
+    avatar: string;
+    authorName: string;
+    authorUsername: string;
+    views: number;
+    createdAt: string;
+    tags: string[];
+    content: string;
+    votes: string;
+    lang?: string;
+}
+
 class LeetCodeSolutionProvider extends LeetCodeWebview {
-	protected readonly viewType: string = 'leetnotion.solution';
-	private problemName: string;
-	private solution: Solution;
+    protected readonly viewType: string = 'leetnotion.solution';
+    private solution: SolutionData;
 
-	public show(solutionString: string): void {
-		this.solution = this.parseSolution(solutionString);
-		this.showWebviewInternal();
-	}
+    public show(data: SolutionData): void {
+        this.solution = data;
+        this.showWebviewInternal();
+    }
 
-	protected getWebviewOption(): ILeetCodeWebviewOption {
-		if (leetCodePreviewProvider.isSideMode()) {
-			return {
-				title: 'Solution',
-				viewColumn: ViewColumn.Two,
-				preserveFocus: true,
-			};
-		} else {
-			return {
-				title: `Solution: ${this.problemName}`,
-				viewColumn: ViewColumn.One,
-			};
-		}
-	}
+    protected getWebviewOption(): ILeetCodeWebviewOption {
+        if (leetCodePreviewProvider.isSideMode()) {
+            return {
+                title: 'Solution',
+                viewColumn: ViewColumn.Two,
+                preserveFocus: true,
+            };
+        } else {
+            return {
+                title: `Solution: ${this.solution.title}`,
+                viewColumn: ViewColumn.One,
+            };
+        }
+    }
 
-	protected getWebviewContent(): string {
-		const styles: string = markdownEngine.getStyles(this.getPanel().webview);
-		const { title, url, lang, author, votes } = this.solution;
-		const head: string = markdownEngine.render(`# [${title}](${url})`);
-		const auth: string = `[${author}](https://leetcode.com/${author}/)`;
-		const info: string = markdownEngine.render(
-			[
-				`| Language |  Author  |  Votes   |`,
-				`| :------: | :------: | :------: |`,
-				`| ${lang}  | ${auth}  | ${votes} |`,
-			].join('\n'),
-		);
-		const body: string = markdownEngine.render(this.solution.body, {
-			lang: this.solution.lang,
-			host: 'https://discuss.leetcode.com/',
-		});
-		return `
+    protected getWebviewContent(): string {
+        const webview = this.getPanel().webview;
+        const styles: string = markdownEngine.getStyles(webview);
+        const { title, url, authorName, authorUsername, views, createdAt, tags, content, votes } = this.solution;
+        const head: string = markdownEngine.render(`# [${title}](${url})`);
+        const auth: string = `[${authorName}](https://leetcode.com/${authorUsername}/)`;
+        const info: string = markdownEngine.render(
+            [
+                `| Language |  Author  |  Votes   |`,
+                `| :------: | :------: | :------: |`,
+                `| ${this.solution.lang || 'N/A'}  | ${auth}  | ${votes} |`,
+            ].join('\n'),
+        );
+        const contentWithoutComments: string = this.solution.content.replace(/<!--[\s\S]*?-->/g, '');
+        const body: string = markdownEngine.render(contentWithoutComments, {
+            lang: this.solution.lang,
+            host: 'https://discuss.leetcode.com/',
+        });
+
+        const tagsElement: string = tags.map((t: string) => `<code>${t}</code>`).join(' | ');
+        const katexScripts: string = markdownEngine.getKatexScripts(webview);
+        return `
             <!DOCTYPE html>
             <html>
             <head>
-                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https:; script-src vscode-resource:; style-src vscode-resource:;"/>
+                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https:; script-src ${webview.cspSource} 'unsafe-inline'; style-src ${webview.cspSource}; font-src ${webview.cspSource};"/>
                 ${styles}
+                ${katexScripts}
             </head>
             <body class="vscode-body 'scrollBeyondLastLine' 'wordWrap' 'showEditorSelection'" style="tab-size:4">
                 ${head}
                 ${info}
+                ${tagsElement}
                 ${body}
+                <script>${markdownEngine.getKatexRenderScript()}</script>
             </body>
             </html>
         `;
-	}
+    }
 
-	protected onDidDisposeWebview(): void {
-		super.onDidDisposeWebview();
-	}
-
-	private parseSolution(raw: string): Solution {
-		raw = raw.slice(1); // skip first empty line
-		[this.problemName, raw] = raw.split(/\n\n([^]+)/); // parse problem name and skip one line
-		const solution: Solution = new Solution();
-		// [^] matches everything including \n, yet can be replaced by . in ES2018's `m` flag
-		[solution.title, raw] = raw.split(/\n\n([^]+)/);
-		[solution.url, raw] = raw.split(/\n\n([^]+)/);
-		[solution.lang, raw] = raw.match(/\* Lang:\s+(.+)\n([^]+)/)!.slice(1);
-		[solution.author, raw] = raw.match(/\* Author:\s+(.+)\n([^]+)/)!.slice(1);
-		[solution.votes, raw] = raw.match(/\* Votes:\s+(\d+)\n\n([^]+)/)!.slice(1);
-		solution.body = raw;
-		return solution;
-	}
-}
-
-// tslint:disable-next-line:max-classes-per-file
-class Solution {
-	public title: string = '';
-	public url: string = '';
-	public lang: string = '';
-	public author: string = '';
-	public votes: string = '';
-	public body: string = ''; // Markdown supported
+    protected onDidDisposeWebview(): void {
+        super.onDidDisposeWebview();
+    }
 }
 
 export const leetCodeSolutionProvider: LeetCodeSolutionProvider = new LeetCodeSolutionProvider();

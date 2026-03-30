@@ -198,6 +198,17 @@ class ExplorerNodeManager implements Disposable {
 		}
 	}
 
+	public updateFavoriteCategory(problemId: string, isFavorite: boolean): void {
+		const favorites = this.dataTree[Category.Favorite];
+		if (!Array.isArray(favorites)) return;
+		const index = favorites.indexOf(problemId);
+		if (isFavorite && index === -1) {
+			favorites.push(problemId);
+		} else if (!isFavorite && index !== -1) {
+			favorites.splice(index, 1);
+		}
+	}
+
 	public dispose(): void {
 		this.explorerNodeMap.clear();
 		this.dataTree = {};

@@ -260,24 +260,40 @@ export async function showSolution(input: LeetCodeNode | vscode.Uri): Promise<vo
 			return;
 		}
 
-		const solution = await leetcodeClient.getTopVotedSolution(problemSlug, problemId, language);
+		let solution = await leetcodeClient.getTopVotedSolution(problemSlug, language);
+		let solutionLang = language;
 		if (!solution) {
-			vscode.window.showErrorMessage('No solution found for this problem and language.');
-			return;
+			const tryAnyLang = 'Check in Other Language';
+			const choice = await vscode.window.showErrorMessage(
+				'No solution found for this problem and language.',
+				tryAnyLang,
+			);
+			if (choice !== tryAnyLang) {
+				return;
+			}
+			solution = await leetcodeClient.getTopVotedSolution(problemSlug);
+			if (!solution) {
+				vscode.window.showErrorMessage('No solution found for this problem in any language.');
+				return;
+			}
+			solutionLang = '';
 		}
 
-		const solutionText = [
-			solution.title,
-			'',
-			solution.link,
-			'',
-			`* Lang:    ${language}`,
-			`* Author:  ${solution.author}`,
-			`* Votes:   ${solution.votes}`,
-			'',
-			solution.content,
-		].join('\n');
-		leetCodeSolutionProvider.show(solutionText);
+        let url = `https://leetcode.com/problems/${problemSlug}/solutions/${solution.topicId}/${solution.slug}`
+
+		leetCodeSolutionProvider.show({
+			title: solution.title,
+			url,
+            avatar: solution.author.userAvatar,
+			authorName: solution.author.realName,
+            authorUsername: solution.author.userName,
+            views: solution.hitCount,
+            createdAt: solution.createdAt,
+            tags: solution.tags.map((tag) => tag.name),
+			content: solution.content.replace(/\\n/g, "\n"),
+			votes: String(solution.reactions[0].count || 0),
+			lang: solutionLang,
+		});
 	} catch (error) {
 		leetCodeChannel.appendLine(error.toString());
 		await promptForOpenOutputChannel(

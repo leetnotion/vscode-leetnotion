@@ -42,6 +42,7 @@ class LeetCodePreviewProvider extends LeetCodeWebview {
 	}
 
 	protected getWebviewContent(): string {
+		const webview = this.getPanel().webview;
 		const button: { element: string; script: string; style: string } = {
 			element: `<button id="solve">Code Now</button>`,
 			script: `const button = document.getElementById('solve');
@@ -147,12 +148,14 @@ class LeetCodePreviewProvider extends LeetCodeWebview {
 		const links: string = markdownEngine.render(
 			`[Submissions](${this.getSubmissionsLink(url)}) | [Solution](${this.getSolutionsLink(url)})`,
 		);
+		const katexScripts: string = markdownEngine.getKatexScripts(webview);
 		return `
             <!DOCTYPE html>
             <html>
             <head>
-                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https:; script-src vscode-resource: 'unsafe-inline'; style-src vscode-resource: 'unsafe-inline';"/>
-                ${markdownEngine.getStyles(this.getPanel().webview)}
+                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https:; script-src ${webview.cspSource} 'unsafe-inline'; style-src ${webview.cspSource} 'unsafe-inline'; font-src ${webview.cspSource};"/>
+                ${markdownEngine.getStyles(webview)}
+                ${katexScripts}
                 ${!this.sideMode ? button.style : ''}
                 <style>
                     code { white-space: pre-wrap; }
@@ -180,6 +183,7 @@ class LeetCodePreviewProvider extends LeetCodeWebview {
                 <script>
                     const vscode = acquireVsCodeApi();
                     ${!this.sideMode ? button.script : ''}
+                    ${markdownEngine.getKatexRenderScript()}
                     function onTagClick(tag) {
                         vscode.postMessage({ command: 'TagClick', tag });
                     }

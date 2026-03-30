@@ -7,7 +7,7 @@ import {
 	JudgeResult,
 	LeetCodeAdvanced,
 	LeetCodeCLI,
-	TopVotedSolution,
+	SolutionArticle,
 } from '@leetnotion/leetcode-api';
 import axios from 'axios';
 import _ from 'lodash';
@@ -333,10 +333,20 @@ class LeetcodeClient {
 
 	public async getTopVotedSolution(
 		slug: string,
-		questionId: string,
 		language?: string,
-	): Promise<TopVotedSolution | null> {
-		return this.withSessionRetry(() => this.cli.getTopVotedSolution(slug, questionId, language));
+	): Promise<SolutionArticle | null> {
+		leetCodeChannel.appendLine(
+			`[getTopVotedSolution] Request: slug=${slug}, language=${language ?? '(any)'}`,
+		);
+		const result = await this.withSessionRetry(() =>
+			this.cli.getTopVotedSolution(slug, language ? [language] : undefined),
+		);
+		leetCodeChannel.appendLine(
+			result
+				? `[getTopVotedSolution] Response: title="${result.title}", author=${result.author}, votes=${result.hitCount}`
+				: `[getTopVotedSolution] Response: no solution found`,
+		);
+		return result;
 	}
 
 	public async submitCode(

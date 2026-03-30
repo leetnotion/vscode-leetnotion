@@ -197,7 +197,7 @@ class LeetCodeSubmissionProvider extends LeetCodeWebview {
 				return this.panel ? this.panel.webview.asWebviewUri(onDiskPath) : onDiskPath;
 			});
 		} catch (error) {
-			leetCodeChannel.appendLine('[Error] Fail to load built-in markdown style file.');
+			leetCodeChannel.appendLine(`[Error] Fail to load built-in markdown style file: ${error}`);
 		}
 		return scripts
 			.map((script: vscode.Uri) => `<script src="${script.toString()}"></script>`)
@@ -218,7 +218,7 @@ class LeetCodeSubmissionProvider extends LeetCodeWebview {
 				return this.panel ? this.panel.webview.asWebviewUri(onDiskPath) : onDiskPath;
 			});
 		} catch (error) {
-			leetCodeChannel.appendLine('[Error] Fail to load built-in markdown style file.');
+			leetCodeChannel.appendLine(`[Error] Fail to load built-in markdown style file: ${error}`);
 		}
 		return styles
 			.map(

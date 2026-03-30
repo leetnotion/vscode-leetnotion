@@ -34,9 +34,9 @@ export async function testSolution(uri?: vscode.Uri): Promise<void> {
 				value: ':default',
 			},
 			{
-				label: '$(edit) Open test case editor...',
+				label: '$(edit) Open test case editor',
 				description: '',
-				detail: 'Edit test cases in a webview panel',
+				detail: 'Edit test cases in a VS Code panel',
 				value: ':direct',
 			},
 			{

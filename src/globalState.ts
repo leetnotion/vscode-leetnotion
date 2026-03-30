@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { IS_PROBLEMS_RETRIEVED, UPDATED_PAGES, LEETCODE_PROBLEMS } from './constants';
 import { IProblem } from './shared';
 import {
 	Lists,
@@ -310,12 +311,20 @@ class GlobalState {
 		this._state.update(UserStatusKey, undefined);
 		this._state.update(TopicTagsKey, undefined);
 		this._state.update(DailyProblemKey, undefined);
+		this._state.update(DailyProblemFetchDateKey, undefined);
 		this._state.update(QuestionsDatabaseIdKey, undefined);
 		this._state.update(SubmissionsDatabaseIdKey, undefined);
 		this._state.update(QuestionNumberPageIdMappingKey, undefined);
 		this._state.update(TitleSlugQuestionNumberMappingKey, undefined);
 		this._state.update(NotionIntegrationStatusKey, undefined);
 		this._state.update(UserQuestionTagsKey, undefined);
+		// Clean up dynamic session keys if a pending session exists
+		const pendingSession = this.getPendingSession();
+		if (pendingSession) {
+			for (const key of [IS_PROBLEMS_RETRIEVED, UPDATED_PAGES, LEETCODE_PROBLEMS]) {
+				this._state.update(`${pendingSession.id}.${key}`, undefined);
+			}
+		}
 		this._state.update(PendingSessionKey, undefined);
 		this._state.update(LeetcodeListsKey, undefined);
 		this._state.update(QuestionsOfListKey, undefined);
