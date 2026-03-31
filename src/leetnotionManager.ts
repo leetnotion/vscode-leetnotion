@@ -21,7 +21,7 @@ class LeetnotionManager {
 		try {
 			if (!accessToken || accessToken === '') {
 				promptForOpenOutputChannel(
-					"Notion integration disabled. To enable notion integration run 'Integrate notion' leetnotion command.",
+					"Skipping Notion integration. For Notion integration, run 'Integrate Notion' command (Cmd/Ctrl + Shift + P).",
 					DialogType.info,
 				);
 				this.disableNotionIntegration();

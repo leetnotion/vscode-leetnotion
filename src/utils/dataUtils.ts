@@ -17,6 +17,7 @@ import {
 	Sheets,
 	TopicTags,
 } from '../types';
+import { explorerNodeManager } from '../explorer/explorerNodeManager';
 import { getStaticRatings, getStaticTopicTags } from './staticDataUtils';
 import { sleep } from './toolUtils';
 
@@ -153,7 +154,9 @@ export async function getListsWithQuestions(): Promise<ListsWithQuestions> {
 	if (lists) {
 		for (const list of lists) {
 			const questions = await globalState.getQuestionsOfList(list.slug);
-			listsDetails[list.name] = questions.map((item) => item.questionFrontendId);
+			if (questions.length > 0) {
+				listsDetails[list.name] = questions.map((item) => item.questionFrontendId);
+			}
 		}
 	}
 	return listsDetails;
@@ -184,6 +187,7 @@ export async function setQuestionsOfAllLists() {
 		try {
 			const questions = await leetcodeClient.getQuestionsOfList(slug);
 			await globalState.setQuestionsOfList(questions, slug);
+			await explorerNodeManager.updateLists();
 			leetCodeChannel.appendLine(`Updated questions of ${name} list`);
 			await sleep(1000);
 		} catch (error) {

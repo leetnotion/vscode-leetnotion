@@ -31,11 +31,24 @@ import { LeetCodeNode } from './LeetCodeNode';
 class ExplorerNodeManager implements Disposable {
 	private explorerNodeMap: Map<string, LeetCodeNode> = new Map<string, LeetCodeNode>();
 	private dataTree: LeetnotionTree = {};
+	private completedFolderIds: Set<string> = new Set<string>();
+	private acProblemIds: Set<string> = new Set<string>();
 	private pendingRefresh: Promise<void> | null = null;
 	private onTreeChanged: () => void = () => {};
 
 	public setOnTreeChanged(callback: () => void): void {
 		this.onTreeChanged = callback;
+	}
+
+	public isFolderCompleted(id: string): boolean {
+		// return true; // TEMP: force all folders to show completed
+		return this.completedFolderIds.has(id);
+	}
+
+	public async updateLists(): Promise<void> {
+		const listsWithQuestions = await getListsWithQuestions();
+		this.dataTree[Category.Lists] = listsWithQuestions;
+		this.onTreeChanged();
 	}
 
 	public async refreshCache(): Promise<void> {
@@ -62,6 +75,13 @@ class ExplorerNodeManager implements Disposable {
 		const shouldHideSolved: boolean = shouldHideSolvedProblem();
 		const dailyProblem = globalState.getDailyProblem();
 		const filtered = problems.filter((item) => !shouldHideSolved || item.state !== ProblemState.AC);
+
+		this.acProblemIds.clear();
+		for (const problem of problems) {
+			if (problem.state === ProblemState.AC) {
+				this.acProblemIds.add(String(problem.id));
+			}
+		}
 
 		const newNodeMap = new Map<string, LeetCodeNode>();
 		for (const problem of filtered) {
@@ -96,6 +116,9 @@ class ExplorerNodeManager implements Disposable {
 		this.explorerNodeMap = newNodeMap;
 		this.dataTree = newDataTree;
 		this.storeLeetCodeNodes();
+		let start = Date.now();
+		this.computeCompletedFolders();
+		leetCodeChannel.appendLine(`[buildTree] Computed completed folders (${Date.now() - start}ms)`);
 	}
 
 	private async doRefreshCache(): Promise<void> {
@@ -299,6 +322,37 @@ class ExplorerNodeManager implements Disposable {
 			}
 			default:
 				return nodes;
+		}
+	}
+
+	private computeCompletedFolders(): void {
+		this.completedFolderIds.clear();
+		const computeForNode = (id: string): boolean => {
+			const data = this.getExplorerDataById(id);
+			if (!data) {
+				return false;
+			}
+			if (Array.isArray(data)) {
+				const completed = data.length > 0 && data.every((pid) => this.acProblemIds.has(String(pid)));
+				if (completed) {
+					this.completedFolderIds.add(id);
+				}
+				return completed;
+			}
+			const childKeys = Object.keys(data);
+			if (childKeys.length === 0) {
+				return false;
+			}
+			const allCompleted = childKeys.reduce((acc, key) => computeForNode(`${id}#${key}`) && acc, true);
+			if (allCompleted) {
+				this.completedFolderIds.add(id);
+			}
+			return allCompleted;
+		};
+		for (const category of Object.keys(this.dataTree)) {
+			if (computeForNode(category)) {
+				this.completedFolderIds.add(category);
+			}
 		}
 	}
 

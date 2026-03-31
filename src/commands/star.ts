@@ -6,9 +6,15 @@ import { LeetCodeNode } from '../explorer/LeetCodeNode';
 import { leetCodeTreeDataProvider } from '../explorer/LeetCodeTreeDataProvider';
 import { explorerNodeManager } from '../explorer/explorerNodeManager';
 import { leetcodeClient } from '../leetCodeClient';
+import { leetCodeManager } from '../leetCodeManager';
 import { hasStarShortcut } from '../utils/settingUtils';
+import { promptForSignIn } from '../utils/uiUtils';
 
 export async function addFavorite(node: LeetCodeNode): Promise<void> {
+	if (!leetCodeManager.getUser()) {
+		promptForSignIn();
+		return;
+	}
 	const liveNode = explorerNodeManager.getNodeById(node.id);
 	if (!liveNode) return;
 	liveNode.isFavorite = true;
@@ -21,6 +27,10 @@ export async function addFavorite(node: LeetCodeNode): Promise<void> {
 }
 
 export async function removeFavorite(node: LeetCodeNode): Promise<void> {
+	if (!leetCodeManager.getUser()) {
+		promptForSignIn();
+		return;
+	}
 	const liveNode = explorerNodeManager.getNodeById(node.id);
 	if (!liveNode) return;
 	liveNode.isFavorite = false;

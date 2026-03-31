@@ -4,9 +4,14 @@
 import * as vscode from 'vscode';
 import { globalState } from '../globalState';
 import { leetcodeClient } from '../leetCodeClient';
-import { DialogType, promptForOpenOutputChannel } from '../utils/uiUtils';
+import { leetCodeManager } from '../leetCodeManager';
+import { DialogType, promptForOpenOutputChannel, promptForSignIn } from '../utils/uiUtils';
 
 export async function deleteCache(): Promise<void> {
+	if (!leetCodeManager.getUser()) {
+		promptForSignIn();
+		return;
+	}
 	try {
 		await leetcodeClient.deleteCache();
 	} catch (error) {
@@ -18,6 +23,10 @@ export async function deleteCache(): Promise<void> {
 }
 
 export async function refreshData(): Promise<void> {
+	if (!leetCodeManager.getUser()) {
+		promptForSignIn();
+		return;
+	}
 	await vscode.window.withProgress(
 		{ location: vscode.ProgressLocation.Notification, title: 'Refreshing problem data...' },
 		async () => {

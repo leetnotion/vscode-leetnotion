@@ -249,6 +249,7 @@ class LeetnotionClient {
 
 	public async setProperties(message: SetPropertiesMessage) {
 		if (!hasNotionIntegrationEnabled()) return;
+		if (!this.isSignedIn || !this.notion) return;
 		if (message.command !== 'set-properties') return;
 		const tagsChanged = !areArraysEqual(message.initialTags, message.finalTags);
 		const hasReviewDate = message.reviewDate && message.reviewDate.length > 0;
@@ -279,9 +280,6 @@ class LeetnotionClient {
 			multi_select: message.isOptimal ? [{ name: 'Optimal' }] : [],
 		};
 		try {
-			if (!this.isSignedIn || !this.notion) {
-				throw new Error('notion-integration-not-enabled');
-			}
 			if (hasReviewDate || tagsChanged) {
 				await this.notion.pages.update({
 					page_id: message.questionPageId,
@@ -306,10 +304,8 @@ class LeetnotionClient {
 
 	public async setUserQuestionTags(): Promise<void> {
 		if (!hasNotionIntegrationEnabled()) return;
+		if (!this.isSignedIn || !this.notion) return;
 		try {
-			if (!this.isSignedIn || !this.notion) {
-				throw new Error('notion-integration-not-enabled');
-			}
 			const questionsDatabaseId = globalState.getQuestionsDatabaseId();
 			if (!questionsDatabaseId) {
 				throw new Error('questions-database-id-not-found');

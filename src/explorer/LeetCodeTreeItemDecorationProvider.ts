@@ -8,12 +8,46 @@ import {
 	workspace,
 	WorkspaceConfiguration,
 } from 'vscode';
+import { explorerNodeManager } from './explorerNodeManager';
 
 export class LeetCodeTreeItemDecorationProvider implements FileDecorationProvider {
 	private readonly DIFFICULTY_BADGE_LABEL: { [key: string]: string } = {
 		easy: 'E',
 		medium: 'M',
 		hard: 'H',
+	};
+
+	private readonly FOLDER_BADGE: { [key: string]: string } = {
+		// Add custom folder emojis here, keyed by folder name (last segment of node ID)
+		"All": "👑",
+		"Difficulty": "🏆",
+		"Difficulty#Easy": "🤓",
+		"Difficulty#Medium": "😳",
+		"Difficulty#Hard": "🫪",
+		"Tag": "🏷️",
+		"Company": "🏢",
+		"Favorite": "💝",
+		"Daily": "📅",
+		"Sheets": "📋",
+		"Lists": "📝",
+		"Contests": "⚔️",
+		// Sheets — achievement reactions
+		"Sheets#LeetCode 75": "⭐",
+		"Sheets#Programming Skills": "🛠️",
+		"Sheets#Binary Search": "⚡",
+		"Sheets#SQL 50": "🗃️",
+		"Sheets#Blind 75": "🔥",
+		"Sheets#Top Interview 150": "🎯",
+		"Sheets#Top 100 Liked": "❤️‍🔥",
+		"Sheets#Neetcode 150": "💪",
+		"Sheets#Grokking Coding Interview Patterns": "🧩",
+		"Sheets#Premium Algo 100": "💎",
+		"Sheets#Advanced SQL 50": "🏛️",
+		"Sheets#Graph Theory": "🕸️",
+		"Sheets#Dynamic Programming": "🤯",
+		"Sheets#Neetcode 250": "🧠",
+		"Sheets#Dynamic Programming Grandmaster": "🐉",
+		"Sheets#Neetcode All": "🏆",
 	};
 
 	private readonly ITEM_COLOR: { [key: string]: ThemeColor } = {
@@ -23,11 +57,20 @@ export class LeetCodeTreeItemDecorationProvider implements FileDecorationProvide
 	};
 
 	public provideFileDecoration(uri: Uri): ProviderResult<FileDecoration> {
-		if (uri.scheme !== 'leetcode' && uri.authority !== 'problems') {
+		if (uri.scheme !== 'leetcode') {
 			return;
 		}
 
-		if (!this.isDifficultyBadgeEnabled()) {
+		if (uri.authority === 'tree-node') {
+			const nodeId = decodeURIComponent(uri.path.slice(1));
+			if (explorerNodeManager.isFolderCompleted(nodeId)) {
+				const badge = this.FOLDER_BADGE[nodeId] ?? '✅';
+				return { badge };
+			}
+			return;
+		}
+
+		if (uri.authority !== 'problems' || !this.isDifficultyBadgeEnabled()) {
 			return;
 		}
 

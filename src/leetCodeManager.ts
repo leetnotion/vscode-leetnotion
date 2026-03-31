@@ -12,6 +12,7 @@ import { Endpoint, urls, urlsCn, UserStatus } from './shared';
 import { hasNotionIntegrationEnabled } from './utils/settingUtils';
 import { parseQuery } from './utils/toolUtils';
 import { DialogType, openUrl, promptForOpenOutputChannel } from './utils/uiUtils';
+import { leetCodeChannel } from './leetCodeChannel';
 
 class LeetCodeManager extends EventEmitter {
 	private currentUser: string | undefined;
@@ -39,6 +40,7 @@ class LeetCodeManager extends EventEmitter {
 				throw new Error('Failed to get user info');
 			}
 		} catch (error) {
+			leetCodeChannel.appendLine(`Error during login status check: ${(error as Error).message}`);
 			this.currentUser = undefined;
 			this.userStatus = UserStatus.SignedOut;
 			await globalState.removeAll();
@@ -60,7 +62,23 @@ class LeetCodeManager extends EventEmitter {
 			this.emit('statusChanged');
 		}
 		if (hasNotionIntegrationEnabled()) {
-			leetnotionManager.enableNotionIntegration();
+			if (globalState.getNotionAccessToken()) {
+				leetnotionManager.enableNotionIntegration();
+			} else {
+				const choice = await vscode.window.showQuickPick([
+					{
+						label: 'Integrate Notion',
+						description: 'Integrate Notion to sync your LeetCode progress and more.',
+					},
+					{
+						label: 'Maybe later',
+						description: 'You can integrate Notion later from the command palette.',
+					},
+				]);
+				if (choice?.label === 'Integrate Notion') {
+					leetnotionManager.enableNotionIntegration();
+				}
+			}
 		}
 	}
 
@@ -87,6 +105,7 @@ class LeetCodeManager extends EventEmitter {
 				`Failed to log in. Please open the output channel for details`,
 				DialogType.error,
 			);
+            leetCodeChannel.appendLine(`Error during URI sign-in: ${(error as Error).message}`);
 		}
 	}
 
@@ -142,6 +161,7 @@ class LeetCodeManager extends EventEmitter {
 				`Failed to log in. Please open the output channel for details`,
 				DialogType.error,
 			);
+            leetCodeChannel.appendLine(`Error during cookie sign-in: ${(error as Error).message}`);
 		}
 	}
 
@@ -154,7 +174,7 @@ class LeetCodeManager extends EventEmitter {
 			leetcodeClient.signOut();
 			this.emit('statusChanged');
 		} catch (error) {
-			// swallow the error when sign out.
+            leetCodeChannel.appendLine(`Error during sign-out: ${(error as Error).message}`);
 		}
 	}
 

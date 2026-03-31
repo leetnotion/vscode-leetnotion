@@ -27,7 +27,7 @@ import { leetCodeStatusBarController } from './statusbar/leetCodeStatusBarContro
 import { setProblemRatingMap, syncLists, syncListsIfNeeded } from './utils/dataUtils';
 import { clearIntervals, repeatAction } from './utils/toolUtils';
 import TrackData from './utils/trackingUtils';
-import { DialogType, promptForOpenOutputChannel } from './utils/uiUtils';
+import { DialogType, promptForOpenOutputChannel, promptForSignIn } from './utils/uiUtils';
 import { leetCodePreviewProvider } from './webview/leetCodePreviewProvider';
 import { leetCodeSolutionProvider } from './webview/leetCodeSolutionProvider';
 import { leetCodeSubmissionProvider } from './webview/leetCodeSubmissionProvider';
@@ -115,10 +115,18 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 				'leetnotion.showSolution',
 				(input: LeetCodeNode | vscode.Uri) => show.showSolution(input),
 			),
-			vscode.commands.registerCommand('leetnotion.refreshExplorer', () =>
-				leetCodeTreeDataProvider.refresh(),
-			),
+			vscode.commands.registerCommand('leetnotion.refreshExplorer', () => {
+				if (!leetCodeManager.getUser()) {
+					promptForSignIn();
+					return;
+				}
+				return leetCodeTreeDataProvider.refresh();
+			}),
 			vscode.commands.registerCommand('leetnotion.syncLists', async () => {
+				if (!leetCodeManager.getUser()) {
+					promptForSignIn();
+					return;
+				}
 				await vscode.window.withProgress(
 					{ location: vscode.ProgressLocation.Notification, title: 'Syncing LeetCode lists...' },
 					async () => {
@@ -162,18 +170,34 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 			vscode.commands.registerCommand('leetnotion.clearAllData', () =>
 				leetnotionManager.clearAllData(),
 			),
-			vscode.commands.registerCommand('leetnotion.updateTemplateInfo', () =>
-				leetnotionManager.updateNotionInfo(),
-			),
-			vscode.commands.registerCommand('leetnotion.integrateNotion', () =>
-				leetnotionManager.enableNotionIntegration(),
-			),
-			vscode.commands.registerCommand('leetnotion.updateTemplate', () =>
-				templateUpdater.updateTemplate(),
-			),
-			vscode.commands.registerCommand('leetnotion.addSubmissions', () =>
-				leetnotionManager.uploadSubmissions(),
-			),
+			vscode.commands.registerCommand('leetnotion.updateTemplateInfo', () => {
+				if (!leetCodeManager.getUser()) {
+					promptForSignIn();
+					return;
+				}
+				return leetnotionManager.updateNotionInfo();
+			}),
+			vscode.commands.registerCommand('leetnotion.integrateNotion', () => {
+				if (!leetCodeManager.getUser()) {
+					promptForSignIn();
+					return;
+				}
+				return leetnotionManager.enableNotionIntegration();
+			}),
+			vscode.commands.registerCommand('leetnotion.updateTemplate', () => {
+				if (!leetCodeManager.getUser()) {
+					promptForSignIn();
+					return;
+				}
+				return templateUpdater.updateTemplate();
+			}),
+			vscode.commands.registerCommand('leetnotion.addSubmissions', () => {
+				if (!leetCodeManager.getUser()) {
+					promptForSignIn();
+					return;
+				}
+				return leetnotionManager.uploadSubmissions();
+			}),
 			{
 				dispose: () => {
 					intervals = clearIntervals(intervals);

@@ -53,6 +53,10 @@ export async function previewProblem(
 	input: IProblem | vscode.Uri,
 	isSideMode: boolean = false,
 ): Promise<void> {
+	if (!leetCodeManager.getUser()) {
+		promptForSignIn();
+		return;
+	}
 	let node: IProblem;
 
 	if (input instanceof vscode.Uri) {
@@ -107,6 +111,10 @@ export async function previewProblem(
 }
 
 export async function pickOne(): Promise<void> {
+	if (!leetCodeManager.getUser()) {
+		promptForSignIn();
+		return;
+	}
 	const problems: IProblem[] = await list.listProblems();
 	const randomProblem: IProblem = problems[Math.floor(Math.random() * problems.length)];
 	await showProblemInternal(randomProblem);
@@ -114,6 +122,10 @@ export async function pickOne(): Promise<void> {
 
 export async function showProblem(node?: LeetCodeNode): Promise<void> {
 	if (!node) {
+		return;
+	}
+	if (!leetCodeManager.getUser()) {
+		promptForSignIn();
 		return;
 	}
 	await showProblemInternal(node);
@@ -237,6 +249,10 @@ export async function searchLists(): Promise<void> {
 }
 
 export async function showSolution(input: LeetCodeNode | vscode.Uri): Promise<void> {
+	if (!leetCodeManager.getUser()) {
+		promptForSignIn();
+		return;
+	}
 	const language: string | undefined = await fetchProblemLanguage();
 	if (!language) {
 		return;

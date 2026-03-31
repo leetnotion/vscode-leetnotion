@@ -10,7 +10,7 @@ import { leetcodeClient } from '../leetCodeClient';
 import { leetCodeManager } from '../leetCodeManager';
 import { IQuickItemEx, langExt, UserStatus } from '../shared';
 import { extractCode, getLangFromFile, getNodeIdFromFile } from '../utils/problemUtils';
-import { DialogType, promptForOpenOutputChannel, showFileSelectDialog } from '../utils/uiUtils';
+import { DialogType, promptForOpenOutputChannel, promptForSignIn, showFileSelectDialog } from '../utils/uiUtils';
 import { getActiveFilePath } from '../utils/workspaceUtils';
 import { leetCodeSubmissionProvider } from '../webview/leetCodeSubmissionProvider';
 import { leetCodeTestCaseProvider } from '../webview/leetCodeTestCaseProvider';
@@ -18,6 +18,7 @@ import { leetCodeTestCaseProvider } from '../webview/leetCodeTestCaseProvider';
 export async function testSolution(uri?: vscode.Uri): Promise<void> {
 	try {
 		if (leetCodeManager.getStatus() === UserStatus.SignedOut) {
+			promptForSignIn();
 			return;
 		}
 
