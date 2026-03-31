@@ -1,6 +1,3 @@
-// Copyright (c) jdneo. All rights reserved.
-// Licensed under the MIT license.
-
 import { customCodeLensProvider } from '../codelens/CustomCodeLensProvider';
 import { LeetCodeNode } from '../explorer/LeetCodeNode';
 import { leetCodeTreeDataProvider } from '../explorer/LeetCodeTreeDataProvider';

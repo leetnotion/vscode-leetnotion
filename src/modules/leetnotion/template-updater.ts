@@ -36,7 +36,6 @@ export class TemplateUpdater {
 			await templateUpdateSession.close();
 		} catch (error) {
 			leetCodeChannel.appendLine(error.message);
-			let str = '';
 			if (error.message.includes('updating-cancelled')) {
 				promptForOpenOutputChannel(
 					`Updating template cancelled. You can resume it later.`,

@@ -1,5 +1,3 @@
-// Copyright (c) jdneo. All rights reserved.
-// Licensed under the MIT license.
 import { globalState } from '@/globalState';
 import { leetCodeChannel } from '@/leetCodeChannel';
 import { JudgeResult } from '@leetnotion/leetcode-api';

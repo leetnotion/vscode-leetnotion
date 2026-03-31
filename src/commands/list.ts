@@ -1,6 +1,3 @@
-// Copyright (c) jdneo. All rights reserved.
-// Licensed under the MIT license.
-
 import { leetCodeChannel } from '../leetCodeChannel';
 import { leetcodeClient } from '../leetCodeClient';
 import { leetCodeManager } from '../leetCodeManager';

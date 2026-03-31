@@ -1,6 +1,3 @@
-// Copyright (c) jdneo. All rights reserved.
-// Licensed under the MIT license.
-
 import { ConfigurationChangeEvent, Disposable, languages, workspace } from 'vscode';
 import { customCodeLensProvider, CustomCodeLensProvider } from './CustomCodeLensProvider';
 

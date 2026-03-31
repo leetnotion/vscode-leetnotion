@@ -1,6 +1,3 @@
-// Copyright (c) jdneo. All rights reserved.
-// Licensed under the MIT license.
-
 import * as vscode from 'vscode';
 import { codeLensController } from './codelens/CodeLensController';
 import * as cache from './commands/cache';

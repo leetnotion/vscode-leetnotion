@@ -1,6 +1,3 @@
-// Copyright (c) jdneo. All rights reserved.
-// Licensed under the MIT license.
-
 import { extractArrayElements } from '@/utils/dataUtils';
 import * as os from 'os';
 import * as path from 'path';

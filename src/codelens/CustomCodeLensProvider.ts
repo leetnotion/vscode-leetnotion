@@ -1,6 +1,3 @@
-// Copyright (c) jdneo. All rights reserved.
-// Licensed under the MIT license.
-
 import * as vscode from 'vscode';
 import { explorerNodeManager } from '../explorer/explorerNodeManager';
 import { LeetCodeNode } from '../explorer/LeetCodeNode';

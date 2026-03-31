@@ -198,7 +198,9 @@ class LeetnotionManager {
 			await globalState.clearAllExtensionData();
 			templateUpdateSession.close();
 			leetnotionClient.signOut();
-		} catch (error) {}
+		} catch (error) {
+			leetCodeChannel.appendLine(`Error during clearing data: ${(error as Error).message}`);
+		}
 	}
 }
 

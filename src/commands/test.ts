@@ -1,6 +1,3 @@
-// Copyright (c) jdneo. All rights reserved.
-// Licensed under the MIT license.
-
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as vscode from 'vscode';
@@ -119,6 +116,7 @@ export async function testSolution(uri?: vscode.Uri): Promise<void> {
 			'Failed to test the solution. Please open the output channel for details.',
 			DialogType.error,
 		);
+		leetCodeChannel.appendLine(`Error testing solution: ${(error as Error).message}`);
 	}
 }
 

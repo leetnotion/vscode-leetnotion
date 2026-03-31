@@ -1,6 +1,3 @@
-// Copyright (c) jdneo. All rights reserved.
-// Licensed under the MIT license.
-
 import { ConfigurationChangeEvent, Disposable, workspace, WorkspaceConfiguration } from 'vscode';
 import { UserStatus } from '../shared';
 import { LeetCodeStatusBarItem } from './LeetCodeStatusBarItem';

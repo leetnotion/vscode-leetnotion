@@ -1,6 +1,3 @@
-// Copyright (c) jdneo. All rights reserved.
-// Licensed under the MIT license.
-
 import { CompanyTags, Lists, Sheets, TopicTags } from '@/types';
 import {
 	extractArrayElements,

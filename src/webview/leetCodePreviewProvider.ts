@@ -1,6 +1,3 @@
-// Copyright (c) jdneo. All rights reserved.
-// Licensed under the MIT license.
-
 import { explorerNodeManager } from '@/explorer/explorerNodeManager';
 import { globalState } from '@/globalState';
 import { NextChallenge, QuestionDetail, SimilarQuestion } from '@leetnotion/leetcode-api';

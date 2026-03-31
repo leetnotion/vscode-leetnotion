@@ -1,6 +1,3 @@
-// Copyright (c) jdneo. All rights reserved.
-// Licensed under the MIT license.
-
 import { leetCodeChannel } from '@/leetCodeChannel';
 import { leetcodeClient } from '@/leetCodeClient';
 import * as fse from 'fs-extra';

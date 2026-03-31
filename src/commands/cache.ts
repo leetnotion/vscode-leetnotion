@@ -1,7 +1,6 @@
-// Copyright (c) jdneo. All rights reserved.
-// Licensed under the MIT license.
-
+import { leetCodeChannel } from '@/leetCodeChannel';
 import * as vscode from 'vscode';
+import { leetCodeTreeDataProvider } from '../explorer/LeetCodeTreeDataProvider';
 import { globalState } from '../globalState';
 import { leetcodeClient } from '../leetCodeClient';
 import { leetCodeManager } from '../leetCodeManager';
@@ -19,6 +18,7 @@ export async function deleteCache(): Promise<void> {
 			'Failed to delete cache. Please open the output channel for details.',
 			DialogType.error,
 		);
+		leetCodeChannel.appendLine(`Error deleting cache: ${(error as Error).message}`);
 	}
 }
 
@@ -34,7 +34,6 @@ export async function refreshData(): Promise<void> {
 			globalState.setTopicTags(undefined as any);
 			globalState.setProblemRatingMap(undefined as any);
 			// Refresh the tree (will fetch fresh API data in phase 2)
-			const { leetCodeTreeDataProvider } = await import('../explorer/LeetCodeTreeDataProvider');
 			await leetCodeTreeDataProvider.refresh();
 		},
 	);

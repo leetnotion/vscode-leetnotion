@@ -1,6 +1,3 @@
-// Copyright (c) jdneo. All rights reserved.
-// Licensed under the MIT license.
-
 import { Command, Uri } from 'vscode';
 import { IProblem, ProblemState } from '../shared';
 

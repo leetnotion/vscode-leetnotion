@@ -1,6 +1,3 @@
-// Copyright (c) jdneo. All rights reserved.
-// Licensed under the MIT license.
-
 import { ViewColumn } from 'vscode';
 import { leetCodePreviewProvider } from './leetCodePreviewProvider';
 import { ILeetCodeWebviewOption, LeetCodeWebview } from './LeetCodeWebview';

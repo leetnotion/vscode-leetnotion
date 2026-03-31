@@ -1,6 +1,3 @@
-// Copyright (c) jdneo. All rights reserved.
-// Licensed under the MIT license.
-
 export function isWindows(): boolean {
 	return process.platform === 'win32';
 }

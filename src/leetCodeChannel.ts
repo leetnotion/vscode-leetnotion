@@ -1,6 +1,3 @@
-// Copyright (c) jdneo. All rights reserved.
-// Licensed under the MIT license.
-
 import * as vscode from 'vscode';
 
 class LeetCodeChannel implements vscode.Disposable {

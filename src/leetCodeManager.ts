@@ -1,6 +1,3 @@
-// Copyright (c) jdneo. All rights reserved.
-// Licensed under the MIT license.
-
 import { EventEmitter } from 'events';
 import * as vscode from 'vscode';
 import { getLeetCodeEndpoint } from './commands/plugin';

@@ -1,6 +1,3 @@
-// Copyright (c) jdneo. All rights reserved.
-// Licensed under the MIT license.
-
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as vscode from 'vscode';
@@ -62,6 +59,7 @@ export async function submitSolution(uri?: vscode.Uri): Promise<void> {
 			'Failed to submit the solution. Please open the output channel for details.',
 			DialogType.error,
 		);
+		leetCodeChannel.appendLine(`Error submitting solution: ${(error as Error).message}`);
 		return;
 	}
 
