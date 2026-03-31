@@ -24,6 +24,7 @@ import {
 	shouldAddCodeToSubmissionPage,
 	shouldUpdateStatusWhenUploadingSubmissions,
 } from './utils/settingUtils';
+import { handleBackgroundError, handleError } from './utils/errorUtils';
 import { areArraysEqual, getNotionLang, splitTextIntoChunks } from './utils/toolUtils';
 import { DialogType, promptForOpenOutputChannel } from './utils/uiUtils';
 import { leetCodeSubmissionProvider } from './webview/leetCodeSubmissionProvider';
@@ -142,8 +143,7 @@ class LeetnotionClient {
 			);
 			await this.addCodeToPage(submissionPageId, submission.lang, submission.code);
 		} catch (error) {
-			promptForOpenOutputChannel(`Failed to update notion for your submission`, DialogType.error);
-			leetCodeChannel.appendLine(`Failed to update notion for your submission: ${error}`);
+			await handleError(error, 'update Notion for your submission');
 		}
 	}
 
@@ -297,8 +297,7 @@ class LeetnotionClient {
 			const allTags = Array.from(new Set([...prevTags, ...message.finalTags]));
 			globalState.setUserQuestionTags(allTags);
 		} catch (error) {
-			leetCodeChannel.appendLine(`Failed to set properties: ${error}`);
-			promptForOpenOutputChannel(`Failed to set properties`, DialogType.error);
+			await handleError(error, 'set properties');
 		}
 	}
 
@@ -319,7 +318,7 @@ class LeetnotionClient {
 			const questionTags = tags.multi_select.options.map(({ name }) => name);
 			globalState.setUserQuestionTags(questionTags);
 		} catch (error) {
-			leetCodeChannel.appendLine(`Failed to set user question tags: ${error}`);
+			handleBackgroundError(error, 'set user question tags');
 		}
 	}
 

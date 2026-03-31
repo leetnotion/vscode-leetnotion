@@ -9,6 +9,7 @@ import { leetnotionClient } from './leetnotionClient';
 import { templateUpdateSession } from './modules/leetnotion/session';
 import { IProblem } from './shared';
 import { LeetcodeSubmission } from './types';
+import { handleBackgroundError, handleError } from './utils/errorUtils';
 import { getWorkspaceConfiguration, hasNotionIntegrationEnabled } from './utils/settingUtils';
 import {
 	DialogType,
@@ -51,7 +52,7 @@ class LeetnotionManager {
 			}
 			await globalState.setNotionIntegrationStatus('done');
 		} catch (error) {
-			leetCodeChannel.appendLine(`Error enabling notion integration: ${error}`);
+			await handleError(error, 'enable Notion integration');
 		}
 	}
 
@@ -79,28 +80,32 @@ class LeetnotionManager {
 			});
 			return option === options[0] ? accessToken : await window.showInputBox(inputOptions);
 		} catch (error) {
-			leetCodeChannel.appendLine(error);
+			handleBackgroundError(error, 'get Notion access token');
 			return undefined;
 		}
 	}
 
 	public async updateNotionInfo(): Promise<void> {
-		const totalNoOfPages = await leetcodeClient.getNoOfProblems();
-		leetCodeChannel.appendLine('Started fetching template pages from notion.');
-		await window.withProgress(
-			{
-				location: ProgressLocation.Notification,
-				cancellable: false,
-				title: 'Loading questions from notion. Please wait...',
-			},
-			async (progress) => {
-				progress.report({ increment: 0 });
-				await leetnotionClient.updateTemplateInformation(() => {
-					progress.report({ increment: 10000 / totalNoOfPages });
-					leetCodeChannel.appendLine(`Collected 100 pages from notion`);
-				});
-			},
-		);
+		try {
+			const totalNoOfPages = await leetcodeClient.getNoOfProblems();
+			leetCodeChannel.appendLine('Started fetching template pages from notion.');
+			await window.withProgress(
+				{
+					location: ProgressLocation.Notification,
+					cancellable: false,
+					title: 'Loading questions from notion. Please wait...',
+				},
+				async (progress) => {
+					progress.report({ increment: 0 });
+					await leetnotionClient.updateTemplateInformation(() => {
+						progress.report({ increment: 10000 / totalNoOfPages });
+						leetCodeChannel.appendLine(`Collected 100 pages from notion`);
+					});
+				},
+			);
+		} catch (error) {
+			await handleError(error, 'update Notion info');
+		}
 	}
 
 	public async uploadSubmissions() {
@@ -163,12 +168,11 @@ class LeetnotionManager {
 				},
 			);
 		} catch (error) {
-			if (error.message.includes('adding-submissions-cancelled')) {
+			if (error instanceof Error && error.message.includes('adding-submissions-cancelled')) {
 				promptForOpenOutputChannel(`Adding submissions cancelled`, DialogType.completed);
 				return;
 			}
-			leetCodeChannel.appendLine(`Failed to upload submissions: ${error}`);
-			promptForOpenOutputChannel(`Failed to upload submissions`, DialogType.error);
+			await handleError(error, 'upload submissions');
 		}
 	}
 
@@ -248,9 +252,7 @@ class LeetnotionManager {
 				`[Notion] Successfully updated ${problemsToUpdate.length} problem(s) with similar questions.`,
 			);
 		} catch (error) {
-			leetCodeChannel.appendLine(
-				`[Notion] Failed to add new problems: ${(error as Error).message}`,
-			);
+			handleBackgroundError(error, 'add new problems to Notion');
 		}
 	}
 
@@ -261,7 +263,7 @@ class LeetnotionManager {
 			templateUpdateSession.close();
 			leetnotionClient.signOut();
 		} catch (error) {
-			leetCodeChannel.appendLine(`Error during clearing data: ${(error as Error).message}`);
+			handleBackgroundError(error, 'clear all data');
 		}
 	}
 }

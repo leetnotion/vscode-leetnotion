@@ -15,7 +15,6 @@ import { LeetCodeNode } from '../explorer/LeetCodeNode';
 import { globalState } from '../globalState';
 import { leetCodeChannel } from '../leetCodeChannel';
 import { leetcodeClient } from '../leetCodeClient';
-import { leetCodeManager } from '../leetCodeManager';
 import {
 	ALL_TIME,
 	Category,
@@ -27,17 +26,15 @@ import {
 	PREMIUM_URL_GLOBAL,
 	ProblemState,
 } from '../shared';
+import { handleError } from '../utils/errorUtils';
 import { genFileExt, genFileName, getNodeIdFromFile } from '../utils/problemUtils';
 import * as settingUtils from '../utils/settingUtils';
 import { getCodeFooter, getCodeHeader, IDescriptionConfiguration } from '../utils/settingUtils';
 import TrackData from '../utils/trackingUtils';
 import {
 	DialogOptions,
-	DialogType,
 	openSettingsEditor,
 	openUrl,
-	promptForOpenOutputChannel,
-	promptForSignIn,
 	promptHintMessage,
 } from '../utils/uiUtils';
 import { selectWorkspaceFolder } from '../utils/workspaceUtils';
@@ -50,10 +47,6 @@ export async function previewProblem(
 	input: IProblem | vscode.Uri,
 	isSideMode: boolean = false,
 ): Promise<void> {
-	if (!leetCodeManager.getUser()) {
-		promptForSignIn();
-		return;
-	}
 	let node: IProblem;
 
 	if (input instanceof vscode.Uri) {
@@ -92,65 +85,61 @@ export async function previewProblem(
 		}),
 	});
 
-	const totalStart = Date.now();
+	try {
+		const totalStart = Date.now();
 
-	const apiStart = Date.now();
-	const problem = await leetcodeClient.leetcode.getQuestionDetailsByTitleSlug(node.slug);
-	const apiTime = Date.now() - apiStart;
-	leetCodeChannel.appendLine(`[${node.id}] ${node.name}: API call took ${apiTime}ms`);
+		const apiStart = Date.now();
+		const problem = await leetcodeClient.leetcode.getQuestionDetailsByTitleSlug(node.slug);
+		const apiTime = Date.now() - apiStart;
+		leetCodeChannel.appendLine(`[${node.id}] ${node.name}: API call took ${apiTime}ms`);
 
-	leetCodePreviewProvider.show(problem, node, isSideMode);
+		leetCodePreviewProvider.show(problem, node, isSideMode);
 
-	const totalTime = Date.now() - totalStart;
-	leetCodeChannel.appendLine(
-		`[${node.id}] ${node.name}: Total time to show problem ${totalTime}ms (API: ${apiTime}ms, Render: ${totalTime - apiTime}ms)`,
-	);
+		const totalTime = Date.now() - totalStart;
+		leetCodeChannel.appendLine(
+			`[${node.id}] ${node.name}: Total time to show problem ${totalTime}ms (API: ${apiTime}ms, Render: ${totalTime - apiTime}ms)`,
+		);
+	} catch (error) {
+		await handleError(error, 'preview the problem');
+	}
 }
 
 export async function pickOne(): Promise<void> {
-	if (!leetCodeManager.getUser()) {
-		promptForSignIn();
-		return;
+	try {
+		const problems: IProblem[] = await list.listProblems();
+		const randomProblem: IProblem = problems[Math.floor(Math.random() * problems.length)];
+		await showProblemInternal(randomProblem);
+	} catch (error) {
+		await handleError(error, 'pick a random problem');
 	}
-	const problems: IProblem[] = await list.listProblems();
-	const randomProblem: IProblem = problems[Math.floor(Math.random() * problems.length)];
-	await showProblemInternal(randomProblem);
 }
 
 export async function showProblem(node?: LeetCodeNode): Promise<void> {
 	if (!node) {
 		return;
 	}
-	if (!leetCodeManager.getUser()) {
-		promptForSignIn();
-		return;
-	}
 	await showProblemInternal(node);
 }
 
 export async function searchProblem(): Promise<void> {
-	if (!leetCodeManager.getUser()) {
-		promptForSignIn();
-		return;
+	try {
+		const choice: IQuickItemEx<IProblem> | undefined = await vscode.window.showQuickPick(
+			parseProblemsToPicks(list.listProblems()),
+			{
+				matchOnDetail: true,
+				placeHolder: 'Select one problem',
+			},
+		);
+		if (!choice) {
+			return;
+		}
+		await showProblemInternal(choice.value);
+	} catch (error) {
+		await handleError(error, 'search problems');
 	}
-	const choice: IQuickItemEx<IProblem> | undefined = await vscode.window.showQuickPick(
-		parseProblemsToPicks(list.listProblems()),
-		{
-			matchOnDetail: true,
-			placeHolder: 'Select one problem',
-		},
-	);
-	if (!choice) {
-		return;
-	}
-	await showProblemInternal(choice.value);
 }
 
 export async function searchCompany(): Promise<void> {
-	if (!leetCodeManager.getUser()) {
-		promptForSignIn();
-		return;
-	}
 	const companyTags = getCompanyTags();
 	const choice: IQuickItemEx<string> | undefined = await vscode.window.showQuickPick(
 		parseCompaniesToPicks(companyTags),
@@ -166,29 +155,25 @@ export async function searchCompany(): Promise<void> {
 }
 
 export async function searchTag(): Promise<void> {
-	if (!leetCodeManager.getUser()) {
-		promptForSignIn();
-		return;
+	try {
+		const topicTags = await getTopicTags();
+		const choice: IQuickItemEx<string> | undefined = await vscode.window.showQuickPick(
+			parseTagsToPicks(topicTags),
+			{
+				matchOnDetail: true,
+				placeHolder: 'Search for a tag',
+			},
+		);
+		if (!choice) {
+			return;
+		}
+		explorerNodeManager.revealNode(`${Category.Tag}#${choice.value}`);
+	} catch (error) {
+		await handleError(error, 'search tags');
 	}
-	const topicTags = await getTopicTags();
-	const choice: IQuickItemEx<string> | undefined = await vscode.window.showQuickPick(
-		parseTagsToPicks(topicTags),
-		{
-			matchOnDetail: true,
-			placeHolder: 'Search for a tag',
-		},
-	);
-	if (!choice) {
-		return;
-	}
-	explorerNodeManager.revealNode(`${Category.Tag}#${choice.value}`);
 }
 
 export async function searchContests(): Promise<void> {
-	if (!leetCodeManager.getUser()) {
-		promptForSignIn();
-		return;
-	}
 	const contests = globalState.get('leetcodeContests') as Record<string, string[]>;
 	if (!contests) {
 		leetCodeChannel.appendLine('Failed to get leetcode contests');
@@ -208,10 +193,6 @@ export async function searchContests(): Promise<void> {
 }
 
 export async function searchSheets(): Promise<void> {
-	if (!leetCodeManager.getUser()) {
-		promptForSignIn();
-		return;
-	}
 	const sheets = getSheets();
 	const choice: IQuickItemEx<string> | undefined = await vscode.window.showQuickPick(
 		parseSheetsToPicks(sheets),
@@ -227,29 +208,25 @@ export async function searchSheets(): Promise<void> {
 }
 
 export async function searchLists(): Promise<void> {
-	if (!leetCodeManager.getUser()) {
-		promptForSignIn();
-		return;
+	try {
+		const lists = await getLists();
+		const choice: IQuickItemEx<string> | undefined = await vscode.window.showQuickPick(
+			parseListsToPicks(lists),
+			{
+				matchOnDetail: true,
+				placeHolder: 'Search for a list',
+			},
+		);
+		if (!choice) {
+			return;
+		}
+		explorerNodeManager.revealNode(`${Category.Lists}#${choice.value}`);
+	} catch (error) {
+		await handleError(error, 'search lists');
 	}
-	const lists = await getLists();
-	const choice: IQuickItemEx<string> | undefined = await vscode.window.showQuickPick(
-		parseListsToPicks(lists),
-		{
-			matchOnDetail: true,
-			placeHolder: 'Search for a list',
-		},
-	);
-	if (!choice) {
-		return;
-	}
-	explorerNodeManager.revealNode(`${Category.Lists}#${choice.value}`);
 }
 
 export async function showSolution(input: LeetCodeNode | vscode.Uri): Promise<void> {
-	if (!leetCodeManager.getUser()) {
-		promptForSignIn();
-		return;
-	}
 	const language: string | undefined = await fetchProblemLanguage();
 	if (!language) {
 		return;
@@ -308,11 +285,7 @@ export async function showSolution(input: LeetCodeNode | vscode.Uri): Promise<vo
 			lang: solutionLang,
 		});
 	} catch (error) {
-		leetCodeChannel.appendLine(error.toString());
-		await promptForOpenOutputChannel(
-			'Failed to fetch the top voted solution. Please open the output channel for details.',
-			DialogType.error,
-		);
+		await handleError(error, 'fetch the top voted solution');
 	}
 }
 
@@ -422,10 +395,7 @@ async function showProblemInternal(node: IProblem): Promise<void> {
 
 		await Promise.all(promises);
 	} catch (error) {
-		await promptForOpenOutputChannel(
-			`${error} Please open the output channel for details.`,
-			DialogType.error,
-		);
+		await handleError(error, 'show the problem');
 	}
 }
 

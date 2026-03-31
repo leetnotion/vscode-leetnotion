@@ -4,26 +4,16 @@ import * as vscode from 'vscode';
 import { explorerNodeManager } from '../explorer/explorerNodeManager';
 import { leetCodeChannel } from '../leetCodeChannel';
 import { leetcodeClient } from '../leetCodeClient';
-import { leetCodeManager } from '../leetCodeManager';
-import { IQuickItemEx, langExt, UserStatus } from '../shared';
+import { IQuickItemEx, langExt } from '../shared';
+import { handleError } from '../utils/errorUtils';
 import { extractCode, getLangFromFile, getNodeIdFromFile } from '../utils/problemUtils';
-import {
-	DialogType,
-	promptForOpenOutputChannel,
-	promptForSignIn,
-	showFileSelectDialog,
-} from '../utils/uiUtils';
+import { showFileSelectDialog } from '../utils/uiUtils';
 import { getActiveFilePath } from '../utils/workspaceUtils';
 import { leetCodeSubmissionProvider } from '../webview/leetCodeSubmissionProvider';
 import { leetCodeTestCaseProvider } from '../webview/leetCodeTestCaseProvider';
 
 export async function testSolution(uri?: vscode.Uri): Promise<void> {
 	try {
-		if (leetCodeManager.getStatus() === UserStatus.SignedOut) {
-			promptForSignIn();
-			return;
-		}
-
 		const filePath: string | undefined = await getActiveFilePath(uri);
 		if (!filePath) {
 			return;
@@ -112,11 +102,7 @@ export async function testSolution(uri?: vscode.Uri): Promise<void> {
 		}
 		leetCodeSubmissionProvider.show(results[0], true, dataInput);
 	} catch (error) {
-		await promptForOpenOutputChannel(
-			'Failed to test the solution. Please open the output channel for details.',
-			DialogType.error,
-		);
-		leetCodeChannel.appendLine(`Error testing solution: ${(error as Error).message}`);
+		await handleError(error, 'test the solution');
 	}
 }
 

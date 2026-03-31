@@ -5,22 +5,16 @@ import { explorerNodeManager } from '../explorer/explorerNodeManager';
 import { leetCodeTreeDataProvider } from '../explorer/LeetCodeTreeDataProvider';
 import { leetCodeChannel } from '../leetCodeChannel';
 import { leetcodeClient } from '../leetCodeClient';
-import { leetCodeManager } from '../leetCodeManager';
 import { leetnotionClient } from '../leetnotionClient';
 import { langExt } from '../shared';
+import { handleError } from '../utils/errorUtils';
 import { extractCode, getLangFromFile, getNodeIdFromFile } from '../utils/problemUtils';
 import { hasNotionIntegrationEnabled } from '../utils/settingUtils';
 import { getQuestionNumber } from '../utils/toolUtils';
-import { DialogType, promptForOpenOutputChannel, promptForSignIn } from '../utils/uiUtils';
 import { getActiveFilePath } from '../utils/workspaceUtils';
 import { leetCodeSubmissionProvider } from '../webview/leetCodeSubmissionProvider';
 
 export async function submitSolution(uri?: vscode.Uri): Promise<void> {
-	if (!leetCodeManager.getUser()) {
-		promptForSignIn();
-		return;
-	}
-
 	const filePath: string | undefined = await getActiveFilePath(uri);
 	if (!filePath) {
 		return;
@@ -55,11 +49,7 @@ export async function submitSolution(uri?: vscode.Uri): Promise<void> {
 			await leetnotionClient.submitSolution(questionNumber);
 		}
 	} catch (error) {
-		await promptForOpenOutputChannel(
-			'Failed to submit the solution. Please open the output channel for details.',
-			DialogType.error,
-		);
-		leetCodeChannel.appendLine(`Error submitting solution: ${(error as Error).message}`);
+		await handleError(error, 'submit the solution');
 		return;
 	}
 

@@ -5,6 +5,7 @@ import { leetCodeChannel } from '../../leetCodeChannel';
 import { leetcodeClient } from '../../leetCodeClient';
 import { leetnotionClient } from '../../leetnotionClient';
 import { LeetcodeProblem, ProblemPageResponse } from '../../types';
+import { handleError } from '../../utils/errorUtils';
 import { hasNotionIntegrationEnabled } from '../../utils/settingUtils';
 import { DialogType, promptForOpenOutputChannel } from '../../utils/uiUtils';
 import { templateUpdateSession } from './session';
@@ -35,16 +36,14 @@ export class TemplateUpdater {
 			);
 			await templateUpdateSession.close();
 		} catch (error) {
-			leetCodeChannel.appendLine(error.message);
-			if (error.message.includes('updating-cancelled')) {
+			if (error instanceof Error && error.message.includes('updating-cancelled')) {
 				promptForOpenOutputChannel(
 					`Updating template cancelled. You can resume it later.`,
 					DialogType.completed,
 				);
 				return;
 			}
-			leetCodeChannel.appendLine(`Failed to update leetnotion template: ${error}`);
-			promptForOpenOutputChannel(`Failed to update leetnotion template`, DialogType.error);
+			await handleError(error, 'update Notion template');
 		}
 	}
 

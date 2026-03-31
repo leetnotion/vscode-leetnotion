@@ -1,22 +1,23 @@
-import { EventEmitter } from 'events';
 import * as vscode from 'vscode';
 import { getLeetCodeEndpoint } from './commands/plugin';
 import { globalState } from './globalState';
-import { leetCodeChannel } from './leetCodeChannel';
 import { leetcodeClient } from './leetCodeClient';
 import { leetnotionManager } from './leetnotionManager';
 import { queryUserData } from './request/query-user-data';
 import { Endpoint, urls, urlsCn, UserStatus } from './shared';
+import { handleError } from './utils/errorUtils';
 import { hasNotionIntegrationEnabled } from './utils/settingUtils';
 import { parseQuery } from './utils/toolUtils';
 import { DialogType, openUrl, promptForOpenOutputChannel } from './utils/uiUtils';
 
-class LeetCodeManager extends EventEmitter {
+class LeetCodeManager {
 	private currentUser: string | undefined;
 	private userStatus: UserStatus;
 
+	private readonly _onStatusChanged = new vscode.EventEmitter<void>();
+	public readonly onStatusChanged: vscode.Event<void> = this._onStatusChanged.event;
+
 	constructor() {
-		super();
 		this.currentUser = undefined;
 		this.userStatus = UserStatus.SignedOut;
 		this.handleUriSignIn = this.handleUriSignIn.bind(this);
@@ -37,13 +38,13 @@ class LeetCodeManager extends EventEmitter {
 				throw new Error('Failed to get user info');
 			}
 		} catch (error) {
-			leetCodeChannel.appendLine(`Error during login status check: ${(error as Error).message}`);
+			handleError(error, 'check login status', { showDialog: false });
 			this.currentUser = undefined;
 			this.userStatus = UserStatus.SignedOut;
 			await globalState.removeAll();
 			leetcodeClient.signOut();
 		} finally {
-			this.emit('statusChanged');
+			this._onStatusChanged.fire();
 		}
 	}
 
@@ -56,7 +57,7 @@ class LeetCodeManager extends EventEmitter {
 			vscode.window.showInformationMessage(`Successfully logged in to leetcode: ${data.username}.`);
 			this.currentUser = data.username;
 			this.userStatus = UserStatus.SignedIn;
-			this.emit('statusChanged');
+			this._onStatusChanged.fire();
 		}
 		if (hasNotionIntegrationEnabled()) {
 			if (globalState.getNotionAccessToken()) {
@@ -98,11 +99,7 @@ class LeetCodeManager extends EventEmitter {
 				},
 			);
 		} catch (error) {
-			promptForOpenOutputChannel(
-				`Failed to log in. Please open the output channel for details`,
-				DialogType.error,
-			);
-			leetCodeChannel.appendLine(`Error during URI sign-in: ${(error as Error).message}`);
+			await handleError(error, 'log in via URI');
 		}
 	}
 
@@ -154,11 +151,7 @@ class LeetCodeManager extends EventEmitter {
 				},
 			);
 		} catch (error) {
-			promptForOpenOutputChannel(
-				`Failed to log in. Please open the output channel for details`,
-				DialogType.error,
-			);
-			leetCodeChannel.appendLine(`Error during cookie sign-in: ${(error as Error).message}`);
+			await handleError(error, 'log in via cookie');
 		}
 	}
 
@@ -169,9 +162,9 @@ class LeetCodeManager extends EventEmitter {
 			this.userStatus = UserStatus.SignedOut;
 			await globalState.removeAll();
 			leetcodeClient.signOut();
-			this.emit('statusChanged');
+			this._onStatusChanged.fire();
 		} catch (error) {
-			leetCodeChannel.appendLine(`Error during sign-out: ${(error as Error).message}`);
+			handleError(error, 'sign out', { showDialog: false });
 		}
 	}
 

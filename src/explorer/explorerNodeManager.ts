@@ -30,6 +30,7 @@ import {
 	shouldHideSolvedProblem,
 } from '../utils/settingUtils';
 import { getStaticProblems } from '../utils/staticDataUtils';
+import { handleBackgroundError } from '../utils/errorUtils';
 import { LeetCodeNode } from './LeetCodeNode';
 
 class ExplorerNodeManager implements Disposable {
@@ -171,64 +172,68 @@ class ExplorerNodeManager implements Disposable {
 			return;
 		}
 
-		// Phase 1: Instant render from cached or static data (no slow API calls)
-		let start = Date.now();
-		const cachedProblems = globalState.getCachedProblems();
-		const phase1Problems = cachedProblems ?? getStaticProblems();
-		const topicTags = await getTopicTags(); // returns cached or static, kicks off bg refresh
-		const contests = await getContests();
-		const listsWithQuestions = await getListsWithQuestions();
-		this.buildTree(phase1Problems, topicTags, contests, listsWithQuestions);
-		this.onTreeChanged();
-		leetCodeChannel.appendLine(
-			`[refreshCache] Phase 1: ${cachedProblems ? 'Cached' : 'Static'} tree rendered (${Date.now() - start}ms)`,
-		);
-
-		// Phase 2: Fetch real data with user state
-		start = Date.now();
-		leetCodeChannel.appendLine('[refreshCache] Phase 2: Fetching daily problem...');
-		await leetcodeClient.setDailyProblem();
-		leetCodeChannel.appendLine(
-			`[refreshCache] Phase 2: Fetched daily problem (${Date.now() - start}ms)`,
-		);
-
-		start = Date.now();
-		leetCodeChannel.appendLine('[refreshCache] Phase 2: Fetching live problems...');
-		const liveProblems = await list.listProblems();
-		leetCodeChannel.appendLine(
-			`[refreshCache] Phase 2: Fetched ${liveProblems.length} problems (${Date.now() - start}ms)`,
-		);
-
-		if (liveProblems.length > 0) {
-			start = Date.now();
-
-			if (this.allProblemIds.size > 0) {
-				const newProblems = liveProblems.filter((p) => !this.allProblemIds.has(String(p.id)));
-				if (newProblems.length > 0) {
-					leetCodeChannel.appendLine(
-						`[refreshCache] Detected ${newProblems.length} new problem(s): ${newProblems.map((p) => p.id).join(', ')}`,
-					);
-					this.onNewProblemsDetected(newProblems);
-				}
-			}
-
-			this.allProblemIds.clear();
-			for (const p of liveProblems) {
-				this.allProblemIds.add(String(p.id));
-			}
-
-			const freshTopicTags = await getTopicTags();
-			this.buildTree(liveProblems, freshTopicTags, contests, listsWithQuestions);
+		try {
+			// Phase 1: Instant render from cached or static data (no slow API calls)
+			let start = Date.now();
+			const cachedProblems = globalState.getCachedProblems();
+			const phase1Problems = cachedProblems ?? getStaticProblems();
+			const topicTags = await getTopicTags(); // returns cached or static, kicks off bg refresh
+			const contests = await getContests();
+			const listsWithQuestions = await getListsWithQuestions();
+			this.buildTree(phase1Problems, topicTags, contests, listsWithQuestions);
 			this.onTreeChanged();
-			globalState.setCachedProblems(liveProblems);
 			leetCodeChannel.appendLine(
-				`[refreshCache] Phase 2: Live tree rendered (${Date.now() - start}ms)`,
+				`[refreshCache] Phase 1: ${cachedProblems ? 'Cached' : 'Static'} tree rendered (${Date.now() - start}ms)`,
 			);
-		}
 
-		leetCodeChannel.appendLine(
-			`[refreshCache] Tree refresh complete (total: ${Date.now() - refreshStart}ms)`,
-		);
+			// Phase 2: Fetch real data with user state
+			start = Date.now();
+			leetCodeChannel.appendLine('[refreshCache] Phase 2: Fetching daily problem...');
+			await leetcodeClient.setDailyProblem();
+			leetCodeChannel.appendLine(
+				`[refreshCache] Phase 2: Fetched daily problem (${Date.now() - start}ms)`,
+			);
+
+			start = Date.now();
+			leetCodeChannel.appendLine('[refreshCache] Phase 2: Fetching live problems...');
+			const liveProblems = await list.listProblems();
+			leetCodeChannel.appendLine(
+				`[refreshCache] Phase 2: Fetched ${liveProblems.length} problems (${Date.now() - start}ms)`,
+			);
+
+			if (liveProblems.length > 0) {
+				start = Date.now();
+
+				if (this.allProblemIds.size > 0) {
+					const newProblems = liveProblems.filter((p) => !this.allProblemIds.has(String(p.id)));
+					if (newProblems.length > 0) {
+						leetCodeChannel.appendLine(
+							`[refreshCache] Detected ${newProblems.length} new problem(s): ${newProblems.map((p) => p.id).join(', ')}`,
+						);
+						this.onNewProblemsDetected(newProblems);
+					}
+				}
+
+				this.allProblemIds.clear();
+				for (const p of liveProblems) {
+					this.allProblemIds.add(String(p.id));
+				}
+
+				const freshTopicTags = await getTopicTags();
+				this.buildTree(liveProblems, freshTopicTags, contests, listsWithQuestions);
+				this.onTreeChanged();
+				globalState.setCachedProblems(liveProblems);
+				leetCodeChannel.appendLine(
+					`[refreshCache] Phase 2: Live tree rendered (${Date.now() - start}ms)`,
+				);
+			}
+
+			leetCodeChannel.appendLine(
+				`[refreshCache] Tree refresh complete (total: ${Date.now() - refreshStart}ms)`,
+			);
+		} catch (error) {
+			handleBackgroundError(error, 'refresh explorer cache');
+		}
 	}
 
 	public getRootNodes(): LeetCodeNode[] {
