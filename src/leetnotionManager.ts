@@ -227,9 +227,7 @@ class LeetnotionManager {
 			return;
 		}
 		try {
-			leetCodeChannel.appendLine(
-				`[Notion] Fetching details for ${slugs.length} new problem(s)...`,
-			);
+			leetCodeChannel.appendLine(`[Notion] Fetching details for ${slugs.length} new problem(s)...`);
 			const leetcodeProblems = await leetcodeClient.getLeetcodeProblemsBySlugs(slugs);
 			const problemsToAdd = leetcodeProblems.filter(
 				({ questionFrontendId }) => !(questionFrontendId in questionNumberPageIdMapping),

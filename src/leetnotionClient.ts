@@ -19,12 +19,12 @@ import {
 	SelectTags,
 	SetPropertiesMessage,
 } from './types';
+import { handleBackgroundError, handleError } from './utils/errorUtils';
 import {
 	hasNotionIntegrationEnabled,
 	shouldAddCodeToSubmissionPage,
 	shouldUpdateStatusWhenUploadingSubmissions,
 } from './utils/settingUtils';
-import { handleBackgroundError, handleError } from './utils/errorUtils';
 import { areArraysEqual, getNotionLang, splitTextIntoChunks } from './utils/toolUtils';
 import { DialogType, promptForOpenOutputChannel } from './utils/uiUtils';
 import { leetCodeSubmissionProvider } from './webview/leetCodeSubmissionProvider';

@@ -24,13 +24,13 @@ import {
 	getSheets,
 	getTopicTags,
 } from '../utils/dataUtils';
+import { handleBackgroundError } from '../utils/errorUtils';
 import {
 	getCompaniesSortingStrategy,
 	shouldHidePremiumProblem,
 	shouldHideSolvedProblem,
 } from '../utils/settingUtils';
 import { getStaticProblems } from '../utils/staticDataUtils';
-import { handleBackgroundError } from '../utils/errorUtils';
 import { LeetCodeNode } from './LeetCodeNode';
 
 class ExplorerNodeManager implements Disposable {

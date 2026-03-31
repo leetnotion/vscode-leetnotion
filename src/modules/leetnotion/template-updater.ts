@@ -75,13 +75,15 @@ export class TemplateUpdater {
 			await templateUpdateSession.update(LEETCODE_PROBLEMS, problems);
 			await templateUpdateSession.update(IS_PROBLEMS_RETRIEVED, true);
 		} else {
-			problems = await templateUpdateSession.get(LEETCODE_PROBLEMS) as LeetcodeProblem[];
+			problems = (await templateUpdateSession.get(LEETCODE_PROBLEMS)) as LeetcodeProblem[];
 		}
 		return problems;
 	}
 
 	public async addNewProblems() {
-		const problems = await templateUpdateSession.get(LEETCODE_PROBLEMS) as LeetcodeProblem[] | undefined;
+		const problems = (await templateUpdateSession.get(LEETCODE_PROBLEMS)) as
+			| LeetcodeProblem[]
+			| undefined;
 		if (!problems) {
 			throw new Error(`leetcode-problems-not-found`);
 		}
@@ -126,11 +128,16 @@ export class TemplateUpdater {
 	}
 
 	public async updateProblems() {
-		const problems = await templateUpdateSession.get(LEETCODE_PROBLEMS) as LeetcodeProblem[] | undefined;
+		const problems = (await templateUpdateSession.get(LEETCODE_PROBLEMS)) as
+			| LeetcodeProblem[]
+			| undefined;
 		if (!problems) {
 			throw new Error(`leetcode-problems-not-found`);
 		}
-		const updatedPagesMapping = await templateUpdateSession.get(UPDATED_PAGES) as Record<string, string>;
+		const updatedPagesMapping = (await templateUpdateSession.get(UPDATED_PAGES)) as Record<
+			string,
+			string
+		>;
 		const problemsToUpdate = problems.filter(
 			({ questionFrontendId }) => !(questionFrontendId in updatedPagesMapping),
 		);

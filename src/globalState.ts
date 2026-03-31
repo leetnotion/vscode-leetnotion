@@ -126,8 +126,12 @@ class GlobalState {
 
 		// Load disk-cached data into memory for synchronous access
 		this._topicTags = await this._readFromDisk<TopicTags>(TopicTagsKey);
-		this._questionNumberPageIdMapping = await this._readFromDisk<Mapping>(QuestionNumberPageIdMappingKey);
-		this._titleSlugQuestionNumberMapping = await this._readFromDisk<Mapping>(TitleSlugQuestionNumberMappingKey);
+		this._questionNumberPageIdMapping = await this._readFromDisk<Mapping>(
+			QuestionNumberPageIdMappingKey,
+		);
+		this._titleSlugQuestionNumberMapping = await this._readFromDisk<Mapping>(
+			TitleSlugQuestionNumberMappingKey,
+		);
 		this._problemRatingMap = await this._readFromDisk<ProblemRatingMap>(ProblemRatingMapKey);
 		this._cachedProblems = await this._readFromDisk<IProblem[]>(CachedProblemsKey);
 	}
@@ -309,7 +313,8 @@ class GlobalState {
 	}
 
 	private async _initializeQuestionsOfList(): Promise<void> {
-		const savedState = await this._readFromDisk<Record<string, QuestionsOfList>>(QuestionsOfListKey) || {};
+		const savedState =
+			(await this._readFromDisk<Record<string, QuestionsOfList>>(QuestionsOfListKey)) || {};
 		this._questionsOfList = { ...savedState };
 	}
 
@@ -427,7 +432,12 @@ class GlobalState {
 		this._state.update(LeetcodeListsKey, undefined);
 		this._state.update(DailyProblemKey, undefined);
 		this._state.update(ListsSyncTimestampKey, undefined);
-		const leetcodeDiskKeys = [QuestionsOfListKey, ProblemRatingMapKey, CachedProblemsKey, TopicTagsKey];
+		const leetcodeDiskKeys = [
+			QuestionsOfListKey,
+			ProblemRatingMapKey,
+			CachedProblemsKey,
+			TopicTagsKey,
+		];
 		for (const key of leetcodeDiskKeys) {
 			await this._writeToDisk(key, undefined);
 		}

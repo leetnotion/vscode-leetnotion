@@ -78,7 +78,7 @@ export class TemplateUpdateSession {
 		if (!this.currentSessionId) {
 			throw new Error(`Session not initialized`);
 		}
-		let arr = await this.get(property) as unknown[];
+		let arr = (await this.get(property)) as unknown[];
 		if (!arr) {
 			arr = [];
 		}

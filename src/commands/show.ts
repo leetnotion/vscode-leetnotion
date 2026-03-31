@@ -31,12 +31,7 @@ import { genFileExt, genFileName, getNodeIdFromFile } from '../utils/problemUtil
 import * as settingUtils from '../utils/settingUtils';
 import { getCodeFooter, getCodeHeader, IDescriptionConfiguration } from '../utils/settingUtils';
 import TrackData from '../utils/trackingUtils';
-import {
-	DialogOptions,
-	openSettingsEditor,
-	openUrl,
-	promptHintMessage,
-} from '../utils/uiUtils';
+import { DialogOptions, openSettingsEditor, openUrl, promptHintMessage } from '../utils/uiUtils';
 import { selectWorkspaceFolder } from '../utils/workspaceUtils';
 import { leetCodePreviewProvider } from '../webview/leetCodePreviewProvider';
 import { leetCodeSolutionProvider } from '../webview/leetCodeSolutionProvider';

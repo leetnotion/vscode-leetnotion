@@ -21,7 +21,12 @@ import { leetnotionManager } from './leetnotionManager';
 import { templateUpdater } from './modules/leetnotion/template-updater';
 import { UserStatus } from './shared';
 import { leetCodeStatusBarController } from './statusbar/leetCodeStatusBarController';
-import { refreshTopicTags, setProblemRatingMap, syncLists, syncListsIfNeeded } from './utils/dataUtils';
+import {
+	refreshTopicTags,
+	setProblemRatingMap,
+	syncLists,
+	syncListsIfNeeded,
+} from './utils/dataUtils';
 import { handleBackgroundError, handleError } from './utils/errorUtils';
 import { clearIntervals, repeatAction } from './utils/toolUtils';
 import TrackData from './utils/trackingUtils';
@@ -73,12 +78,15 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
 		leetcodeClient.setTitleSlugQuestionNumberMapping();
 		if (globalState.getNotionIntegrationStatus() === 'pending') {
-			leetnotionManager.updateNotionInfo().then(async () => {
-				await globalState.setNotionIntegrationStatus('done');
-				vscode.window.showInformationMessage('Notion integration completed 🎉');
-			}).catch((error) => {
-				handleBackgroundError(error, 'complete pending Notion integration');
-			});
+			leetnotionManager
+				.updateNotionInfo()
+				.then(async () => {
+					await globalState.setNotionIntegrationStatus('done');
+					vscode.window.showInformationMessage('Notion integration completed 🎉');
+				})
+				.catch((error) => {
+					handleBackgroundError(error, 'complete pending Notion integration');
+				});
 		}
 
 		leetcodeTreeView = vscode.window.createTreeView('leetnotionExplorer', {
@@ -98,72 +106,119 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 			explorerNodeManager,
 			vscode.window.registerFileDecorationProvider(leetCodeTreeItemDecorationProvider),
 			leetcodeTreeView,
-			vscode.commands.registerCommand('leetnotion.deleteCache', withAuth(() => cache.deleteCache())),
-			vscode.commands.registerCommand('leetnotion.refreshData', withAuth(() => cache.refreshData())),
+			vscode.commands.registerCommand(
+				'leetnotion.deleteCache',
+				withAuth(() => cache.deleteCache()),
+			),
+			vscode.commands.registerCommand(
+				'leetnotion.refreshData',
+				withAuth(() => cache.refreshData()),
+			),
 			vscode.commands.registerCommand('leetnotion.toggleLeetCodeCn', () => {
 				vscode.window.showInformationMessage('Endpoint switching is not currently supported.');
 			}),
 			vscode.commands.registerCommand('leetnotion.signin', () => leetCodeManager.signIn()),
 			vscode.commands.registerCommand('leetnotion.signout', () => leetCodeManager.signOut()),
-			vscode.commands.registerCommand('leetnotion.previewProblem',
+			vscode.commands.registerCommand(
+				'leetnotion.previewProblem',
 				withAuth((node: vscode.Uri) => show.previewProblem(node)),
 			),
-			vscode.commands.registerCommand('leetnotion.showProblem',
+			vscode.commands.registerCommand(
+				'leetnotion.showProblem',
 				withAuth((node: LeetCodeNode) => show.showProblem(node)),
 			),
-			vscode.commands.registerCommand('leetnotion.pickOne', withAuth(() => show.pickOne())),
-			vscode.commands.registerCommand('leetnotion.searchProblem', withAuth(() => show.searchProblem())),
-			vscode.commands.registerCommand('leetnotion.searchCompany', withAuth(() => show.searchCompany())),
-			vscode.commands.registerCommand('leetnotion.searchTag', withAuth(() => show.searchTag())),
-			vscode.commands.registerCommand('leetnotion.searchSheets', withAuth(() => show.searchSheets())),
-			vscode.commands.registerCommand('leetnotion.searchContests', withAuth(() => show.searchContests())),
-			vscode.commands.registerCommand('leetnotion.searchList', withAuth(() => show.searchLists())),
-			vscode.commands.registerCommand('leetnotion.showSolution',
+			vscode.commands.registerCommand(
+				'leetnotion.pickOne',
+				withAuth(() => show.pickOne()),
+			),
+			vscode.commands.registerCommand(
+				'leetnotion.searchProblem',
+				withAuth(() => show.searchProblem()),
+			),
+			vscode.commands.registerCommand(
+				'leetnotion.searchCompany',
+				withAuth(() => show.searchCompany()),
+			),
+			vscode.commands.registerCommand(
+				'leetnotion.searchTag',
+				withAuth(() => show.searchTag()),
+			),
+			vscode.commands.registerCommand(
+				'leetnotion.searchSheets',
+				withAuth(() => show.searchSheets()),
+			),
+			vscode.commands.registerCommand(
+				'leetnotion.searchContests',
+				withAuth(() => show.searchContests()),
+			),
+			vscode.commands.registerCommand(
+				'leetnotion.searchList',
+				withAuth(() => show.searchLists()),
+			),
+			vscode.commands.registerCommand(
+				'leetnotion.showSolution',
 				withAuth((input: LeetCodeNode | vscode.Uri) => show.showSolution(input)),
 			),
-			vscode.commands.registerCommand('leetnotion.refreshExplorer', withAuth(() => {
-				return leetCodeTreeDataProvider.refresh();
-			})),
-			vscode.commands.registerCommand('leetnotion.syncLists', withAuth(async () => {
-				try {
-					await vscode.window.withProgress(
-						{ location: vscode.ProgressLocation.Notification, title: 'Syncing LeetCode lists...' },
-						async () => {
-							await syncLists();
-							await leetCodeTreeDataProvider.refresh();
-						},
-					);
-				} catch (error) {
-					await handleError(error, 'sync lists');
-				}
-			})),
-			vscode.commands.registerCommand('leetnotion.testSolution', withAuth((uri?: vscode.Uri) => {
-				TrackData.report({
-					event_key: `vscode_runCode`,
-					type: 'click',
-					extra: JSON.stringify({
-						path: uri?.path,
-					}),
-				});
-				return test.testSolution(uri);
-			})),
-			vscode.commands.registerCommand('leetnotion.submitSolution', withAuth((uri?: vscode.Uri) => {
-				TrackData.report({
-					event_key: `vscode_submit`,
-					type: 'click',
-					extra: JSON.stringify({
-						path: uri?.path,
-					}),
-				});
-				return submit.submitSolution(uri);
-			})),
+			vscode.commands.registerCommand(
+				'leetnotion.refreshExplorer',
+				withAuth(() => {
+					return leetCodeTreeDataProvider.refresh();
+				}),
+			),
+			vscode.commands.registerCommand(
+				'leetnotion.syncLists',
+				withAuth(async () => {
+					try {
+						await vscode.window.withProgress(
+							{
+								location: vscode.ProgressLocation.Notification,
+								title: 'Syncing LeetCode lists...',
+							},
+							async () => {
+								await syncLists();
+								await leetCodeTreeDataProvider.refresh();
+							},
+						);
+					} catch (error) {
+						await handleError(error, 'sync lists');
+					}
+				}),
+			),
+			vscode.commands.registerCommand(
+				'leetnotion.testSolution',
+				withAuth((uri?: vscode.Uri) => {
+					TrackData.report({
+						event_key: `vscode_runCode`,
+						type: 'click',
+						extra: JSON.stringify({
+							path: uri?.path,
+						}),
+					});
+					return test.testSolution(uri);
+				}),
+			),
+			vscode.commands.registerCommand(
+				'leetnotion.submitSolution',
+				withAuth((uri?: vscode.Uri) => {
+					TrackData.report({
+						event_key: `vscode_submit`,
+						type: 'click',
+						extra: JSON.stringify({
+							path: uri?.path,
+						}),
+					});
+					return submit.submitSolution(uri);
+				}),
+			),
 			vscode.commands.registerCommand('leetnotion.switchDefaultLanguage', () =>
 				switchDefaultLanguage(),
 			),
-			vscode.commands.registerCommand('leetnotion.addFavorite',
+			vscode.commands.registerCommand(
+				'leetnotion.addFavorite',
 				withAuth((node: LeetCodeNode) => star.addFavorite(node)),
 			),
-			vscode.commands.registerCommand('leetnotion.removeFavorite',
+			vscode.commands.registerCommand(
+				'leetnotion.removeFavorite',
 				withAuth((node: LeetCodeNode) => star.removeFavorite(node)),
 			),
 			vscode.commands.registerCommand('leetnotion.problems.sort', () =>
@@ -172,18 +227,22 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 			vscode.commands.registerCommand('leetnotion.clearAllData', () =>
 				leetnotionManager.clearAllData(),
 			),
-			vscode.commands.registerCommand('leetnotion.updateTemplateInfo', withAuth(() =>
-				leetnotionManager.updateNotionInfo(),
-			)),
-			vscode.commands.registerCommand('leetnotion.integrateNotion', withAuth(() =>
-				leetnotionManager.enableNotionIntegration(),
-			)),
-			vscode.commands.registerCommand('leetnotion.updateTemplate', withAuth(() =>
-				templateUpdater.updateTemplate(),
-			)),
-			vscode.commands.registerCommand('leetnotion.addSubmissions', withAuth(() =>
-				leetnotionManager.uploadSubmissions(),
-			)),
+			vscode.commands.registerCommand(
+				'leetnotion.updateTemplateInfo',
+				withAuth(() => leetnotionManager.updateNotionInfo()),
+			),
+			vscode.commands.registerCommand(
+				'leetnotion.integrateNotion',
+				withAuth(() => leetnotionManager.enableNotionIntegration()),
+			),
+			vscode.commands.registerCommand(
+				'leetnotion.updateTemplate',
+				withAuth(() => templateUpdater.updateTemplate()),
+			),
+			vscode.commands.registerCommand(
+				'leetnotion.addSubmissions',
+				withAuth(() => leetnotionManager.uploadSubmissions()),
+			),
 			{
 				dispose: () => {
 					intervals = clearIntervals(intervals);
