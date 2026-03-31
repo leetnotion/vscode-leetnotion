@@ -1,5 +1,7 @@
 import { URLSearchParams } from 'url';
 import {
+	Disposable,
+	EventEmitter,
 	FileDecoration,
 	FileDecorationProvider,
 	ProviderResult,
@@ -10,7 +12,20 @@ import {
 } from 'vscode';
 import { explorerNodeManager } from './explorerNodeManager';
 
-export class LeetCodeTreeItemDecorationProvider implements FileDecorationProvider {
+export class LeetCodeTreeItemDecorationProvider implements FileDecorationProvider, Disposable {
+	private readonly _onDidChangeFileDecorations = new EventEmitter<Uri | Uri[] | undefined>();
+	public readonly onDidChangeFileDecorations = this._onDidChangeFileDecorations.event;
+
+	private readonly configListener = workspace.onDidChangeConfiguration((e) => {
+		if (e.affectsConfiguration('leetnotion.showFolderEmojis') || e.affectsConfiguration('leetnotion.colorizeProblems')) {
+			this._onDidChangeFileDecorations.fire(undefined);
+		}
+	});
+
+	public dispose(): void {
+		this._onDidChangeFileDecorations.dispose();
+		this.configListener.dispose();
+	}
 	private readonly DIFFICULTY_BADGE_LABEL: { [key: string]: string } = {
 		easy: 'E',
 		medium: 'M',
@@ -62,6 +77,9 @@ export class LeetCodeTreeItemDecorationProvider implements FileDecorationProvide
 		}
 
 		if (uri.authority === 'tree-node') {
+			if (!this.isFolderEmojiEnabled()) {
+				return;
+			}
 			const nodeId = decodeURIComponent(uri.path.slice(1));
 			if (explorerNodeManager.isFolderCompleted(nodeId)) {
 				const badge = this.FOLDER_BADGE[nodeId] ?? '✅';
@@ -85,6 +103,11 @@ export class LeetCodeTreeItemDecorationProvider implements FileDecorationProvide
 	private isDifficultyBadgeEnabled(): boolean {
 		const configuration: WorkspaceConfiguration = workspace.getConfiguration();
 		return configuration.get<boolean>('leetnotion.colorizeProblems', false);
+	}
+
+	private isFolderEmojiEnabled(): boolean {
+		const configuration: WorkspaceConfiguration = workspace.getConfiguration();
+		return configuration.get<boolean>('leetnotion.showFolderEmojis', true);
 	}
 }
 

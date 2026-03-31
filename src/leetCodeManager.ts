@@ -86,7 +86,7 @@ class LeetCodeManager extends EventEmitter {
 		try {
 			await vscode.window.withProgress(
 				{ location: vscode.ProgressLocation.Notification },
-				async (progress: vscode.Progress<{}>) => {
+				async (progress: vscode.Progress<any>) => {
 					progress.report({ message: 'Fetching user data...' });
 					const queryParams = parseQuery(uri.query);
 					const cookie = queryParams['cookie'];

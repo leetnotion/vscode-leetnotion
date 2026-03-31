@@ -17,6 +17,10 @@ export function shouldHideSolvedProblem(): boolean {
 	return getWorkspaceConfiguration().get<boolean>('hideSolved', false);
 }
 
+export function shouldHidePremiumProblem(): boolean {
+	return getWorkspaceConfiguration().get<boolean>('hidePremium', false);
+}
+
 export function getWorkspaceFolder(): string {
 	return getWorkspaceConfiguration().get<string>('workspaceFolder', '');
 }

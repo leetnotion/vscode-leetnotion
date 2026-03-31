@@ -24,7 +24,7 @@ import {
 	getSheets,
 	getTopicTags,
 } from '../utils/dataUtils';
-import { getCompaniesSortingStrategy, shouldHideSolvedProblem } from '../utils/settingUtils';
+import { getCompaniesSortingStrategy, shouldHidePremiumProblem, shouldHideSolvedProblem } from '../utils/settingUtils';
 import { getStaticProblems } from '../utils/staticDataUtils';
 import { LeetCodeNode } from './LeetCodeNode';
 
@@ -33,8 +33,15 @@ class ExplorerNodeManager implements Disposable {
 	private dataTree: LeetnotionTree = {};
 	private completedFolderIds: Set<string> = new Set<string>();
 	private acProblemIds: Set<string> = new Set<string>();
+	private lockedProblemIds: Set<string> = new Set<string>();
 	private pendingRefresh: Promise<void> | null = null;
 	private onTreeChanged: () => void = () => {};
+	private lastBuildArgs: {
+		problems: IProblem[];
+		topicTags: Record<string, string[]>;
+		contests: Record<string, string[]>;
+		listsWithQuestions: ListsWithQuestions;
+	} | null = null;
 
 	public setOnTreeChanged(callback: () => void): void {
 		this.onTreeChanged = callback;
@@ -66,20 +73,41 @@ class ExplorerNodeManager implements Disposable {
 		}
 	}
 
+	public rebuildTree(): void {
+		if (this.lastBuildArgs) {
+			this.buildTree(
+				this.lastBuildArgs.problems,
+				this.lastBuildArgs.topicTags,
+				this.lastBuildArgs.contests,
+				this.lastBuildArgs.listsWithQuestions,
+			);
+			this.onTreeChanged();
+		}
+	}
+
 	private buildTree(
 		problems: IProblem[],
 		topicTags: Record<string, string[]>,
 		contests: Record<string, string[]>,
 		listsWithQuestions: ListsWithQuestions,
 	): void {
+		this.lastBuildArgs = { problems, topicTags, contests, listsWithQuestions };
 		const shouldHideSolved: boolean = shouldHideSolvedProblem();
+		const shouldHidePremium: boolean = shouldHidePremiumProblem();
 		const dailyProblem = globalState.getDailyProblem();
-		const filtered = problems.filter((item) => !shouldHideSolved || item.state !== ProblemState.AC);
+		const filtered = problems.filter((item) =>
+			(!shouldHideSolved || item.state !== ProblemState.AC) &&
+			(!shouldHidePremium || !item.locked)
+		);
 
 		this.acProblemIds.clear();
+		this.lockedProblemIds.clear();
 		for (const problem of problems) {
 			if (problem.state === ProblemState.AC) {
 				this.acProblemIds.add(String(problem.id));
+			}
+			if (problem.locked) {
+				this.lockedProblemIds.add(String(problem.id));
 			}
 		}
 
@@ -327,13 +355,18 @@ class ExplorerNodeManager implements Disposable {
 
 	private computeCompletedFolders(): void {
 		this.completedFolderIds.clear();
+		const shouldHidePremium = shouldHidePremiumProblem();
 		const computeForNode = (id: string): boolean => {
 			const data = this.getExplorerDataById(id);
 			if (!data) {
 				return false;
 			}
 			if (Array.isArray(data)) {
-				const completed = data.length > 0 && data.every((pid) => this.acProblemIds.has(String(pid)));
+				const relevantIds = shouldHidePremium
+					? data.filter((pid) => !this.lockedProblemIds.has(String(pid)))
+					: data;
+				const completed = (shouldHidePremium && relevantIds.length === 0 && data.length > 0) ||
+					(relevantIds.length > 0 && relevantIds.every((pid) => this.acProblemIds.has(String(pid))));
 				if (completed) {
 					this.completedFolderIds.add(id);
 				}
