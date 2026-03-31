@@ -24,7 +24,11 @@ import {
 	getSheets,
 	getTopicTags,
 } from '../utils/dataUtils';
-import { getCompaniesSortingStrategy, shouldHidePremiumProblem, shouldHideSolvedProblem } from '../utils/settingUtils';
+import {
+	getCompaniesSortingStrategy,
+	shouldHidePremiumProblem,
+	shouldHideSolvedProblem,
+} from '../utils/settingUtils';
 import { getStaticProblems } from '../utils/staticDataUtils';
 import { LeetCodeNode } from './LeetCodeNode';
 
@@ -95,9 +99,10 @@ class ExplorerNodeManager implements Disposable {
 		const shouldHideSolved: boolean = shouldHideSolvedProblem();
 		const shouldHidePremium: boolean = shouldHidePremiumProblem();
 		const dailyProblem = globalState.getDailyProblem();
-		const filtered = problems.filter((item) =>
-			(!shouldHideSolved || item.state !== ProblemState.AC) &&
-			(!shouldHidePremium || !item.locked)
+		const filtered = problems.filter(
+			(item) =>
+				(!shouldHideSolved || item.state !== ProblemState.AC) &&
+				(!shouldHidePremium || !item.locked),
 		);
 
 		this.acProblemIds.clear();
@@ -365,8 +370,10 @@ class ExplorerNodeManager implements Disposable {
 				const relevantIds = shouldHidePremium
 					? data.filter((pid) => !this.lockedProblemIds.has(String(pid)))
 					: data;
-				const completed = (shouldHidePremium && relevantIds.length === 0 && data.length > 0) ||
-					(relevantIds.length > 0 && relevantIds.every((pid) => this.acProblemIds.has(String(pid))));
+				const completed =
+					(shouldHidePremium && relevantIds.length === 0 && data.length > 0) ||
+					(relevantIds.length > 0 &&
+						relevantIds.every((pid) => this.acProblemIds.has(String(pid))));
 				if (completed) {
 					this.completedFolderIds.add(id);
 				}
@@ -376,7 +383,10 @@ class ExplorerNodeManager implements Disposable {
 			if (childKeys.length === 0) {
 				return false;
 			}
-			const allCompleted = childKeys.reduce((acc, key) => computeForNode(`${id}#${key}`) && acc, true);
+			const allCompleted = childKeys.reduce(
+				(acc, key) => computeForNode(`${id}#${key}`) && acc,
+				true,
+			);
 			if (allCompleted) {
 				this.completedFolderIds.add(id);
 			}

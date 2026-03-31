@@ -46,9 +46,7 @@ class LeetnotionManager {
 				await templateUpdateSession.close();
 				await globalState.setNotionIntegrationStatus('pending');
 				await this.updateNotionInfo();
-				await window.showInformationMessage(
-					'Notion integration completed 🎉',
-				);
+				await window.showInformationMessage('Notion integration completed 🎉');
 			}
 			await globalState.setNotionIntegrationStatus('done');
 		} catch (error) {

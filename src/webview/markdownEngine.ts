@@ -45,17 +45,24 @@ class MarkdownEngine implements vscode.Disposable {
 	}
 
 	public getStyles(webview: vscode.Webview): string {
-		return [this.getBuiltinStyles(webview), this.getSettingsStyles(), this.getKatexStyles(webview)].join(os.EOL);
+		return [
+			this.getBuiltinStyles(webview),
+			this.getSettingsStyles(),
+			this.getKatexStyles(webview),
+		].join(os.EOL);
 	}
 
 	public getKatexScripts(webview: vscode.Webview): string {
 		const extensionUri = globalState.getExtensionUri();
-		const katexJs = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'public', 'scripts', 'katex.min.js'));
-		const autoRenderJs = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'public', 'scripts', 'auto-render.min.js'));
-		return [
-			`<script src="${katexJs}"></script>`,
-			`<script src="${autoRenderJs}"></script>`,
-		].join(os.EOL);
+		const katexJs = webview.asWebviewUri(
+			vscode.Uri.joinPath(extensionUri, 'public', 'scripts', 'katex.min.js'),
+		);
+		const autoRenderJs = webview.asWebviewUri(
+			vscode.Uri.joinPath(extensionUri, 'public', 'scripts', 'auto-render.min.js'),
+		);
+		return [`<script src="${katexJs}"></script>`, `<script src="${autoRenderJs}"></script>`].join(
+			os.EOL,
+		);
 	}
 
 	public getKatexRenderScript(): string {
@@ -79,7 +86,9 @@ class MarkdownEngine implements vscode.Disposable {
 
 	private getKatexStyles(webview: vscode.Webview): string {
 		const extensionUri = globalState.getExtensionUri();
-		const katexCss = webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'public', 'styles', 'katex.min.css'));
+		const katexCss = webview.asWebviewUri(
+			vscode.Uri.joinPath(extensionUri, 'public', 'styles', 'katex.min.css'),
+		);
 		return `<link rel="stylesheet" type="text/css" href="${katexCss}">`;
 	}
 

@@ -1,12 +1,12 @@
 // Copyright (c) jdneo. All rights reserved.
 // Licensed under the MIT license.
 
+import { leetCodeChannel } from '@/leetCodeChannel';
+import { leetcodeClient } from '@/leetCodeClient';
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ViewColumn } from 'vscode';
-import { leetCodeChannel } from '@/leetCodeChannel';
-import { leetcodeClient } from '@/leetCodeClient';
 import { IProblem, langExt } from '../shared';
 import { extractCode, getLangFromFile } from '../utils/problemUtils';
 import { DialogType, promptForOpenOutputChannel } from '../utils/uiUtils';
@@ -15,38 +15,38 @@ import { leetCodeSubmissionProvider } from './leetCodeSubmissionProvider';
 import { markdownEngine } from './markdownEngine';
 
 class LeetCodeTestCaseProvider extends LeetCodeWebview {
-    protected readonly viewType: string = 'leetnotion.testcase';
-    private node: IProblem;
-    private sampleTestCase: string = '';
-    private filePath: string = '';
+	protected readonly viewType: string = 'leetnotion.testcase';
+	private node: IProblem;
+	private sampleTestCase: string = '';
+	private filePath: string = '';
 
-    public show(node: IProblem, sampleTestCase: string, filePath: string): void {
-        this.node = node;
-        this.sampleTestCase = sampleTestCase;
-        this.filePath = filePath;
-        this.showWebviewInternal();
-    }
+	public show(node: IProblem, sampleTestCase: string, filePath: string): void {
+		this.node = node;
+		this.sampleTestCase = sampleTestCase;
+		this.filePath = filePath;
+		this.showWebviewInternal();
+	}
 
-    protected getWebviewOption(): ILeetCodeWebviewOption {
-        return {
-            title: 'Test Cases',
-            viewColumn: ViewColumn.Two,
-            preserveFocus: true,
-        };
-    }
+	protected getWebviewOption(): ILeetCodeWebviewOption {
+		return {
+			title: 'Test Cases',
+			viewColumn: ViewColumn.Two,
+			preserveFocus: true,
+		};
+	}
 
-    protected getWebviewContent(): string {
-        const webview = this.panel!.webview;
-        const styles = markdownEngine.getStyles(webview);
-        const title: string = markdownEngine.render(`## ${this.node.name}`);
-        const label: string = markdownEngine.render(`### Test Cases`);
-        const escapedTestCase = this.sampleTestCase
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
+	protected getWebviewContent(): string {
+		const webview = this.panel!.webview;
+		const styles = markdownEngine.getStyles(webview);
+		const title: string = markdownEngine.render(`## ${this.node.name}`);
+		const label: string = markdownEngine.render(`### Test Cases`);
+		const escapedTestCase = this.sampleTestCase
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;');
 
-        return `
+		return `
             <!DOCTYPE html>
             <html>
             <head>
@@ -112,54 +112,59 @@ class LeetCodeTestCaseProvider extends LeetCodeWebview {
             </body>
             </html>
         `;
-    }
+	}
 
-    protected async onDidReceiveMessage(message: { command: string; testCases: string }): Promise<void> {
-        switch (message.command) {
-            case 'test': {
-                try {
-                    const rawCode = await fse.readFile(this.filePath, 'utf-8');
-                    const code = extractCode(rawCode);
-                    let lang: string | null = getLangFromFile(rawCode);
-                    if (!lang) {
-                        const ext = path.extname(this.filePath).slice(1);
-                        for (const [langName, langExtVal] of langExt.entries()) {
-                            if (langExtVal === ext) {
-                                lang = langName;
-                                break;
-                            }
-                        }
-                    }
-                    const slug = this.node.slug;
-                    const questionId = Number(this.node.id);
+	protected async onDidReceiveMessage(message: {
+		command: string;
+		testCases: string;
+	}): Promise<void> {
+		switch (message.command) {
+			case 'test': {
+				try {
+					const rawCode = await fse.readFile(this.filePath, 'utf-8');
+					const code = extractCode(rawCode);
+					let lang: string | null = getLangFromFile(rawCode);
+					if (!lang) {
+						const ext = path.extname(this.filePath).slice(1);
+						for (const [langName, langExtVal] of langExt.entries()) {
+							if (langExtVal === ext) {
+								lang = langName;
+								break;
+							}
+						}
+					}
+					const slug = this.node.slug;
+					const questionId = Number(this.node.id);
 
-                    if (!slug || !lang || isNaN(questionId)) {
-                        vscode.window.showErrorMessage('Could not determine problem metadata.');
-                        return;
-                    }
+					if (!slug || !lang || isNaN(questionId)) {
+						vscode.window.showErrorMessage('Could not determine problem metadata.');
+						return;
+					}
 
-                    leetCodeChannel.appendLine(`[Test] file: ${this.filePath}`);
-                    leetCodeChannel.appendLine(`[Test] slug: ${slug}, lang: ${lang}, questionId: ${questionId}`);
+					leetCodeChannel.appendLine(`[Test] file: ${this.filePath}`);
+					leetCodeChannel.appendLine(
+						`[Test] slug: ${slug}, lang: ${lang}, questionId: ${questionId}`,
+					);
 
-                    const results = await vscode.window.withProgress(
-                        { location: vscode.ProgressLocation.Notification, title: 'Testing solution...' },
-                        () => leetcodeClient.testCode(slug, lang, questionId, code, message.testCases),
-                    );
+					const results = await vscode.window.withProgress(
+						{ location: vscode.ProgressLocation.Notification, title: 'Testing solution...' },
+						() => leetcodeClient.testCode(slug, lang, questionId, code, message.testCases),
+					);
 
-                    if (!results || results.length === 0) {
-                        return;
-                    }
-                    leetCodeSubmissionProvider.show(results[0], true, message.testCases);
-                } catch (error) {
-                    await promptForOpenOutputChannel(
-                        'Failed to test the solution. Please open the output channel for details.',
-                        DialogType.error,
-                    );
-                }
-                break;
-            }
-        }
-    }
+					if (!results || results.length === 0) {
+						return;
+					}
+					leetCodeSubmissionProvider.show(results[0], true, message.testCases);
+				} catch (error) {
+					await promptForOpenOutputChannel(
+						'Failed to test the solution. Please open the output channel for details.',
+						DialogType.error,
+					);
+				}
+				break;
+			}
+		}
+	}
 }
 
 export const leetCodeTestCaseProvider: LeetCodeTestCaseProvider = new LeetCodeTestCaseProvider();

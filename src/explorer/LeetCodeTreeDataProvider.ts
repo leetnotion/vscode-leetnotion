@@ -23,7 +23,10 @@ export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<LeetCod
 		this.context = context;
 		explorerNodeManager.setOnTreeChanged(() => this.onDidChangeTreeDataEvent.fire(null));
 		vscode.workspace.onDidChangeConfiguration((e) => {
-			if (e.affectsConfiguration('leetnotion.hideSolved') || e.affectsConfiguration('leetnotion.hidePremium')) {
+			if (
+				e.affectsConfiguration('leetnotion.hideSolved') ||
+				e.affectsConfiguration('leetnotion.hidePremium')
+			) {
 				explorerNodeManager.rebuildTree();
 			}
 		});

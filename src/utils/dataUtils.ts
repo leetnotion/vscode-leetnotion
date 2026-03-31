@@ -4,6 +4,7 @@
 import axios from 'axios';
 import * as fsExtra from 'fs-extra';
 import * as path from 'path';
+import { explorerNodeManager } from '../explorer/explorerNodeManager';
 import { globalState } from '../globalState';
 import { leetCodeChannel } from '../leetCodeChannel';
 import { leetcodeClient } from '../leetCodeClient';
@@ -17,7 +18,6 @@ import {
 	Sheets,
 	TopicTags,
 } from '../types';
-import { explorerNodeManager } from '../explorer/explorerNodeManager';
 import { getStaticRatings, getStaticTopicTags } from './staticDataUtils';
 import { sleep } from './toolUtils';
 

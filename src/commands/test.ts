@@ -10,7 +10,12 @@ import { leetcodeClient } from '../leetCodeClient';
 import { leetCodeManager } from '../leetCodeManager';
 import { IQuickItemEx, langExt, UserStatus } from '../shared';
 import { extractCode, getLangFromFile, getNodeIdFromFile } from '../utils/problemUtils';
-import { DialogType, promptForOpenOutputChannel, promptForSignIn, showFileSelectDialog } from '../utils/uiUtils';
+import {
+	DialogType,
+	promptForOpenOutputChannel,
+	promptForSignIn,
+	showFileSelectDialog,
+} from '../utils/uiUtils';
 import { getActiveFilePath } from '../utils/workspaceUtils';
 import { leetCodeSubmissionProvider } from '../webview/leetCodeSubmissionProvider';
 import { leetCodeTestCaseProvider } from '../webview/leetCodeTestCaseProvider';
@@ -73,9 +78,7 @@ export async function testSolution(uri?: vscode.Uri): Promise<void> {
 			case ':default':
 				break;
 			case ':direct': {
-				const node = explorerNodeManager.getNodeById(
-					await getNodeIdFromFile(filePath),
-				);
+				const node = explorerNodeManager.getNodeById(await getNodeIdFromFile(filePath));
 				if (!node) {
 					vscode.window.showErrorMessage('Could not find problem node.');
 					return;

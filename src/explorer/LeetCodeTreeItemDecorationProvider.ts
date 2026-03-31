@@ -17,7 +17,10 @@ export class LeetCodeTreeItemDecorationProvider implements FileDecorationProvide
 	public readonly onDidChangeFileDecorations = this._onDidChangeFileDecorations.event;
 
 	private readonly configListener = workspace.onDidChangeConfiguration((e) => {
-		if (e.affectsConfiguration('leetnotion.showFolderEmojis') || e.affectsConfiguration('leetnotion.colorizeProblems')) {
+		if (
+			e.affectsConfiguration('leetnotion.showFolderEmojis') ||
+			e.affectsConfiguration('leetnotion.colorizeProblems')
+		) {
 			this._onDidChangeFileDecorations.fire(undefined);
 		}
 	});
@@ -34,35 +37,35 @@ export class LeetCodeTreeItemDecorationProvider implements FileDecorationProvide
 
 	private readonly FOLDER_BADGE: { [key: string]: string } = {
 		// Add custom folder emojis here, keyed by folder name (last segment of node ID)
-		"All": "👑",
-		"Difficulty": "🏆",
-		"Difficulty#Easy": "🤓",
-		"Difficulty#Medium": "😳",
-		"Difficulty#Hard": "🫪",
-		"Tag": "🏷️",
-		"Company": "🏢",
-		"Favorite": "💝",
-		"Daily": "📅",
-		"Sheets": "📋",
-		"Lists": "📝",
-		"Contests": "⚔️",
+		All: '👑',
+		Difficulty: '🏆',
+		'Difficulty#Easy': '🤓',
+		'Difficulty#Medium': '😳',
+		'Difficulty#Hard': '🫪',
+		Tag: '🏷️',
+		Company: '🏢',
+		Favorite: '💝',
+		Daily: '📅',
+		Sheets: '📋',
+		Lists: '📝',
+		Contests: '⚔️',
 		// Sheets — achievement reactions
-		"Sheets#LeetCode 75": "⭐",
-		"Sheets#Programming Skills": "🛠️",
-		"Sheets#Binary Search": "⚡",
-		"Sheets#SQL 50": "🗃️",
-		"Sheets#Blind 75": "🔥",
-		"Sheets#Top Interview 150": "🎯",
-		"Sheets#Top 100 Liked": "❤️‍🔥",
-		"Sheets#Neetcode 150": "💪",
-		"Sheets#Grokking Coding Interview Patterns": "🧩",
-		"Sheets#Premium Algo 100": "💎",
-		"Sheets#Advanced SQL 50": "🏛️",
-		"Sheets#Graph Theory": "🕸️",
-		"Sheets#Dynamic Programming": "🤯",
-		"Sheets#Neetcode 250": "🧠",
-		"Sheets#Dynamic Programming Grandmaster": "🐉",
-		"Sheets#Neetcode All": "🏆",
+		'Sheets#LeetCode 75': '⭐',
+		'Sheets#Programming Skills': '🛠️',
+		'Sheets#Binary Search': '⚡',
+		'Sheets#SQL 50': '🗃️',
+		'Sheets#Blind 75': '🔥',
+		'Sheets#Top Interview 150': '🎯',
+		'Sheets#Top 100 Liked': '❤️‍🔥',
+		'Sheets#Neetcode 150': '💪',
+		'Sheets#Grokking Coding Interview Patterns': '🧩',
+		'Sheets#Premium Algo 100': '💎',
+		'Sheets#Advanced SQL 50': '🏛️',
+		'Sheets#Graph Theory': '🕸️',
+		'Sheets#Dynamic Programming': '🤯',
+		'Sheets#Neetcode 250': '🧠',
+		'Sheets#Dynamic Programming Grandmaster': '🐉',
+		'Sheets#Neetcode All': '🏆',
 	};
 
 	private readonly ITEM_COLOR: { [key: string]: ThemeColor } = {

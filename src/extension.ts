@@ -68,9 +68,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 		if (globalState.getNotionIntegrationStatus() === 'pending') {
 			leetnotionManager.updateNotionInfo().then(async () => {
 				await globalState.setNotionIntegrationStatus('done');
-				vscode.window.showInformationMessage(
-					'Notion integration completed 🎉',
-				);
+				vscode.window.showInformationMessage('Notion integration completed 🎉');
 			});
 		}
 

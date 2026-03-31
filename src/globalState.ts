@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { IS_PROBLEMS_RETRIEVED, UPDATED_PAGES, LEETCODE_PROBLEMS } from './constants';
+import { IS_PROBLEMS_RETRIEVED, LEETCODE_PROBLEMS, UPDATED_PAGES } from './constants';
 import { IProblem } from './shared';
 import {
 	Lists,

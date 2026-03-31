@@ -5,6 +5,7 @@ import { EventEmitter } from 'events';
 import * as vscode from 'vscode';
 import { getLeetCodeEndpoint } from './commands/plugin';
 import { globalState } from './globalState';
+import { leetCodeChannel } from './leetCodeChannel';
 import { leetcodeClient } from './leetCodeClient';
 import { leetnotionManager } from './leetnotionManager';
 import { queryUserData } from './request/query-user-data';
@@ -12,7 +13,6 @@ import { Endpoint, urls, urlsCn, UserStatus } from './shared';
 import { hasNotionIntegrationEnabled } from './utils/settingUtils';
 import { parseQuery } from './utils/toolUtils';
 import { DialogType, openUrl, promptForOpenOutputChannel } from './utils/uiUtils';
-import { leetCodeChannel } from './leetCodeChannel';
 
 class LeetCodeManager extends EventEmitter {
 	private currentUser: string | undefined;
@@ -105,7 +105,7 @@ class LeetCodeManager extends EventEmitter {
 				`Failed to log in. Please open the output channel for details`,
 				DialogType.error,
 			);
-            leetCodeChannel.appendLine(`Error during URI sign-in: ${(error as Error).message}`);
+			leetCodeChannel.appendLine(`Error during URI sign-in: ${(error as Error).message}`);
 		}
 	}
 
@@ -161,7 +161,7 @@ class LeetCodeManager extends EventEmitter {
 				`Failed to log in. Please open the output channel for details`,
 				DialogType.error,
 			);
-            leetCodeChannel.appendLine(`Error during cookie sign-in: ${(error as Error).message}`);
+			leetCodeChannel.appendLine(`Error during cookie sign-in: ${(error as Error).message}`);
 		}
 	}
 
@@ -174,7 +174,7 @@ class LeetCodeManager extends EventEmitter {
 			leetcodeClient.signOut();
 			this.emit('statusChanged');
 		} catch (error) {
-            leetCodeChannel.appendLine(`Error during sign-out: ${(error as Error).message}`);
+			leetCodeChannel.appendLine(`Error during sign-out: ${(error as Error).message}`);
 		}
 	}
 

@@ -295,18 +295,18 @@ export async function showSolution(input: LeetCodeNode | vscode.Uri): Promise<vo
 			solutionLang = '';
 		}
 
-        let url = `https://leetcode.com/problems/${problemSlug}/solutions/${solution.topicId}/${solution.slug}`
+		let url = `https://leetcode.com/problems/${problemSlug}/solutions/${solution.topicId}/${solution.slug}`;
 
 		leetCodeSolutionProvider.show({
 			title: solution.title,
 			url,
-            avatar: solution.author.userAvatar,
+			avatar: solution.author.userAvatar,
 			authorName: solution.author.realName,
-            authorUsername: solution.author.userName,
-            views: solution.hitCount,
-            createdAt: solution.createdAt,
-            tags: solution.tags.map((tag) => tag.name),
-			content: solution.content.replace(/\\n/g, "\n"),
+			authorUsername: solution.author.userName,
+			views: solution.hitCount,
+			createdAt: solution.createdAt,
+			tags: solution.tags.map((tag) => tag.name),
+			content: solution.content.replace(/\\n/g, '\n'),
 			votes: String(solution.reactions[0].count || 0),
 			lang: solutionLang,
 		});
