@@ -8,7 +8,7 @@ import { leetCodeManager } from './leetCodeManager';
 import { leetnotionClient } from './leetnotionClient';
 import { templateUpdateSession } from './modules/leetnotion/session';
 import { IProblem } from './shared';
-import { LeetcodeSubmission } from './types';
+import { LeetcodeSubmission, SetPropertiesMessage } from './types';
 import { handleBackgroundError, handleError } from './utils/errorUtils';
 import { getWorkspaceConfiguration, hasNotionIntegrationEnabled } from './utils/settingUtils';
 import {
@@ -18,6 +18,23 @@ import {
 } from './utils/uiUtils';
 
 class LeetnotionManager {
+	public initialize(): void {
+		leetnotionClient.initialize();
+	}
+
+	public async syncSubmission(questionNumber: string): Promise<void> {
+		if (!hasNotionIntegrationEnabled()) return;
+		await leetnotionClient.submitSolution(questionNumber);
+	}
+
+	public async setProperties(message: SetPropertiesMessage): Promise<void> {
+		await leetnotionClient.setProperties(message);
+	}
+
+	public async syncUserQuestionTags(): Promise<void> {
+		await leetnotionClient.setUserQuestionTags();
+	}
+
 	public async enableNotionIntegration(): Promise<void> {
 		const accessToken = await this.getAccessToken();
 		try {

@@ -17,7 +17,6 @@ import { leetCodeChannel } from './leetCodeChannel';
 import { globalState } from './globalState';
 import { leetcodeClient } from './leetCodeClient';
 import { leetCodeManager } from './leetCodeManager';
-import { leetnotionClient } from './leetnotionClient';
 import { leetnotionManager } from './leetnotionManager';
 import { templateUpdater } from './modules/leetnotion/template-updater';
 import { UserStatus } from './shared';
@@ -55,7 +54,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 		leetCodeTreeDataProvider.initialize(context);
 		await globalState.initialize(context);
 		leetcodeClient.initialize();
-		leetnotionClient.initialize();
+		leetnotionManager.initialize();
 
 		const status = leetCodeManager.getStatus();
 		if (status === UserStatus.SignedIn) {
@@ -212,7 +211,7 @@ function startRecurringTasks() {
 						leetcodeClient.checkIn(),
 						leetcodeClient.collectEasterEgg(),
 						leetcodeClient.setDailyProblem(),
-						leetnotionClient.setUserQuestionTags(),
+						leetnotionManager.syncUserQuestionTags(),
 					]);
 					leetCodeTreeDataProvider.refresh();
 				} catch (error) {

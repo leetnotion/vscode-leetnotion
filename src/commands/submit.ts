@@ -5,11 +5,10 @@ import { explorerNodeManager } from '../explorer/explorerNodeManager';
 import { leetCodeTreeDataProvider } from '../explorer/LeetCodeTreeDataProvider';
 import { leetCodeChannel } from '../leetCodeChannel';
 import { leetcodeClient } from '../leetCodeClient';
-import { leetnotionClient } from '../leetnotionClient';
+import { leetnotionManager } from '../leetnotionManager';
 import { langExt } from '../shared';
 import { handleError } from '../utils/errorUtils';
 import { extractCode, getLangFromFile, getNodeIdFromFile } from '../utils/problemUtils';
-import { hasNotionIntegrationEnabled } from '../utils/settingUtils';
 import { getQuestionNumber } from '../utils/toolUtils';
 import { getActiveFilePath } from '../utils/workspaceUtils';
 import { leetCodeSubmissionProvider } from '../webview/leetCodeSubmissionProvider';
@@ -43,10 +42,11 @@ export async function submitSolution(uri?: vscode.Uri): Promise<void> {
 		);
 
 		leetCodeSubmissionProvider.show(result);
-		if (hasNotionIntegrationEnabled() && result.ok) {
+		if (result.ok) {
 			const questionNumber = getQuestionNumber(filePath);
-			if (!questionNumber) return;
-			await leetnotionClient.submitSolution(questionNumber);
+			if (questionNumber) {
+				await leetnotionManager.syncSubmission(questionNumber);
+			}
 		}
 	} catch (error) {
 		await handleError(error, 'submit the solution');

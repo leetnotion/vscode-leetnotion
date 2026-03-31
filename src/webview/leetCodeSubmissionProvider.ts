@@ -4,7 +4,7 @@ import { JudgeResult } from '@leetnotion/leetcode-api';
 import * as os from 'os';
 import * as vscode from 'vscode';
 import { ViewColumn } from 'vscode';
-import { leetnotionClient } from '../leetnotionClient';
+import { leetnotionManager } from '../leetnotionManager';
 import { SetPropertiesMessage } from '../types';
 import {
 	DialogType,
@@ -78,7 +78,7 @@ class LeetCodeSubmissionProvider extends LeetCodeWebview {
 	protected async onDidReceiveMessage(message: SetPropertiesMessage): Promise<void> {
 		switch (message.command) {
 			case 'set-properties': {
-				await leetnotionClient.setProperties(message);
+				await leetnotionManager.setProperties(message);
 				promptForOpenOutputChannel(`Properties Updated in Notion`, DialogType.completed);
 				break;
 			}
