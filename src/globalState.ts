@@ -1,3 +1,5 @@
+import * as fs from 'fs/promises';
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { IS_PROBLEMS_RETRIEVED, LEETCODE_PROBLEMS, UPDATED_PAGES } from './constants';
 import { IProblem } from './shared';
@@ -29,6 +31,16 @@ export const ProblemRatingMapKey = 'leetcode-problem-rating-map';
 export const ListsSyncTimestampKey = 'leetcode-lists-sync-timestamp';
 export const CachedProblemsKey = 'leetcode-cached-problems';
 
+const DISK_STORAGE_KEYS = new Set([
+	TopicTagsKey,
+	QuestionNumberPageIdMappingKey,
+	TitleSlugQuestionNumberMappingKey,
+	QuestionsOfListKey,
+	ProblemRatingMapKey,
+	CachedProblemsKey,
+	'leetcodeContests',
+]);
+
 export type UserDataType = {
 	isSignedIn: boolean;
 	isPremium: boolean;
@@ -43,6 +55,7 @@ class GlobalState {
 	private context: vscode.ExtensionContext;
 	private _state: vscode.Memento;
 	private _secrets: vscode.SecretStorage;
+	private _cacheDirPath: string;
 
 	private _cookie?: string;
 	private _userStatus?: UserDataType;
@@ -62,10 +75,38 @@ class GlobalState {
 	private _problemRatingMap?: ProblemRatingMap;
 	private _cachedProblems?: IProblem[];
 
+	private async _ensureCacheDir(): Promise<void> {
+		await fs.mkdir(this._cacheDirPath, { recursive: true });
+	}
+
+	private _diskPath(key: string): string {
+		return path.join(this._cacheDirPath, `${key}.json`);
+	}
+
+	private async _readFromDisk<T>(key: string): Promise<T | undefined> {
+		try {
+			const data = await fs.readFile(this._diskPath(key), 'utf-8');
+			return JSON.parse(data) as T;
+		} catch {
+			return undefined;
+		}
+	}
+
+	private async _writeToDisk<T>(key: string, value: T | undefined): Promise<void> {
+		if (value === undefined) {
+			await fs.unlink(this._diskPath(key)).catch(() => {});
+			return;
+		}
+		await this._ensureCacheDir();
+		await fs.writeFile(this._diskPath(key), JSON.stringify(value));
+	}
+
 	public async initialize(context: vscode.ExtensionContext): Promise<void> {
 		this.context = context;
 		this._state = this.context.globalState;
 		this._secrets = this.context.secrets;
+		this._cacheDirPath = path.join(this.context.globalStorageUri.fsPath, 'cache');
+		await this._migrateToDisk();
 
 		// Migrate plaintext secrets from globalState to SecretStorage
 		const plaintextCookie = this._state.get<string>(CookieKey);
@@ -82,6 +123,36 @@ class GlobalState {
 		// Load secrets into in-memory cache for synchronous access
 		this._cookie = await this._secrets.get(CookieKey);
 		this._notionAccessToken = await this._secrets.get(NotionAccessTokenKey);
+
+		// Load disk-cached data into memory for synchronous access
+		this._topicTags = await this._readFromDisk<TopicTags>(TopicTagsKey);
+		this._questionNumberPageIdMapping = await this._readFromDisk<Mapping>(QuestionNumberPageIdMappingKey);
+		this._titleSlugQuestionNumberMapping = await this._readFromDisk<Mapping>(TitleSlugQuestionNumberMappingKey);
+		this._problemRatingMap = await this._readFromDisk<ProblemRatingMap>(ProblemRatingMapKey);
+		this._cachedProblems = await this._readFromDisk<IProblem[]>(CachedProblemsKey);
+	}
+
+	private async _migrateToDisk(): Promise<void> {
+		for (const key of DISK_STORAGE_KEYS) {
+			const data = this._state.get(key);
+			if (data !== undefined) {
+				await this._writeToDisk(key, data);
+				await this._state.update(key, undefined);
+			}
+		}
+
+		// Migrate pending session's large keys from globalState to disk
+		const pendingSession = this._state.get<PendingSessionDetails>(PendingSessionKey);
+		if (pendingSession) {
+			for (const key of [UPDATED_PAGES, LEETCODE_PROBLEMS]) {
+				const sessionKey = `${pendingSession.id}.${key}`;
+				const data = this._state.get(sessionKey);
+				if (data !== undefined) {
+					await this._writeToDisk(sessionKey, data);
+					await this._state.update(sessionKey, undefined);
+				}
+			}
+		}
 	}
 
 	public async setCookie(cookie: string): Promise<void> {
@@ -114,13 +185,13 @@ class GlobalState {
 		this._state.update(UserStatusKey, undefined);
 	}
 
-	public setTopicTags(topicTags: TopicTags): any {
+	public async setTopicTags(topicTags: TopicTags): Promise<void> {
 		this._topicTags = topicTags;
-		return this._state.update(TopicTagsKey, topicTags);
+		await this._writeToDisk(TopicTagsKey, topicTags);
 	}
 
 	public getTopicTags(): TopicTags | undefined {
-		return this._topicTags ?? this._state.get(TopicTagsKey);
+		return this._topicTags;
 	}
 
 	public async setDailyProblem(dailyProblemId: string): Promise<any> {
@@ -164,24 +235,22 @@ class GlobalState {
 		return this._submissionsDatabaseId ?? this._state.get(SubmissionsDatabaseIdKey);
 	}
 
-	public setQuestionNumberPageIdMapping(mapping: Mapping): any {
+	public async setQuestionNumberPageIdMapping(mapping: Mapping): Promise<void> {
 		this._questionNumberPageIdMapping = mapping;
-		return this._state.update(QuestionNumberPageIdMappingKey, mapping);
+		await this._writeToDisk(QuestionNumberPageIdMappingKey, mapping);
 	}
 
 	public getQuestionNumberPageIdMapping(): Mapping | undefined {
-		return this._questionNumberPageIdMapping ?? this._state.get(QuestionNumberPageIdMappingKey);
+		return this._questionNumberPageIdMapping;
 	}
 
-	public setTitleSlugQuestionNumberMapping(mapping: Mapping): any {
+	public async setTitleSlugQuestionNumberMapping(mapping: Mapping): Promise<void> {
 		this._titleSlugQuestionNumberMapping = mapping;
-		return this._state.update(TitleSlugQuestionNumberMappingKey, mapping);
+		await this._writeToDisk(TitleSlugQuestionNumberMappingKey, mapping);
 	}
 
 	public getTitleSlugQuestionNumberMapping(): Mapping | undefined {
-		return (
-			this._titleSlugQuestionNumberMapping ?? this._state.get(TitleSlugQuestionNumberMappingKey)
-		);
+		return this._titleSlugQuestionNumberMapping;
 	}
 
 	public setNotionIntegrationStatus(status: NotionIntegrationStatus): any {
@@ -226,21 +295,21 @@ class GlobalState {
 
 	public async setQuestionsOfList(questions: QuestionsOfList, listId: string): Promise<void> {
 		if (!this._questionsOfList) {
-			this._initializeQuestionsOfList();
+			await this._initializeQuestionsOfList();
 		}
-		this._questionsOfList[listId] = questions;
-		await this._state.update(QuestionsOfListKey, this._questionsOfList);
+		this._questionsOfList![listId] = questions;
+		await this._writeToDisk(QuestionsOfListKey, this._questionsOfList);
 	}
 
 	public async getQuestionsOfList(listId: string): Promise<QuestionsOfList | undefined> {
 		if (!this._questionsOfList) {
 			await this._initializeQuestionsOfList();
 		}
-		return this._questionsOfList[listId] ?? [];
+		return this._questionsOfList![listId] ?? [];
 	}
 
 	private async _initializeQuestionsOfList(): Promise<void> {
-		const savedState = this._state.get<Record<string, QuestionsOfList>>(QuestionsOfListKey) || {};
+		const savedState = await this._readFromDisk<Record<string, QuestionsOfList>>(QuestionsOfListKey) || {};
 		this._questionsOfList = { ...savedState };
 	}
 
@@ -252,34 +321,45 @@ class GlobalState {
 		return this._state.get(ListsSyncTimestampKey);
 	}
 
-	public getProblemRatingMap() {
-		return this._problemRatingMap ?? this._state.get(ProblemRatingMapKey);
+	public getProblemRatingMap(): ProblemRatingMap | undefined {
+		return this._problemRatingMap;
 	}
 
-	public setProblemRatingMap(problemRatingMap: ProblemRatingMap) {
+	public async setProblemRatingMap(problemRatingMap: ProblemRatingMap): Promise<void> {
 		this._problemRatingMap = problemRatingMap;
-		return this._state.update(ProblemRatingMapKey, problemRatingMap);
+		await this._writeToDisk(ProblemRatingMapKey, problemRatingMap);
 	}
 
 	public getCachedProblems(): IProblem[] | undefined {
-		return this._cachedProblems ?? this._state.get(CachedProblemsKey);
+		return this._cachedProblems;
 	}
 
-	public setCachedProblems(problems: IProblem[]) {
+	public async setCachedProblems(problems: IProblem[]): Promise<void> {
 		this._cachedProblems = problems;
-		return this._state.update(CachedProblemsKey, problems);
+		await this._writeToDisk(CachedProblemsKey, problems);
 	}
 
 	public async getWithBackgroundRefresh<T>(key: string, fetchFn: () => Promise<T>): Promise<any> {
-		const cached = this.get(key);
+		const isDiskKey = DISK_STORAGE_KEYS.has(key);
+		const cached = isDiskKey ? await this._readFromDisk<T>(key) : this.get(key);
 		if (cached) {
 			fetchFn()
-				.then((fresh) => this.update(key, fresh))
+				.then(async (fresh) => {
+					if (isDiskKey) {
+						await this._writeToDisk(key, fresh);
+					} else {
+						await this.update(key, fresh);
+					}
+				})
 				.catch(() => {});
 			return cached;
 		} else {
 			const fresh = await fetchFn();
-			await this.update(key, fresh);
+			if (isDiskKey) {
+				await this._writeToDisk(key, fresh);
+			} else {
+				await this.update(key, fresh);
+			}
 			return fresh;
 		}
 	}
@@ -309,30 +389,27 @@ class GlobalState {
 
 		// Clear all global state keys
 		this._state.update(UserStatusKey, undefined);
-		this._state.update(TopicTagsKey, undefined);
 		this._state.update(DailyProblemKey, undefined);
 		this._state.update(DailyProblemFetchDateKey, undefined);
 		this._state.update(QuestionsDatabaseIdKey, undefined);
 		this._state.update(SubmissionsDatabaseIdKey, undefined);
-		this._state.update(QuestionNumberPageIdMappingKey, undefined);
-		this._state.update(TitleSlugQuestionNumberMappingKey, undefined);
 		this._state.update(NotionIntegrationStatusKey, undefined);
 		this._state.update(UserQuestionTagsKey, undefined);
 		// Clean up dynamic session keys if a pending session exists
 		const pendingSession = this.getPendingSession();
 		if (pendingSession) {
-			for (const key of [IS_PROBLEMS_RETRIEVED, UPDATED_PAGES, LEETCODE_PROBLEMS]) {
-				this._state.update(`${pendingSession.id}.${key}`, undefined);
-			}
+			this._state.update(`${pendingSession.id}.${IS_PROBLEMS_RETRIEVED}`, undefined);
+			await this._writeToDisk(`${pendingSession.id}.${UPDATED_PAGES}`, undefined);
+			await this._writeToDisk(`${pendingSession.id}.${LEETCODE_PROBLEMS}`, undefined);
 		}
 		this._state.update(PendingSessionKey, undefined);
 		this._state.update(LeetcodeListsKey, undefined);
-		this._state.update(QuestionsOfListKey, undefined);
-		this._state.update(ProblemRatingMapKey, undefined);
 		this._state.update(ListsSyncTimestampKey, undefined);
-		this._state.update('leetcodeContests', undefined);
 		this._state.update('leetcode-favorite-overrides', undefined);
-		this._state.update(CachedProblemsKey, undefined);
+		// Clear disk-stored data
+		for (const key of DISK_STORAGE_KEYS) {
+			await this._writeToDisk(key, undefined);
+		}
 	}
 
 	public async deleteLeetCodeCache(): Promise<void> {
@@ -348,12 +425,12 @@ class GlobalState {
 		await this._secrets.delete(CookieKey);
 		this._state.update(UserStatusKey, undefined);
 		this._state.update(LeetcodeListsKey, undefined);
-		this._state.update(QuestionsOfListKey, undefined);
-		this._state.update(ProblemRatingMapKey, undefined);
-		this._state.update(CachedProblemsKey, undefined);
-		this._state.update(TopicTagsKey, undefined);
 		this._state.update(DailyProblemKey, undefined);
 		this._state.update(ListsSyncTimestampKey, undefined);
+		const leetcodeDiskKeys = [QuestionsOfListKey, ProblemRatingMapKey, CachedProblemsKey, TopicTagsKey];
+		for (const key of leetcodeDiskKeys) {
+			await this._writeToDisk(key, undefined);
+		}
 	}
 
 	public get(key: string) {
@@ -362,6 +439,14 @@ class GlobalState {
 
 	public async update(key: string, value: any) {
 		await this._state.update(key, value);
+	}
+
+	public async getDisk<T>(key: string): Promise<T | undefined> {
+		return this._readFromDisk<T>(key);
+	}
+
+	public async updateDisk<T>(key: string, value: T | undefined): Promise<void> {
+		await this._writeToDisk(key, value);
 	}
 }
 

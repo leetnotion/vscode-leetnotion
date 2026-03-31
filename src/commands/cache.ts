@@ -18,8 +18,8 @@ export async function refreshData(): Promise<void> {
 			{ location: vscode.ProgressLocation.Notification, title: 'Refreshing problem data...' },
 			async () => {
 				// Clear cached metadata so fresh API data is fetched
-				globalState.setTopicTags(undefined as any);
-				globalState.setProblemRatingMap(undefined as any);
+				await globalState.setTopicTags(undefined as any);
+				await globalState.setProblemRatingMap(undefined as any);
 				// Refresh the tree (will fetch fresh API data in phase 2)
 				await leetCodeTreeDataProvider.refresh();
 			},

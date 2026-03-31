@@ -222,7 +222,7 @@ class ExplorerNodeManager implements Disposable {
 				const freshTopicTags = await getTopicTags();
 				this.buildTree(liveProblems, freshTopicTags, contests, listsWithQuestions);
 				this.onTreeChanged();
-				globalState.setCachedProblems(liveProblems);
+				await globalState.setCachedProblems(liveProblems);
 				leetCodeChannel.appendLine(
 					`[refreshCache] Phase 2: Live tree rendered (${Date.now() - start}ms)`,
 				);

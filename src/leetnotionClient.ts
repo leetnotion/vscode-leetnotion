@@ -115,7 +115,7 @@ class LeetnotionClient {
 				if (!questionNumber) return;
 				questionNumberPageIdMapping[questionNumber.toString()] = page.id;
 			});
-		globalState.setQuestionNumberPageIdMapping(questionNumberPageIdMapping);
+		await globalState.setQuestionNumberPageIdMapping(questionNumberPageIdMapping);
 	}
 
 	public getPageIdOfQuestion(questionNumber: string): string | null {

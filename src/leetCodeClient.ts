@@ -92,7 +92,7 @@ class LeetcodeClient {
 	// TODO: cache the titleSlug to question number mapping and invalidate the cache after some time
 	public async setTitleSlugQuestionNumberMapping() {
 		const mapping = await this.leetcode.getTitleSlugQuestionNumberMapping();
-		globalState.setTitleSlugQuestionNumberMapping(mapping);
+		await globalState.setTitleSlugQuestionNumberMapping(mapping);
 	}
 
 	public async collectEasterEgg() {
@@ -271,7 +271,7 @@ class LeetcodeClient {
 				};
 			})
 			.sort((a, b) => Number(a.id) - Number(b.id));
-		globalState.setTitleSlugQuestionNumberMapping(slugToIdMapping);
+		await globalState.setTitleSlugQuestionNumberMapping(slugToIdMapping);
 		leetCodeChannel.appendLine(
 			`[listProblems] Mapped and sorted ${result.length} problems (${Date.now() - start}ms)`,
 		);
