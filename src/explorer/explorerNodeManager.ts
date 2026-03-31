@@ -38,8 +38,10 @@ class ExplorerNodeManager implements Disposable {
 	private completedFolderIds: Set<string> = new Set<string>();
 	private acProblemIds: Set<string> = new Set<string>();
 	private lockedProblemIds: Set<string> = new Set<string>();
+	private allProblemIds: Set<string> = new Set<string>();
 	private pendingRefresh: Promise<void> | null = null;
 	private onTreeChanged: () => void = () => {};
+	private onNewProblemsDetected: (newProblems: IProblem[]) => void = () => {};
 	private lastBuildArgs: {
 		problems: IProblem[];
 		topicTags: Record<string, string[]>;
@@ -49,6 +51,10 @@ class ExplorerNodeManager implements Disposable {
 
 	public setOnTreeChanged(callback: () => void): void {
 		this.onTreeChanged = callback;
+	}
+
+	public setOnNewProblemsDetected(callback: (newProblems: IProblem[]) => void): void {
+		this.onNewProblemsDetected = callback;
 	}
 
 	public isFolderCompleted(id: string): boolean {
@@ -195,6 +201,22 @@ class ExplorerNodeManager implements Disposable {
 
 		if (liveProblems.length > 0) {
 			start = Date.now();
+
+			if (this.allProblemIds.size > 0) {
+				const newProblems = liveProblems.filter((p) => !this.allProblemIds.has(String(p.id)));
+				if (newProblems.length > 0) {
+					leetCodeChannel.appendLine(
+						`[refreshCache] Detected ${newProblems.length} new problem(s): ${newProblems.map((p) => p.id).join(', ')}`,
+					);
+					this.onNewProblemsDetected(newProblems);
+				}
+			}
+
+			this.allProblemIds.clear();
+			for (const p of liveProblems) {
+				this.allProblemIds.add(String(p.id));
+			}
+
 			const freshTopicTags = await getTopicTags();
 			this.buildTree(liveProblems, freshTopicTags, contests, listsWithQuestions);
 			this.onTreeChanged();

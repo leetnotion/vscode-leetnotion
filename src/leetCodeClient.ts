@@ -278,6 +278,25 @@ class LeetcodeClient {
 		return result;
 	}
 
+	public async getLeetcodeProblemsBySlugs(slugs: string[]): Promise<LeetcodeProblem[]> {
+		if (!this._isSignedIn) throw new Error(`not-signed-in-to-leetcode`);
+		const problemTypes = await this.leetcode.getProblemTypes();
+		const problems: LeetcodeProblem[] = [];
+		for (const slug of slugs) {
+			try {
+				const problem = await this.leetcode.problem(slug);
+				problems.push({
+					...problem,
+					frequency: (problem as any).frequency ?? 0,
+					type: problemTypes[problem.questionFrontendId] ?? 'Algorithm',
+				} as LeetcodeProblem);
+			} catch (error) {
+				leetCodeChannel.appendLine(`Failed to fetch problem ${slug}: ${error}`);
+			}
+		}
+		return problems;
+	}
+
 	public async getProblemDescription(slug: string): Promise<string> {
 		const problem = await this.leetcode.problem(slug);
 		return problem.content || '';

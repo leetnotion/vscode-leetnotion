@@ -21,7 +21,7 @@ import { leetnotionManager } from './leetnotionManager';
 import { templateUpdater } from './modules/leetnotion/template-updater';
 import { UserStatus } from './shared';
 import { leetCodeStatusBarController } from './statusbar/leetCodeStatusBarController';
-import { setProblemRatingMap, syncLists, syncListsIfNeeded } from './utils/dataUtils';
+import { refreshTopicTags, setProblemRatingMap, syncLists, syncListsIfNeeded } from './utils/dataUtils';
 import { clearIntervals, repeatAction } from './utils/toolUtils';
 import TrackData from './utils/trackingUtils';
 import { DialogType, promptForOpenOutputChannel, promptForSignIn } from './utils/uiUtils';
@@ -60,6 +60,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 		if (status === UserStatus.SignedIn) {
 			startRecurringTasks();
 		}
+
+		explorerNodeManager.setOnNewProblemsDetected(async (newProblems) => {
+			await refreshTopicTags();
+			leetCodeTreeDataProvider.refresh();
+			leetnotionManager.addNewProblemsToNotion(newProblems);
+		});
 
 		leetcodeClient.setTitleSlugQuestionNumberMapping();
 		if (globalState.getNotionIntegrationStatus() === 'pending') {

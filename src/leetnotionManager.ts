@@ -7,6 +7,7 @@ import { leetcodeClient } from './leetCodeClient';
 import { leetCodeManager } from './leetCodeManager';
 import { leetnotionClient } from './leetnotionClient';
 import { templateUpdateSession } from './modules/leetnotion/session';
+import { IProblem } from './shared';
 import { LeetcodeSubmission } from './types';
 import { getWorkspaceConfiguration, hasNotionIntegrationEnabled } from './utils/settingUtils';
 import {
@@ -190,6 +191,67 @@ class LeetnotionManager {
 			return submissions;
 		}
 		throw new Error(`Error at getting submission from submissions.json`);
+	}
+
+	public async addNewProblemsToNotion(newProblems: IProblem[]): Promise<void> {
+		if (!hasNotionIntegrationEnabled()) {
+			return;
+		}
+		const questionNumberPageIdMapping = globalState.getQuestionNumberPageIdMapping();
+		if (!questionNumberPageIdMapping) {
+			return;
+		}
+		const slugs = newProblems.map((p) => p.slug).filter(Boolean);
+		if (slugs.length === 0) {
+			return;
+		}
+		try {
+			leetCodeChannel.appendLine(
+				`[Notion] Fetching details for ${slugs.length} new problem(s)...`,
+			);
+			const leetcodeProblems = await leetcodeClient.getLeetcodeProblemsBySlugs(slugs);
+			const problemsToAdd = leetcodeProblems.filter(
+				({ questionFrontendId }) => !(questionFrontendId in questionNumberPageIdMapping),
+			);
+			if (problemsToAdd.length === 0) {
+				leetCodeChannel.appendLine('[Notion] No new problems to add to Notion.');
+				return;
+			}
+			leetCodeChannel.appendLine(
+				`[Notion] Adding ${problemsToAdd.length} new problem(s) to Notion...`,
+			);
+			await leetnotionClient.addProblems(problemsToAdd, (response) => {
+				const questionNumber = response.properties['Question Number'].number;
+				if (questionNumber) {
+					questionNumberPageIdMapping[questionNumber.toString()] = response.id;
+					globalState.setQuestionNumberPageIdMapping(questionNumberPageIdMapping);
+				}
+				const title = response.properties.Name.title[0].text.content;
+				leetCodeChannel.appendLine(`[Notion] Added problem: ${title}`);
+			});
+			leetCodeChannel.appendLine(
+				`[Notion] Successfully added ${problemsToAdd.length} new problem(s).`,
+			);
+
+			// Update the newly added problems to link similar questions
+			leetCodeChannel.appendLine(
+				`[Notion] Updating ${problemsToAdd.length} new problem(s) to link similar questions...`,
+			);
+			const problemsToUpdate = [...problemsToAdd].sort(
+				(a, b) => parseInt(b.questionFrontendId) - parseInt(a.questionFrontendId),
+			);
+			await leetnotionClient.updateProblems(problemsToUpdate, (response) => {
+				const title = response.properties.Name.title[0].text.content;
+				leetCodeChannel.appendLine(`[Notion] Updated problem: ${title}`);
+			});
+			leetCodeChannel.appendLine(
+				`[Notion] Successfully updated ${problemsToUpdate.length} problem(s) with similar questions.`,
+			);
+		} catch (error) {
+			leetCodeChannel.appendLine(
+				`[Notion] Failed to add new problems: ${(error as Error).message}`,
+			);
+		}
 	}
 
 	public async clearAllData(): Promise<void> {

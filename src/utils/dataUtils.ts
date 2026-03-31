@@ -90,6 +90,16 @@ export async function getQuestionTopicTags(): Promise<TopicTags> {
 	return getStaticTopicTags();
 }
 
+export async function refreshTopicTags(): Promise<void> {
+	try {
+		const fresh = await leetcodeClient.getTopicTags();
+		globalState.setTopicTags(fresh);
+		leetCodeChannel.appendLine('[refreshTopicTags] Topic tags updated.');
+	} catch (err) {
+		leetCodeChannel.appendLine(`[refreshTopicTags] Failed to refresh topic tags: ${err}`);
+	}
+}
+
 export async function getProblemRatingMap(): Promise<ProblemRatingMap> {
 	const cached = globalState.getProblemRatingMap();
 	if (cached) {
