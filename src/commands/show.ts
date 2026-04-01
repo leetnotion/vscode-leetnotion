@@ -32,7 +32,7 @@ import * as settingUtils from '../utils/settingUtils';
 import { getCodeFooter, getCodeHeader, IDescriptionConfiguration } from '../utils/settingUtils';
 import TrackData from '../utils/trackingUtils';
 import { DialogOptions, openSettingsEditor, openUrl, promptHintMessage } from '../utils/uiUtils';
-import { selectWorkspaceFolder } from '../utils/workspaceUtils';
+import { getActiveFilePath, selectWorkspaceFolder } from '../utils/workspaceUtils';
 import { leetCodePreviewProvider } from '../webview/leetCodePreviewProvider';
 import { leetCodeSolutionProvider } from '../webview/leetCodeSolutionProvider';
 import * as list from './list';
@@ -221,7 +221,7 @@ export async function searchLists(): Promise<void> {
 	}
 }
 
-export async function showSolution(input: LeetCodeNode | vscode.Uri): Promise<void> {
+export async function showSolution(input?: LeetCodeNode | vscode.Uri): Promise<void> {
 	const language: string | undefined = await fetchProblemLanguage();
 	if (!language) {
 		return;
@@ -233,11 +233,17 @@ export async function showSolution(input: LeetCodeNode | vscode.Uri): Promise<vo
 		if (input instanceof LeetCodeNode) {
 			problemId = input.id;
 			problemSlug = input.slug;
-		} else if (input instanceof vscode.Uri) {
-			const nodeId = await getNodeIdFromFile(input.fsPath);
-			const node = explorerNodeManager.getNodeById(nodeId);
-			problemId = node?.id;
-			problemSlug = node ? node.slug : undefined;
+		} else {
+			// Triggered from Code Lens/context menu (Uri) or command palette (no input)
+			const filePath = input instanceof vscode.Uri
+				? input.fsPath
+				: await getActiveFilePath();
+			if (filePath) {
+				const nodeId = await getNodeIdFromFile(filePath);
+				const node = explorerNodeManager.getNodeById(nodeId);
+				problemId = node?.id;
+				problemSlug = node?.slug;
+			}
 		}
 
 		if (!problemId || !problemSlug) {

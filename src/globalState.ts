@@ -418,17 +418,13 @@ class GlobalState {
 	}
 
 	public async deleteLeetCodeCache(): Promise<void> {
-		// Clear leetcode-specific cached data, preserving Notion state
-		this._cookie = undefined;
-		this._userStatus = undefined;
+		// Clear leetcode-specific cached data, preserving auth and Notion state
 		this._lists = undefined;
 		this._questionsOfList = undefined;
 		this._problemRatingMap = undefined;
 		this._cachedProblems = undefined;
 		this._topicTags = undefined;
 		this._dailyProblemId = undefined;
-		await this._secrets.delete(CookieKey);
-		this._state.update(UserStatusKey, undefined);
 		this._state.update(LeetcodeListsKey, undefined);
 		this._state.update(DailyProblemKey, undefined);
 		this._state.update(ListsSyncTimestampKey, undefined);

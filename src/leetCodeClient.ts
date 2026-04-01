@@ -260,7 +260,7 @@ class LeetcodeClient {
 					name: p.name,
 					slug: p.slug,
 					difficulty: p.level,
-					passRate: p.percent.toFixed(2),
+					passRate: `${p.percent.toFixed(2)}%`,
 					state,
 					isFavorite: this.getFavoriteState(id, p.starred),
 					locked: p.locked,
@@ -392,10 +392,15 @@ class LeetcodeClient {
 	 * Toggle favorite with optimistic UI and debounced API sync.
 	 * Returns immediately after updating local state.
 	 * The API call is debounced — rapid toggles only send the final state.
+	 * If the API call fails, onRevert is called to roll back the UI.
 	 */
-	public toggleFavorite(questionId: string, addToFavorite: boolean): void {
+	public toggleFavorite(
+		questionId: string,
+		addToFavorite: boolean,
+		onRevert?: () => void,
+	): void {
 		// Persist to globalState immediately
-		const favorites: Record<string, boolean> = globalState.get('leetcode-favorite-overrides') || {};
+		const favorites = (globalState.get('leetcode-favorite-overrides') as Record<string, boolean>) || {};
 		favorites[questionId] = addToFavorite;
 		globalState.update('leetcode-favorite-overrides', favorites);
 
@@ -406,12 +411,16 @@ class LeetcodeClient {
 		}
 		const timer = setTimeout(() => {
 			this.favoriteDebounceTimers.delete(questionId);
-			this.syncFavoriteToApi(questionId, addToFavorite);
+			this.syncFavoriteToApi(questionId, addToFavorite, onRevert);
 		}, 1500);
 		this.favoriteDebounceTimers.set(questionId, timer);
 	}
 
-	private async syncFavoriteToApi(questionId: string, addToFavorite: boolean): Promise<void> {
+	private async syncFavoriteToApi(
+		questionId: string,
+		addToFavorite: boolean,
+		onRevert?: () => void,
+	): Promise<void> {
 		try {
 			leetCodeChannel.appendLine(
 				`Syncing favorite for problem ${questionId}: ${addToFavorite ? 'star' : 'unstar'}`,
@@ -425,6 +434,14 @@ class LeetcodeClient {
 			}
 		} catch (error) {
 			leetCodeChannel.appendLine(`Failed to sync favorite for problem ${questionId}: ${error}`);
+			// Revert globalState override
+			const favorites = (globalState.get('leetcode-favorite-overrides') as Record<string, boolean>) || {};
+			delete favorites[questionId];
+			globalState.update('leetcode-favorite-overrides', favorites);
+			// Revert UI via callback
+			if (onRevert) {
+				onRevert();
+			}
 		}
 	}
 

@@ -21,7 +21,7 @@ async function generate() {
 			slug: p.slug,
 			category: p.category,
 			difficulty: p.level,
-			passRate: p.percent.toFixed(2),
+			passRate: `${p.percent.toFixed(2)}%`,
 			locked: p.locked,
 		}))
 		.sort((a, b) => Number(a.id) - Number(b.id));

@@ -454,13 +454,7 @@
 						"scope": "application",
 						"description": "Show a hint to configure commands key binding."
 					},
-					"leetnotion.useWsl": {
-						"type": "boolean",
-						"default": false,
-						"scope": "application",
-						"description": "Use the Windows Subsystem for Linux."
-					},
-					"leetnotion.endpoint": {
+	"leetnotion.endpoint": {
 						"type": "string",
 						"default": "leetcode",
 						"scope": "application",
@@ -761,13 +755,7 @@
 						"scope": "application",
 						"description": "Determine whether to group all webview pages into the second editor column when solving problems."
 					},
-					"leetnotion.nodePath": {
-						"type": "string",
-						"default": "node",
-						"scope": "application",
-						"description": "The Node.js executable path. for example, C:\\Program Files\\nodejs\\node.exe"
-					},
-					"leetnotion.colorizeProblems": {
+	"leetnotion.colorizeProblems": {
 						"type": "boolean",
 						"default": true,
 						"scope": "application",
