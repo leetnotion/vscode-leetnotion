@@ -454,7 +454,7 @@
 						"scope": "application",
 						"description": "Show a hint to configure commands key binding."
 					},
-	"leetnotion.endpoint": {
+					"leetnotion.endpoint": {
 						"type": "string",
 						"default": "leetcode",
 						"scope": "application",
@@ -755,7 +755,7 @@
 						"scope": "application",
 						"description": "Determine whether to group all webview pages into the second editor column when solving problems."
 					},
-	"leetnotion.colorizeProblems": {
+					"leetnotion.colorizeProblems": {
 						"type": "boolean",
 						"default": true,
 						"scope": "application",
@@ -837,6 +837,7 @@
 	},
 	"devDependencies": {
 		"@types/fs-extra": "^9.0.13",
+		"@types/he": "^1.2.3",
 		"@types/lodash": "^4.17.24",
 		"@types/markdown-it": "0.0.7",
 		"@types/mocha": "^2.2.48",
@@ -857,6 +858,7 @@
 		"bottleneck": "^2.19.5",
 		"esbuild": "^0.24.2",
 		"fs-extra": "^10.1.0",
+		"he": "^1.2.0",
 		"highlight.js": "^10.7.3",
 		"lodash": "^4.17.23",
 		"markdown-it": "^8.4.2",

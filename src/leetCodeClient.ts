@@ -10,6 +10,7 @@ import {
 	SolutionArticle,
 } from '@leetnotion/leetcode-api';
 import axios from 'axios';
+import * as he from 'he';
 import _ from 'lodash';
 import * as vscode from 'vscode';
 import { globalState } from './globalState';
@@ -324,14 +325,8 @@ class LeetcodeClient {
 
 		if (showDescriptionInComment) {
 			const rawContent = problem.content || '';
-			const textContent = rawContent
-				.replace(/<[^>]+>/g, '')
-				.replace(/&nbsp;/g, ' ')
-				.replace(/&lt;/g, '<')
-				.replace(/&gt;/g, '>')
-				.replace(/&amp;/g, '&')
-				.replace(/&quot;/g, '"')
-				.replace(/&#39;/g, "'")
+			const textContent = he
+				.decode(rawContent.replace(/<\/sup>/g, '').replace(/<sup>/g, '^').replace(/<[^>]+>/g, ''))
 				.replace(/\r\n/g, '\n');
 			headerLines.push(`${commentLine}`);
 			for (const line of textContent.split('\n')) {
@@ -446,9 +441,9 @@ class LeetcodeClient {
 	}
 
 	private getFavoriteState(questionId: string, apiValue: boolean): boolean {
-		const overrides: Record<string, boolean> | undefined = globalState.get(
+		const overrides = globalState.get(
 			'leetcode-favorite-overrides',
-		);
+		) as Record<string, boolean> | undefined;
 		if (overrides && questionId in overrides) {
 			return overrides[questionId];
 		}
