@@ -74,7 +74,9 @@ export async function syncContests(): Promise<void> {
 				const ids = questions.map((q) => slugToId[q.title_slug]).filter(Boolean);
 				if (ids.length > 0) {
 					newEntries[contest.title] = ids;
-					leetCodeChannel.appendLine(`[syncContests] Added ${contest.title}: ${ids.length} problems`);
+					leetCodeChannel.appendLine(
+						`[syncContests] Added ${contest.title}: ${ids.length} problems`,
+					);
 				}
 			} catch (err) {
 				leetCodeChannel.appendLine(`[syncContests] Failed to fetch ${contest.title}: ${err}`);
@@ -85,7 +87,9 @@ export async function syncContests(): Promise<void> {
 			const updated = { ...newEntries, ...contests };
 			await globalState.updateDisk('leetcodeContests', updated);
 			await explorerNodeManager.refreshCache();
-			leetCodeChannel.appendLine(`[syncContests] Synced ${Object.keys(newEntries).length} new contest(s).`);
+			leetCodeChannel.appendLine(
+				`[syncContests] Synced ${Object.keys(newEntries).length} new contest(s).`,
+			);
 		}
 	} catch (error) {
 		leetCodeChannel.appendLine(`[syncContests] Failed to sync contests: ${error}`);

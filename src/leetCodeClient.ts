@@ -328,7 +328,12 @@ class LeetcodeClient {
 		if (showDescriptionInComment) {
 			const rawContent = problem.content || '';
 			const textContent = he
-				.decode(rawContent.replace(/<\/sup>/g, '').replace(/<sup>/g, '^').replace(/<[^>]+>/g, ''))
+				.decode(
+					rawContent
+						.replace(/<\/sup>/g, '')
+						.replace(/<sup>/g, '^')
+						.replace(/<[^>]+>/g, ''),
+				)
 				.replace(/\r\n/g, '\n');
 			headerLines.push(`${commentLine}`);
 			for (const line of textContent.split('\n')) {
@@ -391,13 +396,10 @@ class LeetcodeClient {
 	 * The API call is debounced — rapid toggles only send the final state.
 	 * If the API call fails, onRevert is called to roll back the UI.
 	 */
-	public toggleFavorite(
-		questionId: string,
-		addToFavorite: boolean,
-		onRevert?: () => void,
-	): void {
+	public toggleFavorite(questionId: string, addToFavorite: boolean, onRevert?: () => void): void {
 		// Persist to globalState immediately
-		const favorites = (globalState.get('leetcode-favorite-overrides') as Record<string, boolean>) || {};
+		const favorites =
+			(globalState.get('leetcode-favorite-overrides') as Record<string, boolean>) || {};
 		favorites[questionId] = addToFavorite;
 		globalState.update('leetcode-favorite-overrides', favorites);
 
@@ -432,7 +434,8 @@ class LeetcodeClient {
 		} catch (error) {
 			leetCodeChannel.appendLine(`Failed to sync favorite for problem ${questionId}: ${error}`);
 			// Revert globalState override
-			const favorites = (globalState.get('leetcode-favorite-overrides') as Record<string, boolean>) || {};
+			const favorites =
+				(globalState.get('leetcode-favorite-overrides') as Record<string, boolean>) || {};
 			delete favorites[questionId];
 			globalState.update('leetcode-favorite-overrides', favorites);
 			// Revert UI via callback
@@ -443,9 +446,9 @@ class LeetcodeClient {
 	}
 
 	private getFavoriteState(questionId: string, apiValue: boolean): boolean {
-		const overrides = globalState.get(
-			'leetcode-favorite-overrides',
-		) as Record<string, boolean> | undefined;
+		const overrides = globalState.get('leetcode-favorite-overrides') as
+			| Record<string, boolean>
+			| undefined;
 		if (overrides && questionId in overrides) {
 			return overrides[questionId];
 		}

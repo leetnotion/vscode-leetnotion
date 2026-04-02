@@ -65,9 +65,7 @@ async function generate() {
 		for (const contest of contests) {
 			try {
 				const { questions } = await leetcode.getContestQuestions(contest.titleSlug);
-				const ids = questions
-					.map((q) => slugToId[q.title_slug])
-					.filter(Boolean);
+				const ids = questions.map((q) => slugToId[q.title_slug]).filter(Boolean);
 				if (ids.length > 0) {
 					contestData[contest.title] = ids;
 				}

@@ -236,9 +236,7 @@ export async function showSolution(input?: LeetCodeNode | vscode.Uri): Promise<v
 			problemSlug = input.slug;
 		} else {
 			// Triggered from Code Lens/context menu (Uri) or command palette (no input)
-			const filePath = input instanceof vscode.Uri
-				? input.fsPath
-				: await getActiveFilePath();
+			const filePath = input instanceof vscode.Uri ? input.fsPath : await getActiveFilePath();
 			if (filePath) {
 				const nodeId = await getNodeIdFromFile(filePath);
 				const node = explorerNodeManager.getNodeById(nodeId);
