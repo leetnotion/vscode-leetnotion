@@ -17,6 +17,7 @@ export const UserStatusKey = 'leetcode-user-status';
 export const TopicTagsKey = 'leetcode-topic-tags';
 export const DailyProblemKey = 'leetcode-daily-problem';
 export const DailyProblemFetchDateKey = 'leetcode-daily-problem-fetch-date';
+export const DailyProblemUserStatusKey = 'leetcode-daily-problem-user-status';
 export const NotionAccessTokenKey = 'notion-access-token';
 export const QuestionsDatabaseIdKey = 'notion-questions-database-id';
 export const SubmissionsDatabaseIdKey = 'notion-submissions-database-id';
@@ -198,9 +199,10 @@ class GlobalState {
 		return this._topicTags;
 	}
 
-	public async setDailyProblem(dailyProblemId: string): Promise<any> {
+	public async setDailyProblem(dailyProblemId: string, userStatus?: string): Promise<any> {
 		this._dailyProblemId = dailyProblemId;
 		await this._state.update(DailyProblemFetchDateKey, new Date().toISOString().slice(0, 10));
+		await this._state.update(DailyProblemUserStatusKey, userStatus);
 		return await this._state.update(DailyProblemKey, dailyProblemId);
 	}
 
@@ -210,6 +212,10 @@ class GlobalState {
 
 	public getDailyProblemFetchDate(): string | undefined {
 		return this._state.get(DailyProblemFetchDateKey);
+	}
+
+	public isDailyChallengeCompleted(): boolean {
+		return this._state.get(DailyProblemUserStatusKey) === 'Finish';
 	}
 
 	public async setNotionAccessToken(accessToken: string): Promise<void> {
@@ -396,6 +402,7 @@ class GlobalState {
 		this._state.update(UserStatusKey, undefined);
 		this._state.update(DailyProblemKey, undefined);
 		this._state.update(DailyProblemFetchDateKey, undefined);
+		this._state.update(DailyProblemUserStatusKey, undefined);
 		this._state.update(QuestionsDatabaseIdKey, undefined);
 		this._state.update(SubmissionsDatabaseIdKey, undefined);
 		this._state.update(NotionIntegrationStatusKey, undefined);
@@ -427,6 +434,7 @@ class GlobalState {
 		this._dailyProblemId = undefined;
 		this._state.update(LeetcodeListsKey, undefined);
 		this._state.update(DailyProblemKey, undefined);
+		this._state.update(DailyProblemUserStatusKey, undefined);
 		this._state.update(ListsSyncTimestampKey, undefined);
 		const leetcodeDiskKeys = [
 			QuestionsOfListKey,

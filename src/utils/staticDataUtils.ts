@@ -9,6 +9,7 @@ import { ProblemRatingMap, TopicTags } from '../types';
 const categoryProblemsPath = '../../data/categoryProblems.json';
 const topicTagsPath = '../../data/topicTags.json';
 const ratingsPath = '../../data/ratings.json';
+const contestsPath = '../../data/contests.json';
 
 interface StaticProblem {
 	id: string;
@@ -44,4 +45,8 @@ export function getStaticTopicTags(): TopicTags {
 
 export function getStaticRatings(): ProblemRatingMap {
 	return fsExtra.readJSONSync(path.join(__dirname, ratingsPath)) as ProblemRatingMap;
+}
+
+export function getStaticContests(): Record<string, string[]> {
+	return fsExtra.readJSONSync(path.join(__dirname, contestsPath)) as Record<string, string[]>;
 }

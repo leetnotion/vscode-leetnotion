@@ -24,6 +24,7 @@ import { leetCodeStatusBarController } from './statusbar/leetCodeStatusBarContro
 import {
 	refreshTopicTags,
 	setProblemRatingMap,
+	syncContests,
 	syncLists,
 	syncListsIfNeeded,
 } from './utils/dataUtils';
@@ -40,7 +41,7 @@ export let leetcodeTreeView: vscode.TreeView<LeetCodeNode> | undefined;
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
 	try {
-		leetCodeManager.onStatusChanged(() => {
+		leetCodeManager.onStatusChanged(async () => {
 			leetCodeStatusBarController.updateStatusBar(
 				leetCodeManager.getStatus(),
 				leetCodeManager.getUser(),
@@ -50,6 +51,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
 			const status = leetCodeManager.getStatus();
 			if (status === UserStatus.SignedIn && intervals.length === 0) {
+				await leetcodeClient.setTitleSlugQuestionNumberMapping();
 				startRecurringTasks();
 			} else if (status === UserStatus.SignedOut) {
 				intervals = clearIntervals(intervals);
@@ -285,7 +287,7 @@ function startRecurringTasks() {
 	intervals.push(
 		repeatAction(async () => {
 			try {
-				await Promise.all([syncListsIfNeeded(twoHoursMs), setProblemRatingMap()]);
+				await Promise.all([syncListsIfNeeded(twoHoursMs), setProblemRatingMap(), syncContests()]);
 			} catch (error) {
 				handleBackgroundError(error, '2-hour interval tasks');
 			}

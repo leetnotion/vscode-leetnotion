@@ -123,13 +123,15 @@ class LeetcodeClient {
 	public async setDailyProblem() {
 		try {
 			const todayUTC = new Date().toISOString().slice(0, 10);
-			if (globalState.getDailyProblemFetchDate() === todayUTC) {
+			const alreadyFetchedToday = globalState.getDailyProblemFetchDate() === todayUTC;
+			if (alreadyFetchedToday && globalState.isDailyChallengeCompleted()) {
 				return;
 			}
 			const {
 				question: { questionFrontendId },
+				userStatus,
 			} = await this.leetcode.daily();
-			await globalState.setDailyProblem(questionFrontendId);
+			await globalState.setDailyProblem(questionFrontendId, userStatus);
 		} catch (error) {
 			leetCodeChannel.appendLine(`Error getting daily question: ${error}`);
 		}

@@ -1,7 +1,6 @@
 // Copyright (c) leetnotion. All rights reserved.
 // Licensed under the MIT license.
 
-import axios from 'axios';
 import * as fsExtra from 'fs-extra';
 import * as path from 'path';
 import { explorerNodeManager } from '../explorer/explorerNodeManager';
@@ -18,7 +17,7 @@ import {
 	Sheets,
 	TopicTags,
 } from '../types';
-import { getStaticRatings, getStaticTopicTags } from './staticDataUtils';
+import { getStaticContests, getStaticRatings, getStaticTopicTags } from './staticDataUtils';
 import { sleep } from './toolUtils';
 
 const sheetsPath = '../../data/sheets.json';
@@ -40,19 +39,56 @@ export function getQuestionCompanyTags(): QuestionCompanyTags {
 }
 
 export async function getContests(): Promise<Record<string, string[]>> {
+	const cached = await globalState.getDisk<Record<string, string[]>>('leetcodeContests');
+	if (cached) {
+		return cached;
+	}
+	const staticContests = getStaticContests();
+	await globalState.updateDisk('leetcodeContests', staticContests);
+	return staticContests;
+}
+
+export async function syncContests(): Promise<void> {
 	try {
-		return await globalState.getWithBackgroundRefresh<Record<string, string[]>>(
-			'leetcodeContests',
-			async () => {
-				const { data } = await axios.get(
-					'https://raw.githubusercontent.com/codewithsathya/leetcode-contests/refs/heads/main/contestData.json',
-				);
-				return data;
-			},
-		);
+		const contests = await getContests();
+		const existingContestNames = new Set(Object.keys(contests));
+
+		// Fetch recent past contests from API
+		const { contests: pastContests } = await leetcodeClient.leetcode.getPastContests();
+
+		// Find contests not in our data
+		const newContests = pastContests.filter((c) => !existingContestNames.has(c.title));
+		if (newContests.length === 0) {
+			leetCodeChannel.appendLine('[syncContests] No new contests found.');
+			return;
+		}
+
+		// Use cached slug → frontend ID mapping
+		const slugToId = globalState.getTitleSlugQuestionNumberMapping() ?? {};
+
+		// Fetch questions for each new contest
+		const newEntries: Record<string, string[]> = {};
+		for (const contest of newContests) {
+			try {
+				const { questions } = await leetcodeClient.leetcode.getContestQuestions(contest.titleSlug);
+				const ids = questions.map((q) => slugToId[q.title_slug]).filter(Boolean);
+				if (ids.length > 0) {
+					newEntries[contest.title] = ids;
+					leetCodeChannel.appendLine(`[syncContests] Added ${contest.title}: ${ids.length} problems`);
+				}
+			} catch (err) {
+				leetCodeChannel.appendLine(`[syncContests] Failed to fetch ${contest.title}: ${err}`);
+			}
+		}
+
+		if (Object.keys(newEntries).length > 0) {
+			const updated = { ...newEntries, ...contests };
+			await globalState.updateDisk('leetcodeContests', updated);
+			await explorerNodeManager.refreshCache();
+			leetCodeChannel.appendLine(`[syncContests] Synced ${Object.keys(newEntries).length} new contest(s).`);
+		}
 	} catch (error) {
-		console.error(`Failed to fetch contests: ${error}`);
-		return {};
+		leetCodeChannel.appendLine(`[syncContests] Failed to sync contests: ${error}`);
 	}
 }
 
@@ -163,6 +199,7 @@ export async function getListsWithQuestions(): Promise<ListsWithQuestions> {
 	const listsDetails: ListsWithQuestions = {};
 	if (lists) {
 		for (const list of lists) {
+			if (list.name === 'Favorite') continue;
 			const questions = await globalState.getQuestionsOfList(list.slug);
 			if (questions.length > 0) {
 				listsDetails[list.name] = questions.map((item) => item.questionFrontendId);

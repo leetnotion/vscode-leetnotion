@@ -389,6 +389,13 @@ class ExplorerNodeManager implements Disposable {
 		this.completedFolderIds.clear();
 		const shouldHidePremium = shouldHidePremiumProblem();
 		const computeForNode = (id: string): boolean => {
+			if (id === Category.Daily) {
+				const completed = globalState.isDailyChallengeCompleted();
+				if (completed) {
+					this.completedFolderIds.add(id);
+				}
+				return completed;
+			}
 			const data = this.getExplorerDataById(id);
 			if (!data) {
 				return false;

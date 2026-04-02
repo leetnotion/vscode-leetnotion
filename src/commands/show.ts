@@ -2,6 +2,7 @@ import { CompanyTags, Lists, Sheets, TopicTags } from '@/types';
 import {
 	extractArrayElements,
 	getCompanyTags,
+	getContests,
 	getLists,
 	getSheets,
 	getTopicTags,
@@ -169,8 +170,8 @@ export async function searchTag(): Promise<void> {
 }
 
 export async function searchContests(): Promise<void> {
-	const contests = globalState.get('leetcodeContests') as Record<string, string[]>;
-	if (!contests) {
+	const contests = getContests();
+	if (!contests || Object.keys(contests).length === 0) {
 		leetCodeChannel.appendLine('Failed to get leetcode contests');
 		return;
 	}
