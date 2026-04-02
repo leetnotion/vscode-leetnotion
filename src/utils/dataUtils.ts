@@ -52,12 +52,33 @@ export async function syncContests(): Promise<void> {
 	try {
 		const contests = await getContests();
 		const existingContestNames = new Set(Object.keys(contests));
+		const pageSize = 30;
 
-		// Fetch recent past contests from API
-		const { contests: pastContests } = await leetcodeClient.leetcode.getPastContests();
+		// Fetch first page to get totalNum
+		const { totalNum, contests: firstPage } = await leetcodeClient.leetcode.getPastContests({
+			limit: pageSize,
+			skip: 0,
+		});
 
-		// Find contests not in our data
-		const newContests = pastContests.filter((c) => !existingContestNames.has(c.title));
+		// Collect all new contests by paginating until we hit known contests
+		const newContests = firstPage.filter((c) => !existingContestNames.has(c.title));
+
+		// If all contests on first page are new and there could be more, keep fetching
+		if (newContests.length === firstPage.length && totalNum > existingContestNames.size + pageSize) {
+			for (let skip = pageSize; skip < totalNum; skip += pageSize) {
+				const { contests: page } = await leetcodeClient.leetcode.getPastContests({
+					limit: pageSize,
+					skip,
+				});
+				const newInPage = page.filter((c) => !existingContestNames.has(c.title));
+				newContests.push(...newInPage);
+				// Stop if we've reached contests we already have
+				if (newInPage.length < page.length) {
+					break;
+				}
+			}
+		}
+
 		if (newContests.length === 0) {
 			leetCodeChannel.appendLine('[syncContests] No new contests found.');
 			return;
