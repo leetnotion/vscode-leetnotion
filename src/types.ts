@@ -246,6 +246,7 @@ export type LeetnotionSubmission = {
 	lang: string;
 	status_display: string;
 	id: number;
+	code: string;
 };
 
 export type LeetnotionTree = {

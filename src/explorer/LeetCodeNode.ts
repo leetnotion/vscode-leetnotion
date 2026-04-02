@@ -26,6 +26,10 @@ export class LeetCodeNode {
 		return this.data.id;
 	}
 
+	public get questionId(): number {
+		return this.data.questionId;
+	}
+
 	public get passRate(): string {
 		return this.data.passRate;
 	}

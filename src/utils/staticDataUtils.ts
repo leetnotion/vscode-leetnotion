@@ -13,6 +13,7 @@ const contestsPath = '../../data/contests.json';
 
 interface StaticProblem {
 	id: string;
+	questionId: number;
 	name: string;
 	slug: string;
 	category: string;
@@ -26,6 +27,7 @@ export function getStaticProblems(): IProblem[] {
 	return raw.map(
 		(p): IProblem => ({
 			id: p.id,
+			questionId: p.questionId,
 			name: p.name,
 			slug: p.slug,
 			difficulty: p.difficulty,

@@ -260,6 +260,7 @@ class LeetcodeClient {
 
 				return {
 					id,
+					questionId: p.id,
 					name: p.name,
 					slug: p.slug,
 					difficulty: p.level,

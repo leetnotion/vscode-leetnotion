@@ -218,6 +218,10 @@ class GlobalState {
 		return this._state.get(DailyProblemUserStatusKey) === 'Finish';
 	}
 
+	public async markDailyChallengeCompleted(): Promise<void> {
+		await this._state.update(DailyProblemUserStatusKey, 'Finish');
+	}
+
 	public async setNotionAccessToken(accessToken: string): Promise<void> {
 		this._notionAccessToken = accessToken;
 		await this._secrets.store(NotionAccessTokenKey, accessToken);

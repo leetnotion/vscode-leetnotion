@@ -7,6 +7,7 @@ import { leetCodeChannel } from '../leetCodeChannel';
 import { leetcodeClient } from '../leetCodeClient';
 import { leetnotionManager } from '../leetnotionManager';
 import { langExt } from '../shared';
+import { globalState } from '../globalState';
 import { handleError } from '../utils/errorUtils';
 import { extractCode, getLangFromFile, getNodeIdFromFile } from '../utils/problemUtils';
 import { getQuestionNumber } from '../utils/toolUtils';
@@ -45,7 +46,19 @@ export async function submitSolution(uri?: vscode.Uri): Promise<void> {
 		if (result.ok) {
 			const questionNumber = getQuestionNumber(filePath);
 			if (questionNumber) {
-				await leetnotionManager.syncSubmission(questionNumber);
+				const nodeId = await getNodeIdFromFile(filePath);
+				const node = explorerNodeManager.getNodeById(nodeId);
+				if (questionNumber === globalState.getDailyProblem()) {
+					await globalState.markDailyChallengeCompleted();
+				}
+				leetnotionManager.syncSubmission(questionNumber, {
+					title: node?.name ?? slug,
+					timestamp: Math.floor(Date.now() / 1000),
+					lang: result.lang,
+					status_display: result.state,
+					id: Number(result.submission_id),
+					code,
+				});
 			}
 		}
 	} catch (error) {
@@ -63,7 +76,7 @@ async function extractProblemMeta(
 	const nodeId = await getNodeIdFromFile(filePath);
 	const node = explorerNodeManager.getNodeById(nodeId);
 	const slug = node ? node.slug : null;
-	const questionId = node ? Number(node.id) : null;
+	const questionId = node ? node.questionId : null;
 
 	// Prefer lang from @lc header, fall back to file extension
 	let lang: string | null = getLangFromFile(fileContent);

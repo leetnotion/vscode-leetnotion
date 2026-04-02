@@ -17,6 +17,7 @@ async function generate() {
 	const staticProblems = problems
 		.map((p) => ({
 			id: String(p.fid),
+			questionId: p.id,
 			name: p.name,
 			slug: p.slug,
 			category: p.category,

@@ -8,7 +8,7 @@ import { leetCodeManager } from './leetCodeManager';
 import { leetnotionClient } from './leetnotionClient';
 import { templateUpdateSession } from './modules/leetnotion/session';
 import { IProblem } from './shared';
-import { LeetcodeSubmission, SetPropertiesMessage } from './types';
+import { LeetcodeSubmission, LeetnotionSubmission, SetPropertiesMessage } from './types';
 import { handleBackgroundError, handleError } from './utils/errorUtils';
 import { getWorkspaceConfiguration, hasNotionIntegrationEnabled } from './utils/settingUtils';
 import {
@@ -22,9 +22,9 @@ class LeetnotionManager {
 		leetnotionClient.initialize();
 	}
 
-	public async syncSubmission(questionNumber: string): Promise<void> {
+	public async syncSubmission(questionNumber: string, submission: LeetnotionSubmission): Promise<void> {
 		if (!hasNotionIntegrationEnabled()) return;
-		await leetnotionClient.submitSolution(questionNumber);
+		await leetnotionClient.submitSolution(questionNumber, submission);
 	}
 
 	public async setProperties(message: SetPropertiesMessage): Promise<void> {
@@ -65,9 +65,9 @@ class LeetnotionManager {
 				await templateUpdateSession.close();
 				await globalState.setNotionIntegrationStatus('pending');
 				await this.updateNotionInfo();
-				await window.showInformationMessage('Notion integration completed 🎉');
 			}
 			await globalState.setNotionIntegrationStatus('done');
+			window.showInformationMessage('Notion integration completed 🎉');
 		} catch (error) {
 			await handleError(error, 'enable Notion integration');
 		}

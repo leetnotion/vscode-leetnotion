@@ -92,6 +92,8 @@ export async function testSolution(uri?: vscode.Uri): Promise<void> {
 				return;
 		}
 
+		leetCodeChannel.appendLine(`[Test] dataInput:\n${dataInput}`);
+
 		const results = await vscode.window.withProgress(
 			{ location: vscode.ProgressLocation.Notification, title: 'Testing solution...' },
 			() => leetcodeClient.testCode(slug, lang, questionId, code, dataInput),
@@ -118,7 +120,7 @@ async function extractTestMeta(
 	const nodeId = await getNodeIdFromFile(filePath);
 	const node = explorerNodeManager.getNodeById(nodeId);
 	const slug = node ? node.slug : null;
-	const questionId = node ? Number(node.id) : null;
+	const questionId = node ? node.questionId : null;
 
 	let sampleTestCase = '';
 	if (slug) {

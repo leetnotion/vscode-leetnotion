@@ -6,7 +6,6 @@ import AdvancedNotionClient, {
 import Bottleneck from 'bottleneck';
 import { globalState } from './globalState';
 import { leetCodeChannel } from './leetCodeChannel';
-import { leetcodeClient } from './leetCodeClient';
 import { LeetCodeToNotionConverter } from './modules/leetnotion/converter';
 import {
 	LeetcodeProblem,
@@ -126,22 +125,31 @@ class LeetnotionClient {
 		return mapping[questionNumber];
 	}
 
-	public async submitSolution(questionNumber: string) {
+	public async submitSolution(questionNumber: string, submission: LeetnotionSubmission) {
 		if (!hasNotionIntegrationEnabled()) return;
 		if (!this.isSignedIn || !this.notion) return;
 		try {
+			const totalStart = Date.now();
+
+			let start = Date.now();
 			const updateResponse = await this.updateStatusOfQuestion(questionNumber);
-			const submission = await leetcodeClient.getRecentSubmission();
-			if (!submission) {
-				throw new Error(`no-recent-submission`);
-			}
+			leetCodeChannel.appendLine(`[Notion] updateStatusOfQuestion took ${Date.now() - start}ms`);
+
+			start = Date.now();
 			const submissionPageId = await this.createSubmissionPage(questionNumber, submission);
+			leetCodeChannel.appendLine(`[Notion] createSubmissionPage took ${Date.now() - start}ms`);
+
 			this.updatePanel(
 				updateResponse.id,
 				submissionPageId,
 				this.getSelectTags(updateResponse.properties.Tags.multi_select.map((tag) => tag.name)),
 			);
+
+			start = Date.now();
 			await this.addCodeToPage(submissionPageId, submission.lang, submission.code);
+			leetCodeChannel.appendLine(`[Notion] addCodeToPage took ${Date.now() - start}ms`);
+
+			leetCodeChannel.appendLine(`[Notion] submitSolution total took ${Date.now() - totalStart}ms`);
 		} catch (error) {
 			await handleError(error, 'update Notion for your submission');
 		}
