@@ -112,7 +112,7 @@ class TrackData implements ITrackData {
 					timestamp: new Date().toISOString(),
 				});
 			}
-		} catch (err) {
+		} catch {
 			// fallback: push events back if failed
 			this.reportCache = this.reportCache.concat(eventsToSend);
 		} finally {

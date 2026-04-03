@@ -64,7 +64,10 @@ export async function syncContests(): Promise<void> {
 		const newContests = firstPage.filter((c) => !existingContestNames.has(c.title));
 
 		// If all contests on first page are new and there could be more, keep fetching
-		if (newContests.length === firstPage.length && totalNum > existingContestNames.size + pageSize) {
+		if (
+			newContests.length === firstPage.length &&
+			totalNum > existingContestNames.size + pageSize
+		) {
 			for (let skip = pageSize; skip < totalNum; skip += pageSize) {
 				const { contests: page } = await leetcodeClient.leetcode.getPastContests({
 					limit: pageSize,

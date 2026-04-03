@@ -86,7 +86,9 @@ class LeetCodeManager {
 					'Get Notion Template',
 				);
 				if (action === 'Get Notion Template') {
-					vscode.env.openExternal(vscode.Uri.parse('https://codewithsathya.gumroad.com/l/leetnotion'));
+					vscode.env.openExternal(
+						vscode.Uri.parse('https://codewithsathya.gumroad.com/l/leetnotion'),
+					);
 				}
 			}
 		}

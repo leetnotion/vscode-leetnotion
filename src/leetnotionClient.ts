@@ -33,7 +33,7 @@ const SubmissionsDatabaseKey = 'Submissions Database';
 
 class LeetnotionClient {
 	private notion: AdvancedNotionClient | undefined;
-	private isSignedIn: boolean;
+	private isSignedIn: boolean = false;
 	private limiter = new Bottleneck({
 		minTime: 334,
 	});
@@ -136,7 +136,9 @@ class LeetnotionClient {
 				this.updateStatusOfQuestion(questionNumber),
 				this.createSubmissionPage(questionNumber, submission),
 			]);
-			leetCodeChannel.appendLine(`[Notion] updateStatus and createSubmissionPage took ${Date.now() - start}ms`);
+			leetCodeChannel.appendLine(
+				`[Notion] updateStatus and createSubmissionPage took ${Date.now() - start}ms`,
+			);
 
 			this.updatePanel(
 				updateResponse.id,

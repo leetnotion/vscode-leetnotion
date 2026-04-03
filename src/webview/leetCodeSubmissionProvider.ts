@@ -5,7 +5,6 @@ import * as os from 'os';
 import * as vscode from 'vscode';
 import { ViewColumn } from 'vscode';
 import { leetnotionManager } from '../leetnotionManager';
-import { SetPropertiesMessage } from '../types';
 import {
 	DialogType,
 	openKeybindingsEditor,

@@ -69,7 +69,6 @@ class LeetnotionEngine implements vscode.Disposable {
 		);
 		return webview.asWebviewUri(onDiskPath).toString();
 	}
-
 }
 
 export const leetnotionEngine: LeetnotionEngine = new LeetnotionEngine();

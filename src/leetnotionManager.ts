@@ -22,7 +22,10 @@ class LeetnotionManager {
 		leetnotionClient.initialize();
 	}
 
-	public async syncSubmission(questionNumber: string, submission: LeetnotionSubmission): Promise<void> {
+	public async syncSubmission(
+		questionNumber: string,
+		submission: LeetnotionSubmission,
+	): Promise<void> {
 		if (!hasNotionIntegrationEnabled()) return;
 		await leetnotionClient.submitSolution(questionNumber, submission);
 	}
