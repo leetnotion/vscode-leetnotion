@@ -59,22 +59,34 @@ class LeetCodeManager {
 			this.userStatus = UserStatus.SignedIn;
 			this._onStatusChanged.fire();
 		}
-		if (hasNotionIntegrationEnabled()) {
-			if (globalState.getNotionAccessToken()) {
+	}
+
+	private async promptNotionIntegration(): Promise<void> {
+		if (!hasNotionIntegrationEnabled()) {
+			return;
+		}
+		if (globalState.getNotionAccessToken()) {
+			leetnotionManager.enableNotionIntegration();
+		} else {
+			const choice = await vscode.window.showQuickPick([
+				{
+					label: 'Integrate Notion',
+					description: 'Integrate Notion to sync your LeetCode progress and more.',
+				},
+				{
+					label: 'Maybe later',
+					description: 'You can integrate Notion later from the command palette.',
+				},
+			]);
+			if (choice?.label === 'Integrate Notion') {
 				leetnotionManager.enableNotionIntegration();
-			} else {
-				const choice = await vscode.window.showQuickPick([
-					{
-						label: 'Integrate Notion',
-						description: 'Integrate Notion to sync your LeetCode progress and more.',
-					},
-					{
-						label: 'Maybe later',
-						description: 'You can integrate Notion later from the command palette.',
-					},
-				]);
-				if (choice?.label === 'Integrate Notion') {
-					leetnotionManager.enableNotionIntegration();
+			} else if (choice?.label === 'Maybe later') {
+				const action = await vscode.window.showInformationMessage(
+					'Get the Ultimate Leetcode Tracker Notion template to sync your LeetCode progress seamlessly to notion.',
+					'Get Notion Template',
+				);
+				if (action === 'Get Notion Template') {
+					vscode.env.openExternal(vscode.Uri.parse('https://codewithsathya.gumroad.com/l/leetnotion'));
 				}
 			}
 		}
@@ -82,22 +94,26 @@ class LeetCodeManager {
 
 	public async handleUriSignIn(uri: vscode.Uri): Promise<void> {
 		try {
-			await vscode.window.withProgress(
+			const cookie = await vscode.window.withProgress(
 				{ location: vscode.ProgressLocation.Notification },
 				async (progress: vscode.Progress<any>) => {
 					progress.report({ message: 'Fetching user data...' });
 					const queryParams = parseQuery(uri.query);
-					const cookie = queryParams['cookie'];
-					if (!cookie) {
+					const parsedCookie = queryParams['cookie'];
+					if (!parsedCookie) {
 						promptForOpenOutputChannel(
 							`Failed to get cookie. Please log in again`,
 							DialogType.error,
 						);
 						return;
 					}
-					await this.updateUserStatusWithCookie(cookie);
+					await this.updateUserStatusWithCookie(parsedCookie);
+					return parsedCookie;
 				},
 			);
+			if (cookie) {
+				await this.promptNotionIntegration();
+			}
 		} catch (error) {
 			await handleError(error, 'log in via URI');
 		}
@@ -115,6 +131,7 @@ class LeetCodeManager {
 			return;
 		}
 		await this.updateUserStatusWithCookie(cookie);
+		await this.promptNotionIntegration();
 	}
 
 	public async signIn(): Promise<void> {

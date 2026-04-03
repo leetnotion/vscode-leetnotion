@@ -28,7 +28,24 @@ window.addEventListener("message", (event) => {
                 maximumSelectionLength: 100,
                 placeholder: "Search for an option...",
             });
+            const reviewDateInput = document.getElementById("review-date-input");
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const minDate = tomorrow.toISOString().split("T")[0];
+            reviewDateInput.min = minDate;
+            reviewDateInput.addEventListener("blur", () => {
+                if (reviewDateInput.value && reviewDateInput.value < minDate) {
+                    reviewDateInput.value = "";
+                    vscode.postMessage({ command: "show-error", message: "Review date must be in the future." });
+                }
+            });
             setPropertiesSection.style.display = "block";
+            $(document).on("click", (e) => {
+                if (!$(e.target).closest(".select2-container").length) {
+                    $("#tags-select").select2("close");
+                    $(".select2-container .select2-search__field").blur();
+                }
+            });
             break;
     }
 });

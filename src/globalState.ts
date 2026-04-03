@@ -222,6 +222,10 @@ class GlobalState {
 		await this._state.update(DailyProblemUserStatusKey, 'Finish');
 	}
 
+	public async clearDailyChallengeStatus(): Promise<void> {
+		await this._state.update(DailyProblemUserStatusKey, undefined);
+	}
+
 	public async setNotionAccessToken(accessToken: string): Promise<void> {
 		this._notionAccessToken = accessToken;
 		await this._secrets.store(NotionAccessTokenKey, accessToken);

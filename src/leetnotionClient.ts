@@ -50,7 +50,7 @@ class LeetnotionClient {
 				}
 				const delay = LeetnotionClient.BASE_DELAY_MS * Math.pow(2, attempt);
 				leetCodeChannel.appendLine(
-					`Retrying ${label} (attempt ${attempt + 1}/${LeetnotionClient.MAX_RETRIES}) after ${delay}ms: ${error.message}`,
+					`Retrying ${label} (attempt ${attempt + 1}/${LeetnotionClient.MAX_RETRIES}) after ${delay}ms: ${(error as Error).message}`,
 				);
 				await new Promise((resolve) => setTimeout(resolve, delay));
 			}
@@ -132,12 +132,11 @@ class LeetnotionClient {
 			const totalStart = Date.now();
 
 			let start = Date.now();
-			const updateResponse = await this.updateStatusOfQuestion(questionNumber);
-			leetCodeChannel.appendLine(`[Notion] updateStatusOfQuestion took ${Date.now() - start}ms`);
-
-			start = Date.now();
-			const submissionPageId = await this.createSubmissionPage(questionNumber, submission);
-			leetCodeChannel.appendLine(`[Notion] createSubmissionPage took ${Date.now() - start}ms`);
+			const [updateResponse, submissionPageId] = await Promise.all([
+				this.updateStatusOfQuestion(questionNumber),
+				this.createSubmissionPage(questionNumber, submission),
+			]);
+			leetCodeChannel.appendLine(`[Notion] updateStatus and createSubmissionPage took ${Date.now() - start}ms`);
 
 			this.updatePanel(
 				updateResponse.id,

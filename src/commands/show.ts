@@ -1,9 +1,9 @@
-import { CompanyTags, Lists, Sheets, TopicTags } from '@/types';
+import { CompanyTags, ListsWithQuestions, Sheets, TopicTags } from '@/types';
 import {
 	extractArrayElements,
 	getCompanyTags,
 	getContests,
-	getLists,
+	getListsWithQuestions,
 	getSheets,
 	getTopicTags,
 } from '@/utils/dataUtils';
@@ -170,7 +170,7 @@ export async function searchTag(): Promise<void> {
 }
 
 export async function searchContests(): Promise<void> {
-	const contests = getContests();
+	const contests = await getContests();
 	if (!contests || Object.keys(contests).length === 0) {
 		leetCodeChannel.appendLine('Failed to get leetcode contests');
 		return;
@@ -205,9 +205,9 @@ export async function searchSheets(): Promise<void> {
 
 export async function searchLists(): Promise<void> {
 	try {
-		const lists = await getLists();
+		const listsWithQuestions = await getListsWithQuestions();
 		const choice: IQuickItemEx<string> | undefined = await vscode.window.showQuickPick(
-			parseListsToPicks(lists),
+			parseListsToPicks(listsWithQuestions),
 			{
 				matchOnDetail: true,
 				placeHolder: 'Search for a list',
@@ -494,14 +494,15 @@ async function parseTagsToPicks(tags: TopicTags) {
 	return picks;
 }
 
-async function parseListsToPicks(lists: Lists) {
-	const picks: Array<IQuickItemEx<string>> = lists.map((list) =>
+async function parseListsToPicks(lists: ListsWithQuestions) {
+	const picks: Array<IQuickItemEx<string>> = Object.keys(lists).map((name) =>
 		Object.assign(
 			{},
 			{
-				label: list.name,
+				label: name,
 				description: '',
-				value: list.name,
+				detail: `No of Problems: ${lists[name].length}`,
+				value: name,
 			},
 		),
 	);

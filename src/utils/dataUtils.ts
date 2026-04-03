@@ -226,7 +226,7 @@ export async function getListsWithQuestions(): Promise<ListsWithQuestions> {
 		for (const list of lists) {
 			if (list.name === 'Favorite') continue;
 			const questions = await globalState.getQuestionsOfList(list.slug);
-			if (questions.length > 0) {
+			if (questions && questions.length > 0) {
 				listsDetails[list.name] = questions.map((item) => item.questionFrontendId);
 			}
 		}

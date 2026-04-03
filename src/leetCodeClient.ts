@@ -127,6 +127,9 @@ class LeetcodeClient {
 			if (alreadyFetchedToday && globalState.isDailyChallengeCompleted()) {
 				return;
 			}
+			if (!alreadyFetchedToday) {
+				await globalState.clearDailyChallengeStatus();
+			}
 			const {
 				question: { questionFrontendId },
 				userStatus,
@@ -266,7 +269,7 @@ class LeetcodeClient {
 					difficulty: p.level,
 					passRate: `${p.percent.toFixed(2)}%`,
 					state,
-					isFavorite: this.getFavoriteState(id, p.starred),
+					isFavorite: this.getFavoriteState(String(p.id), p.starred),
 					locked: p.locked,
 					companies,
 					tags,

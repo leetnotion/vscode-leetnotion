@@ -10,7 +10,7 @@ export async function addFavorite(node: LeetCodeNode): Promise<void> {
 	if (!liveNode) return;
 	liveNode.isFavorite = true;
 	explorerNodeManager.updateFavoriteCategory(liveNode.id, true);
-	leetcodeClient.toggleFavorite(liveNode.id, true, () => {
+	leetcodeClient.toggleFavorite(String(liveNode.questionId), true, () => {
 		liveNode.isFavorite = false;
 		explorerNodeManager.updateFavoriteCategory(liveNode.id, false);
 		leetCodeTreeDataProvider.fireChange();
@@ -29,7 +29,7 @@ export async function removeFavorite(node: LeetCodeNode): Promise<void> {
 	if (!liveNode) return;
 	liveNode.isFavorite = false;
 	explorerNodeManager.updateFavoriteCategory(liveNode.id, false);
-	leetcodeClient.toggleFavorite(liveNode.id, false, () => {
+	leetcodeClient.toggleFavorite(String(liveNode.questionId), false, () => {
 		liveNode.isFavorite = true;
 		explorerNodeManager.updateFavoriteCategory(liveNode.id, true);
 		leetCodeTreeDataProvider.fireChange();

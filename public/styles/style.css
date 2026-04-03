@@ -1,9 +1,26 @@
 #setPropertiesSection {
 	display: none;
 }
-#notes-label,
-#notes-input {
+#notes-label {
 	font-size: 1.2rem;
+	margin-bottom: 4px;
+}
+#notes-input {
+	width: 100%;
+	min-height: 200px;
+	background: var(--vscode-input-background);
+	color: var(--vscode-input-foreground);
+	border: 1px solid var(--vscode-input-border);
+	border-radius: 4px;
+	padding: 8px;
+	font-family: var(--vscode-editor-font-family), monospace;
+	font-size: var(--vscode-editor-font-size, 13px);
+	resize: vertical;
+	box-sizing: border-box;
+}
+#notes-input:focus {
+	outline: 1px solid var(--vscode-focusBorder);
+	border-color: var(--vscode-focusBorder);
 }
 #review-container {
 	display: flex;
@@ -25,19 +42,53 @@
 	background-color: var(--vscode-input-background);
 	color: var(--vscode-input-foreground);
 	padding: 4px 4px 4px 6px;
-	border: 1px solid #ccc;
+	border: 1px solid var(--vscode-input-border);
 	border-radius: 4px;
 	font-family: Arial, sans-serif;
 	font-size: 1.2rem;
+	color-scheme: dark;
+	cursor: pointer;
+}
+#review-date-input::-webkit-calendar-picker-indicator {
+	cursor: pointer;
+}
+#review-date-input::-webkit-datetime-edit {
+	cursor: pointer;
+}
+#review-date-input::-webkit-datetime-edit-fields-wrapper {
+	cursor: pointer;
+}
+#review-date-input::-webkit-datetime-edit-day-field,
+#review-date-input::-webkit-datetime-edit-month-field,
+#review-date-input::-webkit-datetime-edit-year-field,
+#review-date-input::-webkit-datetime-edit-text {
+	cursor: pointer;
+}
+#optimal-checkbox-container {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 1.2rem;
+	margin: 7px 0;
 }
 #optimal-checkbox-input {
-	font-size: 1.2rem;
+    cursor: pointer;
+    outline: none;
+}
+#optimal-checkbox-label {
+    cursor: pointer;
 }
 #setPropertiesButton {
+	border: 0;
 	margin: 10px 0;
+	padding: 0.4rem 1.5rem;
+	font-size: 14px;
+	color: white;
+	background-color: var(--vscode-button-background);
+	cursor: pointer;
 }
-#optimal-checkbox-input {
-	margin: 7px 0;
+#setPropertiesButton:hover {
+	background-color: var(--vscode-button-hoverBackground);
 }
 .form-control {
 	display: block;
@@ -45,15 +96,45 @@
 }
 .select2-container--default .select2-selection--multiple {
 	background-color: var(--vscode-input-background);
+	border: 1px solid var(--vscode-input-background, transparent);
+	outline: none;
+}
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+	border: 1px solid var(--vscode-input-border, transparent);
+	outline: none;
 }
 .select2-container--default .select2-selection--multiple .select2-selection__choice {
-	background-color: var(--button-primary-background);
-	color: var(--button-primary-foreground);
+	background-color: var(--vscode-badge-background, #4d4d4d);
+	color: var(--vscode-badge-foreground, #ffffff);
+	border-radius: 4px;
+	padding: 2px 6px;
+	display: inline-flex;
+	align-items: center;
 }
 .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
 	color: var(--vscode-button-foreground);
+    margin: 0 4px 0 2px;
+    font-size: 1.2em;
+    font-weight: bold;
+    line-height: 1;
 }
 .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
 	background-color: var(--button-primary-background);
-	color: var(--vscode-button-secondaryHoverBackground);
+	color: var(--vscode-button-background);
+}
+.select2-results__option {
+	cursor: pointer;
+}
+.select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+	background-color: var(--vscode-list-hoverBackground, rgba(255, 255, 255, 0.1));
+	color: var(--vscode-list-hoverForeground, inherit);
+}
+#tags-box {
+	position: relative;
+	width: 100%;
+	box-sizing: border-box;
+}
+#tags-box .select2-container {
+	width: 100% !important;
+	box-sizing: border-box;
 }

@@ -3,7 +3,7 @@ import { globalState } from '../globalState';
 import { hasNotionIntegrationEnabled } from '../utils/settingUtils';
 
 class LeetnotionEngine implements vscode.Disposable {
-	private notionIntegrationEnabled: boolean;
+	private notionIntegrationEnabled: boolean | undefined;
 	private listener: vscode.Disposable;
 
 	public constructor() {
@@ -37,28 +37,27 @@ class LeetnotionEngine implements vscode.Disposable {
 		if (!this.notionIntegrationEnabled) return '';
 		return `<div id="setPropertiesSection">
                     <div id="setPropertiesInputSection">
-                        <vscode-text-area autofocus cols="50" rows="10" resize="both" id="notes-input">
-                            <div id="notes-label">Notes</div>
-                        </vscode-text-area>
+                        <div id="notes-label">Notes</div>
+                        <textarea autofocus cols="50" rows="10" id="notes-input" spellcheck="false"></textarea>
                         <div id="review-container">
                         <label id="review-label" for="absolute-review-date-container">Review on</label>
                         <div id="absolute-review-date-container">
-                            <input type="date" id="review-date-input" value="" />
+                            <input type="date" id="review-date-input" value="" lang="en-CA" />
                         </div>
                         </div>
-                        <vscode-checkbox id="optimal-checkbox-input">Optimal Solution</vscode-checkbox>
+                        <div id="optimal-checkbox-container">
+                            <input type="checkbox" id="optimal-checkbox-input" />
+                            <label for="optimal-checkbox-input">Optimal Solution</label>
+                        </div>
                     </div>
-                    <vscode-divider></vscode-divider>
                     <label id="tags-label" for="tags-box">Tags</label>
                     <div id="tags-box">
                         <select class="form-control" multiple="multiple" id="tags-select">
                         </select>
                     </div>
-                    <vscode-divider></vscode-divider>
-                    <vscode-button id="setPropertiesButton" appearance="primary">Set Properties</vscode-button>
+                    <button id="setPropertiesButton">Set Properties</button>
                 </div>
-                <script type="module" src="${this.getLeetnotionScript(webview)}"></script>
-                <script type="module" src="${this.getVscodeComponentsUri(webview)}"></script>`;
+                <script type="module" src="${this.getLeetnotionScript(webview)}"></script>`;
 	}
 
 	private getLeetnotionScript(webview: vscode.Webview): string {
@@ -71,15 +70,6 @@ class LeetnotionEngine implements vscode.Disposable {
 		return webview.asWebviewUri(onDiskPath).toString();
 	}
 
-	private getVscodeComponentsUri(webview: vscode.Webview): string {
-		const onDiskPath = vscode.Uri.joinPath(
-			globalState.getExtensionUri(),
-			'public',
-			'scripts',
-			'vscode-components.js',
-		);
-		return webview.asWebviewUri(onDiskPath).toString();
-	}
 }
 
 export const leetnotionEngine: LeetnotionEngine = new LeetnotionEngine();
