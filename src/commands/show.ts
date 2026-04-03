@@ -19,12 +19,10 @@ import { leetcodeClient } from '../leetCodeClient';
 import {
 	ALL_TIME,
 	Category,
-	Endpoint,
 	IProblem,
 	IQuickItemEx,
 	languages,
-	PREMIUM_URL_CN,
-	PREMIUM_URL_GLOBAL,
+	PREMIUM_URL,
 	ProblemState,
 } from '../shared';
 import { handleError } from '../utils/errorUtils';
@@ -37,8 +35,6 @@ import { getActiveFilePath, selectWorkspaceFolder } from '../utils/workspaceUtil
 import { leetCodePreviewProvider } from '../webview/leetCodePreviewProvider';
 import { leetCodeSolutionProvider } from '../webview/leetCodeSolutionProvider';
 import * as list from './list';
-import { getLeetCodeEndpoint } from './plugin';
-
 export async function previewProblem(
 	input: IProblem | vscode.Uri,
 	isSideMode: boolean = false,
@@ -66,7 +62,7 @@ export async function previewProblem(
 		node = input;
 		const { isPremium } = globalState.getUserStatus() ?? {};
 		if (input.locked && !isPremium) {
-			const url = getLeetCodeEndpoint() === Endpoint.LeetCode ? PREMIUM_URL_GLOBAL : PREMIUM_URL_CN;
+			const url = PREMIUM_URL;
 			openUrl(url);
 			return;
 		}

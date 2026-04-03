@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import { getLeetCodeEndpoint } from '../commands/plugin';
 import { leetCodeChannel } from '../leetCodeChannel';
 import { getWorkspaceConfiguration } from './settingUtils';
 
@@ -55,11 +54,7 @@ export async function promptForSignIn(): Promise<void> {
 			await vscode.commands.executeCommand('leetnotion.signin');
 			break;
 		case DialogOptions.signUp:
-			if (getLeetCodeEndpoint()) {
-				openUrl('https://leetcode.cn');
-			} else {
-				openUrl('https://leetcode.com');
-			}
+			openUrl('https://leetcode.com');
 			break;
 		default:
 			break;

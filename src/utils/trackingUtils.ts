@@ -1,19 +1,12 @@
 import mixpanel from 'mixpanel';
 import * as vscode from 'vscode';
-import { getLeetCodeEndpoint } from '../commands/plugin';
 import { leetCodeManager } from '../leetCodeManager';
-import { Endpoint } from '../shared';
 
 const MIXPANEL_TOKEN = '3306db013b2f21d4df00a4554c381c1a';
 
 const mixpanelClient = mixpanel.init(MIXPANEL_TOKEN, {
 	protocol: 'https',
 });
-
-const getTimeZone = (): string => {
-	const endPoint: string = getLeetCodeEndpoint();
-	return endPoint === Endpoint.LeetCodeCN ? 'Asia/Shanghai' : 'UTC';
-};
 
 interface IReportData {
 	event_key: string;
@@ -99,7 +92,7 @@ class TrackData implements ITrackData {
 
 		try {
 			this.isSubmit = true;
-			const timezone = getTimeZone();
+			const timezone = 'UTC';
 
 			for (const event of eventsToSend) {
 				const distinct_id = event.target || 'anonymous';

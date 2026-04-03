@@ -60,11 +60,6 @@ export enum ProblemState {
 	Locked = 4,
 }
 
-export enum Endpoint {
-	LeetCode = 'leetcode',
-	LeetCodeCN = 'leetcode-cn',
-}
-
 export interface IProblem {
 	isFavorite: boolean;
 	locked: boolean;
@@ -135,40 +130,16 @@ export enum CompanySortingStrategy {
 	Popularity = 'Popularity',
 }
 
-export const PREMIUM_URL_CN = 'https://leetcode.cn/premium-payment/?source=vscode';
-export const PREMIUM_URL_GLOBAL = 'https://leetcode.com/subscribe/?ref=lp_pl&source=vscode';
+export const PREMIUM_URL = 'https://leetcode.com/subscribe/?ref=lp_pl&source=vscode';
 
 const protocol = vscode.env.appName.includes('Insiders') ? 'vscode-insiders' : 'vscode';
 
 export const urls = {
-	// base urls
 	base: 'https://leetcode.com',
 	graphql: 'https://leetcode.com/graphql',
 	userGraphql: 'https://leetcode.com/graphql',
 	login: 'https://leetcode.com/accounts/login/',
 	authLoginUrl: `https://leetcode.com/authorize-login/${protocol}/?path=leetnotion.vscode-leetnotion`,
-};
-
-export const urlsCn = {
-	// base urls
-	base: 'https://leetcode.cn',
-	graphql: 'https://leetcode.cn/graphql',
-	userGraphql: 'https://leetcode.cn/graphql/',
-	login: 'https://leetcode.cn/accounts/login/',
-	authLoginUrl: `https://leetcode.cn/authorize-login/${protocol}/?path=leetnotion.vscode-leetnotion`,
-};
-
-export const getUrl = (key: string) => {
-	const leetCodeConfig: vscode.WorkspaceConfiguration =
-		vscode.workspace.getConfiguration('leetnotion');
-	const point = leetCodeConfig.get<string>('endpoint', Endpoint.LeetCode);
-	switch (point) {
-		case Endpoint.LeetCodeCN:
-			return urlsCn[key];
-		case Endpoint.LeetCode:
-		default:
-			return urls[key];
-	}
 };
 
 export const defaultHeaders = {

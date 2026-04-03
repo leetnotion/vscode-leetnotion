@@ -1,12 +1,6 @@
 import * as vscode from 'vscode';
 import { leetCodeTreeDataProvider } from '../explorer/LeetCodeTreeDataProvider';
-import { Endpoint, IQuickItemEx, SortingStrategy } from '../shared';
-
-export function getLeetCodeEndpoint(): string {
-	const leetCodeConfig: vscode.WorkspaceConfiguration =
-		vscode.workspace.getConfiguration('leetnotion');
-	return leetCodeConfig.get<string>('endpoint', Endpoint.LeetCode);
-}
+import { IQuickItemEx, SortingStrategy } from '../shared';
 
 const SORT_ORDER: SortingStrategy[] = [
 	SortingStrategy.None,

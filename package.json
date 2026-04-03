@@ -2,7 +2,7 @@
 	"name": "vscode-leetnotion",
 	"displayName": "Leetnotion",
 	"description": "Solve LeetCode problems in VsCode and keep your submissions in sync with your Ultimate LeetCode Tracker template in notion",
-	"version": "1.5.0",
+	"version": "2.0.0",
 	"author": "Leetnotion",
 	"publisher": "Leetnotion",
 	"license": "MIT",
@@ -26,7 +26,7 @@
 		"interview",
 		"notion"
 	],
-	"preview": true,
+	"preview": false,
 	"activationEvents": [],
 	"main": "./out/src/extension",
 	"contributes": {
@@ -40,12 +40,6 @@
 				"command": "leetnotion.refreshData",
 				"title": "Refresh Problem Data",
 				"category": "LeetNotion"
-			},
-			{
-				"command": "leetnotion.toggleLeetCodeCn",
-				"title": "Switch Endpoint",
-				"category": "Leetnotion",
-				"icon": "$(globe)"
 			},
 			{
 				"command": "leetnotion.signin",
@@ -210,11 +204,6 @@
 		},
 		"menus": {
 			"view/title": [
-				{
-					"command": "leetnotion.toggleLeetCodeCn",
-					"when": "view == leetnotionExplorer",
-					"group": "navigation@0"
-				},
 				{
 					"command": "leetnotion.signin",
 					"when": "view == leetnotionExplorer",
@@ -453,22 +442,6 @@
 						"default": true,
 						"scope": "application",
 						"description": "Show a hint to configure commands key binding."
-					},
-					"leetnotion.endpoint": {
-						"type": "string",
-						"default": "leetcode",
-						"scope": "application",
-						"enum": [
-							"leetcode",
-							"leetcode-cn"
-						],
-						"description": "Endpoint of the user account."
-					},
-					"leetnotion.useEndpointTranslation": {
-						"type": "boolean",
-						"default": true,
-						"scope": "application",
-						"description": "Use endpoint's translation (if available)"
 					},
 					"leetnotion.workspaceFolder": {
 						"type": "string",
@@ -851,7 +824,7 @@
 		"typescript": "^5.9.3"
 	},
 	"dependencies": {
-		"@leetnotion/leetcode-api": "file:../leetcode-api",
+		"@leetnotion/leetcode-api": "^3.0.0",
 		"@leetnotion/notion-api": "^0.0.2",
 		"axios": "^1.14.0",
 		"bottleneck": "^2.19.5",

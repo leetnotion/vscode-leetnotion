@@ -1,10 +1,9 @@
 import * as vscode from 'vscode';
-import { getLeetCodeEndpoint } from './commands/plugin';
 import { globalState } from './globalState';
 import { leetcodeClient } from './leetCodeClient';
 import { leetnotionManager } from './leetnotionManager';
 import { queryUserData } from './request/query-user-data';
-import { Endpoint, urls, urlsCn, UserStatus } from './shared';
+import { urls, UserStatus } from './shared';
 import { handleError } from './utils/errorUtils';
 import { hasNotionIntegrationEnabled } from './utils/settingUtils';
 import { parseQuery } from './utils/toolUtils';
@@ -196,13 +195,7 @@ class LeetCodeManager {
 	}
 
 	public getAuthLoginUrl(): string {
-		switch (getLeetCodeEndpoint()) {
-			case Endpoint.LeetCodeCN:
-				return urlsCn.authLoginUrl;
-			case Endpoint.LeetCode:
-			default:
-				return urls.authLoginUrl;
-		}
+		return urls.authLoginUrl;
 	}
 }
 

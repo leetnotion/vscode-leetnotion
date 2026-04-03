@@ -116,10 +116,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 				'leetnotion.refreshData',
 				withAuth(() => cache.refreshData()),
 			),
-			vscode.commands.registerCommand('leetnotion.toggleLeetCodeCn', () => {
-				vscode.window.showInformationMessage('Endpoint switching is not currently supported.');
-			}),
-			vscode.commands.registerCommand('leetnotion.signin', () => leetCodeManager.signIn()),
+vscode.commands.registerCommand('leetnotion.signin', () => leetCodeManager.signIn()),
 			vscode.commands.registerCommand('leetnotion.signout', () => leetCodeManager.signOut()),
 			vscode.commands.registerCommand(
 				'leetnotion.previewProblem',
