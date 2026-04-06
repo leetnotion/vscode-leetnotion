@@ -6,10 +6,8 @@
 		"outDir": "out",
 		"resolveJsonModule": true,
 		"moduleResolution": "Node16",
-		"ignoreDeprecations": "6.0",
-		"baseUrl": ".",
 		"paths": {
-			"@/*": ["src/*"]
+			"@/*": ["./src/*"]
 		},
 		"noImplicitAny": false,
 		"removeComments": true,

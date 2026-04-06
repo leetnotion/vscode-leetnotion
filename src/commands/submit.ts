@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { explorerNodeManager } from '../explorer/explorerNodeManager';
 import { leetCodeTreeDataProvider } from '../explorer/LeetCodeTreeDataProvider';
+import { leetCodeTreeItemDecorationProvider } from '../explorer/LeetCodeTreeItemDecorationProvider';
 import { globalState } from '../globalState';
 import { leetCodeChannel } from '../leetCodeChannel';
 import { leetcodeClient } from '../leetCodeClient';
@@ -12,7 +13,6 @@ import { handleError } from '../utils/errorUtils';
 import { extractCode, getLangFromFile, getNodeIdFromFile } from '../utils/problemUtils';
 import { getQuestionNumber } from '../utils/toolUtils';
 import { getActiveFilePath } from '../utils/workspaceUtils';
-import { leetCodeTreeItemDecorationProvider } from '../explorer/LeetCodeTreeItemDecorationProvider';
 import { leetCodeSubmissionProvider } from '../webview/leetCodeSubmissionProvider';
 
 export async function submitSolution(uri?: vscode.Uri): Promise<void> {

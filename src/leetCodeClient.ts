@@ -106,10 +106,14 @@ class LeetcodeClient {
 			leetCodeChannel.appendLine('[Easter Egg] Validating cookie before collecting easter egg...');
 			const userInfo = await this.getUserInfo();
 			if (!userInfo || !userInfo.username) {
-				leetCodeChannel.appendLine(`[Easter Egg] Skipping: cookie is invalid or expired. userInfo: ${JSON.stringify(userInfo)}`);
+				leetCodeChannel.appendLine(
+					`[Easter Egg] Skipping: cookie is invalid or expired. userInfo: ${JSON.stringify(userInfo)}`,
+				);
 				return;
 			}
-			leetCodeChannel.appendLine(`[Easter Egg] Cookie valid. userInfo: ${JSON.stringify(userInfo)}. Calling collectEasterEgg API...`);
+			leetCodeChannel.appendLine(
+				`[Easter Egg] Cookie valid. userInfo: ${JSON.stringify(userInfo)}. Calling collectEasterEgg API...`,
+			);
 			const isCollected = await this.leetcode.collectEasterEgg();
 			leetCodeChannel.appendLine(`[Easter Egg] API returned: isCollected=${isCollected}`);
 			if (isCollected) {

@@ -360,19 +360,19 @@
 			{
 				"title": "Leetnotion",
 				"properties": {
-				"leetnotion.onlyShowAlgorithmProblems": {
-					"type": "boolean",
-					"default": false,
-					"scope": "application",
-					"description": "Show only algorithm problems. When enabled, problems from other categories (Database, Shell, Concurrency, JavaScript, Pandas, etc.) are hidden."
-				},
-				"leetnotion.hideSolved": {
-					"type": "boolean",
-					"default": false,
-					"scope": "application",
-					"description": "Hide solved problems."
-				},
-				"leetnotion.hidePremium": {
+					"leetnotion.onlyShowAlgorithmProblems": {
+						"type": "boolean",
+						"default": false,
+						"scope": "application",
+						"description": "Show only algorithm problems. When enabled, problems from other categories (Database, Shell, Concurrency, JavaScript, Pandas, etc.) are hidden."
+					},
+					"leetnotion.hideSolved": {
+						"type": "boolean",
+						"default": false,
+						"scope": "application",
+						"description": "Hide solved problems."
+					},
+					"leetnotion.hidePremium": {
 						"type": "boolean",
 						"default": false,
 						"scope": "application",
@@ -817,7 +817,7 @@
 		"watch": "tsc -watch -p ./",
 		"lint": "eslint src/**/*.ts",
 		"generate-static-data": "tsx scripts/generate-static-data.ts",
-		"build": "vsce package",
+		"build": "vsce package --no-dependencies",
 		"vs-publish": "vsce publish"
 	},
 	"devDependencies": {
@@ -831,23 +831,21 @@
 		"@types/vscode": "1.93.0",
 		"@typescript-eslint/eslint-plugin": "^8.58.0",
 		"@typescript-eslint/parser": "^8.58.0",
-		"eslint": "^10.1.0",
+		"esbuild": "^0.28.0",
+		"eslint": "^10.2.0",
 		"prettier-plugin-organize-imports": "^4.3.0",
-		"typescript": "^5.9.3"
+		"typescript": "^6.0.2"
 	},
 	"dependencies": {
 		"@leetnotion/leetcode-api": "^3.0.0",
 		"@leetnotion/notion-api": "^0.0.2",
 		"axios": "^1.14.0",
 		"bottleneck": "^2.19.5",
-		"esbuild": "^0.24.2",
 		"fs-extra": "^10.1.0",
 		"he": "^1.2.0",
 		"highlight.js": "^10.7.3",
 		"lodash": "^4.18.1",
 		"markdown-it": "^8.4.2",
-		"mixpanel": "^0.18.1",
-		"require-from-string": "^2.0.2",
-		"unescape-js": "^1.1.4"
+		"mixpanel": "^0.18.1"
 	}
 }

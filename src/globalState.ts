@@ -188,7 +188,7 @@ class GlobalState {
 		this._userStatus = undefined;
 		await this._secrets.delete(CookieKey);
 		this._state.update(UserStatusKey, undefined);
-        this._state.update(ListsSyncTimestampKey, undefined);
+		this._state.update(ListsSyncTimestampKey, undefined);
 	}
 
 	public async setTopicTags(topicTags: TopicTags): Promise<void> {

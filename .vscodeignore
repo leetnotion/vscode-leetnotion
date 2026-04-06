@@ -27,3 +27,5 @@ thirdpartynotice.txt
 **/*.vsix
 scripts/**
 node_modules/**
+CLAUDE.md
+AGENTS.md
