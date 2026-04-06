@@ -70,8 +70,8 @@ importers:
         specifier: ^1.2.3
         version: 1.2.3
       '@types/vscode':
-        specifier: 1.57.0
-        version: 1.57.0
+        specifier: 1.93.0
+        version: 1.93.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.58.0
         version: 8.58.0(@typescript-eslint/parser@8.58.0(eslint@10.1.0)(typescript@5.9.3))(eslint@10.1.0)(typescript@5.9.3)
@@ -341,8 +341,8 @@ packages:
   '@types/require-from-string@1.2.3':
     resolution: {integrity: sha512-kxLU5xvefySGpp1Z7VCt4m5AhQJUZ8HjW8ADdeS7GieqFPHLAde007fd9bxeXEsFXyaA0LeWIoQXyXP17mGpIg==}
 
-  '@types/vscode@1.57.0':
-    resolution: {integrity: sha512-FeznBFtIDCWRluojTsi9c3LLcCHOXP5etQfBK42+ixo1CoEAchkw39tuui9zomjZuKfUVL33KZUDIwHZ/xvOkQ==}
+  '@types/vscode@1.93.0':
+    resolution: {integrity: sha512-kUK6jAHSR5zY8ps42xuW89NLcBpw1kOabah7yv38J8MyiYuOHxLQBi0e7zeXbQgVefDy/mZZetqEFC+Fl5eIEQ==}
 
   '@typescript-eslint/eslint-plugin@8.58.0':
     resolution: {integrity: sha512-RLkVSiNuUP1C2ROIWfqX+YcUfLaSnxGE/8M+Y57lopVwg9VTYYfhuz15Yf1IzCKgZj6/rIbYTmJCUSqr76r0Wg==}
@@ -1044,7 +1044,7 @@ snapshots:
 
   '@types/require-from-string@1.2.3': {}
 
-  '@types/vscode@1.57.0': {}
+  '@types/vscode@1.93.0': {}
 
   '@typescript-eslint/eslint-plugin@8.58.0(@typescript-eslint/parser@8.58.0(eslint@10.1.0)(typescript@5.9.3))(eslint@10.1.0)(typescript@5.9.3)':
     dependencies:

@@ -1,6 +1,23 @@
 const vscode = acquireVsCodeApi();
 const setPropertiesSection = document.getElementById("setPropertiesSection");
 const setPropertiesButton = document.getElementById("setPropertiesButton");
+
+// AI Analyze button
+const analyzeButton = document.getElementById("analyzeButton");
+if (analyzeButton) {
+    analyzeButton.addEventListener("click", () => {
+        vscode.postMessage({ command: "analyze" });
+    });
+}
+
+// AI Debug button
+const debugButton = document.getElementById("debugButton");
+if (debugButton) {
+    debugButton.addEventListener("click", () => {
+        vscode.postMessage({ command: "debug" });
+    });
+}
+
 window.addEventListener("message", (event) => {
     const message = event.data;
     switch (message.command) {

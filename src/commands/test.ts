@@ -96,7 +96,9 @@ export async function testSolution(uri?: vscode.Uri): Promise<void> {
 		if (!results || results.length === 0) {
 			return;
 		}
-		leetCodeSubmissionProvider.show(results[0], true, dataInput);
+		const nodeId = await getNodeIdFromFile(filePath);
+		const node = explorerNodeManager.getNodeById(nodeId);
+		leetCodeSubmissionProvider.show(results[0], true, dataInput, code, slug, node?.name);
 	} catch (error) {
 		await handleError(error, 'test the solution');
 	}

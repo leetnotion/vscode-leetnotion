@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { leetCodeChannel } from '../leetCodeChannel';
 import { isAIFeaturesEnabled } from './settingUtils';
 
 const COPILOT_CHAT_EXTENSION_ID = 'github.copilot-chat';
@@ -31,6 +32,7 @@ export async function sendChatRequest(
 	if (!model) {
 		return undefined;
 	}
+	leetCodeChannel.appendLine(`[AI] Using model: ${model.name} (${model.id}, ${model.vendor})`);
 	const messages: vscode.LanguageModelChatMessage[] = [];
 	if (systemPrompt) {
 		messages.push(vscode.LanguageModelChatMessage.Assistant(systemPrompt));

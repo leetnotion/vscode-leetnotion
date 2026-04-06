@@ -43,12 +43,12 @@ export async function submitSolution(uri?: vscode.Uri): Promise<void> {
 			() => leetcodeClient.submitCode(slug, lang, questionId, code),
 		);
 
-		leetCodeSubmissionProvider.show(result);
+		const nodeId = await getNodeIdFromFile(filePath);
+		const node = explorerNodeManager.getNodeById(nodeId);
+		leetCodeSubmissionProvider.show(result, false, undefined, code, slug, node?.name);
 		if (result.ok) {
 			const questionNumber = getQuestionNumber(filePath);
 			if (questionNumber) {
-				const nodeId = await getNodeIdFromFile(filePath);
-				const node = explorerNodeManager.getNodeById(nodeId);
 				if (questionNumber === globalState.getDailyProblem()) {
 					await globalState.markDailyChallengeCompleted();
 					leetCodeTreeItemDecorationProvider.refresh();

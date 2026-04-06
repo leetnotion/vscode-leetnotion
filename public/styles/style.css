@@ -1,3 +1,31 @@
+.leetnotion-title-row {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+}
+.leetnotion-title-row > :first-child {
+	flex: 1;
+	min-width: 0;
+}
+.leetnotion-ai-button {
+	flex-shrink: 0;
+	border: 0;
+	margin-top: 8px;
+	padding: 0.4rem 1rem;
+	font-size: 13px;
+	color: white;
+	background-color: var(--vscode-button-background);
+	cursor: pointer;
+	border-radius: 4px;
+	white-space: nowrap;
+}
+.leetnotion-ai-button:hover {
+	background-color: var(--vscode-button-hoverBackground);
+}
+.leetnotion-ai-button:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
 #setPropertiesSection {
 	display: none;
 }

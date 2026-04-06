@@ -151,7 +151,7 @@ class LeetCodeTestCaseProvider extends LeetCodeWebview {
 					if (!results || results.length === 0) {
 						return;
 					}
-					leetCodeSubmissionProvider.show(results[0], true, message.testCases);
+					leetCodeSubmissionProvider.show(results[0], true, message.testCases, code, slug, this.node.name);
 				} catch (error) {
 					await promptForOpenOutputChannel(
 						'Failed to test the solution. Please open the output channel for details.',
