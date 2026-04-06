@@ -131,7 +131,7 @@ class LeetCodeTestCaseProvider extends LeetCodeWebview {
 						}
 					}
 					const slug = this.node.slug;
-					const questionId = Number(this.node.id);
+					const questionId = this.node.questionId;
 
 					if (!slug || !lang || isNaN(questionId)) {
 						vscode.window.showErrorMessage('Could not determine problem metadata.');

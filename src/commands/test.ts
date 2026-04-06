@@ -50,10 +50,6 @@ export async function testSolution(uri?: vscode.Uri): Promise<void> {
 
 		leetCodeChannel.appendLine(`[Test] file: ${filePath}`);
 		leetCodeChannel.appendLine(`[Test] slug: ${slug}, lang: ${lang}, questionId: ${questionId}`);
-		leetCodeChannel.appendLine(
-			`[Test] rawCode lines: ${rawCode.split('\n').length}, code lines: ${code.split('\n').length}`,
-		);
-		leetCodeChannel.appendLine(`[Test] code being sent:\n${code}`);
 
 		if (!slug || !lang || questionId === null) {
 			vscode.window.showErrorMessage('Could not determine problem metadata from file.');
@@ -91,8 +87,6 @@ export async function testSolution(uri?: vscode.Uri): Promise<void> {
 			default:
 				return;
 		}
-
-		leetCodeChannel.appendLine(`[Test] dataInput:\n${dataInput}`);
 
 		const results = await vscode.window.withProgress(
 			{ location: vscode.ProgressLocation.Notification, title: 'Testing solution...' },

@@ -800,6 +800,12 @@
 						"scope": "application",
 						"default": true,
 						"description": "Change status of problem when uploading existing submissions to the template."
+					},
+					"leetnotion.enableAIFeatures": {
+						"type": "boolean",
+						"default": true,
+						"scope": "application",
+						"description": "Enable AI-powered features using GitHub Copilot (solution analysis, debugging help, complexity analysis, etc.)."
 					}
 				}
 			}

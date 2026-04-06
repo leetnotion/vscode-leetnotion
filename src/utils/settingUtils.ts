@@ -86,6 +86,10 @@ export function shouldUpdateStatusWhenUploadingSubmissions(): boolean {
 	return getWorkspaceConfiguration().get<boolean>('changeStatusWhenUploadingSubmissions', true);
 }
 
+export function isAIFeaturesEnabled(): boolean {
+	return getWorkspaceConfiguration().get<boolean>('enableAIFeatures', true);
+}
+
 export function getCompaniesSortingStrategy(): CompanySortingStrategy {
 	return getWorkspaceConfiguration().get<CompanySortingStrategy>(
 		'companies.sortStrategy',

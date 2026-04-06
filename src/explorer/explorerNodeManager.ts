@@ -173,6 +173,13 @@ class ExplorerNodeManager implements Disposable {
 		}
 
 		try {
+			// Clear stale daily challenge status from a previous day so Phase 1
+			// doesn't render the completed emoji for yesterday's problem.
+			const todayUTC = new Date().toISOString().slice(0, 10);
+			if (globalState.getDailyProblemFetchDate() !== todayUTC) {
+				await globalState.clearDailyChallengeStatus();
+			}
+
 			// Phase 1: Instant render from cached or static data (no slow API calls)
 			let start = Date.now();
 			const cachedProblems = globalState.getCachedProblems();
