@@ -26,6 +26,9 @@ export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<LeetCod
 			) {
 				explorerNodeManager.rebuildTree();
 			}
+			if (e.affectsConfiguration('leetnotion.onlyShowAlgorithmProblems')) {
+				this.refresh();
+			}
 		});
 	}
 

@@ -360,13 +360,19 @@
 			{
 				"title": "Leetnotion",
 				"properties": {
-					"leetnotion.hideSolved": {
-						"type": "boolean",
-						"default": false,
-						"scope": "application",
-						"description": "Hide solved problems."
-					},
-					"leetnotion.hidePremium": {
+				"leetnotion.onlyShowAlgorithmProblems": {
+					"type": "boolean",
+					"default": false,
+					"scope": "application",
+					"description": "Show only algorithm problems. When enabled, problems from other categories (Database, Shell, Concurrency, JavaScript, Pandas, etc.) are hidden."
+				},
+				"leetnotion.hideSolved": {
+					"type": "boolean",
+					"default": false,
+					"scope": "application",
+					"description": "Hide solved problems."
+				},
+				"leetnotion.hidePremium": {
 						"type": "boolean",
 						"default": false,
 						"scope": "application",

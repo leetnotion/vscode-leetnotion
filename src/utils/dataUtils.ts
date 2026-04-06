@@ -246,6 +246,7 @@ export async function syncLists() {
 export async function syncListsIfNeeded(intervalMs: number) {
 	const lastSync = globalState.getListsSyncTimestamp();
 	if (lastSync && Date.now() - lastSync < intervalMs) {
+		leetCodeChannel.appendLine('[Lists] Skipping list sync — last sync was less than 2 hours ago.');
 		return;
 	}
 	await syncLists();

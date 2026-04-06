@@ -26,6 +26,10 @@ export class LeetCodeTreeItemDecorationProvider implements FileDecorationProvide
 		}
 	});
 
+	public refresh(): void {
+		this._onDidChangeFileDecorations.fire(undefined);
+	}
+
 	public dispose(): void {
 		this._onDidChangeFileDecorations.dispose();
 		this.configListener.dispose();

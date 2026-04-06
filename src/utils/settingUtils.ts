@@ -14,6 +14,10 @@ export function shouldHideSolvedProblem(): boolean {
 	return getWorkspaceConfiguration().get<boolean>('hideSolved', false);
 }
 
+export function shouldShowOnlyAlgorithmProblems(): boolean {
+	return getWorkspaceConfiguration().get<boolean>('onlyShowAlgorithmProblems', false);
+}
+
 export function shouldHidePremiumProblem(): boolean {
 	return getWorkspaceConfiguration().get<boolean>('hidePremium', false);
 }

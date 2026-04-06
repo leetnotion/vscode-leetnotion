@@ -22,6 +22,7 @@ import {
 	getQuestionCompanyTags,
 	getQuestionTopicTags,
 } from './utils/dataUtils';
+import { shouldShowOnlyAlgorithmProblems } from './utils/settingUtils';
 import { extractCookie } from './utils/toolUtils';
 import { DialogType, promptForOpenOutputChannel } from './utils/uiUtils';
 
@@ -97,14 +98,25 @@ class LeetcodeClient {
 	}
 
 	public async collectEasterEgg() {
-		if (!this._isSignedIn) return;
+		if (!this._isSignedIn) {
+			leetCodeChannel.appendLine('[Easter Egg] Skipping: user is not signed in');
+			return;
+		}
 		try {
+			leetCodeChannel.appendLine('[Easter Egg] Validating cookie before collecting easter egg...');
+			const userInfo = await this.getUserInfo();
+			if (!userInfo || !userInfo.username) {
+				leetCodeChannel.appendLine(`[Easter Egg] Skipping: cookie is invalid or expired. userInfo: ${JSON.stringify(userInfo)}`);
+				return;
+			}
+			leetCodeChannel.appendLine(`[Easter Egg] Cookie valid. userInfo: ${JSON.stringify(userInfo)}. Calling collectEasterEgg API...`);
 			const isCollected = await this.leetcode.collectEasterEgg();
+			leetCodeChannel.appendLine(`[Easter Egg] API returned: isCollected=${isCollected}`);
 			if (isCollected) {
 				promptForOpenOutputChannel(`Collected Easter Egg 🎉: +10 coins`, DialogType.completed);
 			}
 		} catch (error) {
-			leetCodeChannel.appendLine(`Error collecting Easter Egg: ${error}`);
+			leetCodeChannel.appendLine(`[Easter Egg] Error collecting Easter Egg: ${error}`);
 		}
 	}
 
@@ -222,8 +234,9 @@ class LeetcodeClient {
 
 	public async listProblems(): Promise<IProblem[]> {
 		let start = Date.now();
-		leetCodeChannel.appendLine('[listProblems] Fetching all category problems...');
-		const problems: CategoryProblem[] = await this.cli.categoryProblems('all');
+		const category = shouldShowOnlyAlgorithmProblems() ? 'algorithms' : 'all';
+		leetCodeChannel.appendLine(`[listProblems] Fetching ${category} category problems...`);
+		const problems: CategoryProblem[] = await this.cli.categoryProblems(category);
 		leetCodeChannel.appendLine(
 			`[listProblems] Fetched ${problems.length} category problems (${Date.now() - start}ms)`,
 		);

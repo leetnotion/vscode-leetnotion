@@ -30,7 +30,7 @@ class LeetCodeManager {
 			}
 			leetcodeClient.initialize();
 			const userInfo = await leetcodeClient.getUserInfo();
-			if (userInfo) {
+			if (userInfo && userInfo.username) {
 				this.currentUser = userInfo.username;
 				this.userStatus = UserStatus.SignedIn;
 			} else {

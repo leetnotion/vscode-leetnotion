@@ -12,6 +12,7 @@ import { handleError } from '../utils/errorUtils';
 import { extractCode, getLangFromFile, getNodeIdFromFile } from '../utils/problemUtils';
 import { getQuestionNumber } from '../utils/toolUtils';
 import { getActiveFilePath } from '../utils/workspaceUtils';
+import { leetCodeTreeItemDecorationProvider } from '../explorer/LeetCodeTreeItemDecorationProvider';
 import { leetCodeSubmissionProvider } from '../webview/leetCodeSubmissionProvider';
 
 export async function submitSolution(uri?: vscode.Uri): Promise<void> {
@@ -50,6 +51,7 @@ export async function submitSolution(uri?: vscode.Uri): Promise<void> {
 				const node = explorerNodeManager.getNodeById(nodeId);
 				if (questionNumber === globalState.getDailyProblem()) {
 					await globalState.markDailyChallengeCompleted();
+					leetCodeTreeItemDecorationProvider.refresh();
 				}
 				leetnotionManager.syncSubmission(questionNumber, {
 					title: node?.name ?? slug,
