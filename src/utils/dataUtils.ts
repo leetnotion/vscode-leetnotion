@@ -273,7 +273,7 @@ export async function setQuestionsOfAllLists() {
 }
 
 export function extractArrayElements(data) {
-	let result = [];
+	let result: any[] = [];
 
 	function recurse(value) {
 		if (Array.isArray(value)) {

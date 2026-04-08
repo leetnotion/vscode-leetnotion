@@ -147,7 +147,7 @@ class ExplorerNodeManager implements Disposable {
 			[Category.Favorite]: filtered
 				.filter(({ isFavorite }) => isFavorite)
 				.map((problem) => problem.id),
-			[Category.Daily]: [dailyProblem],
+			[Category.Daily]: dailyProblem ? [dailyProblem] : [],
 			[Category.Sheets]: getSheets(),
 			[Category.Lists]: listsWithQuestions,
 		};
@@ -248,7 +248,9 @@ class ExplorerNodeManager implements Disposable {
 		for (const category of Object.keys(this.dataTree)) {
 			if (this.explorerNodeMap.has(category)) {
 				const node = this.explorerNodeMap.get(category);
-				nodes.push(node);
+				if (node) {
+					nodes.push(node);
+				}
 			}
 		}
 		return nodes;
@@ -270,7 +272,9 @@ class ExplorerNodeManager implements Disposable {
 			for (const key of Object.keys(data)) {
 				if (this.explorerNodeMap.has(`${id}#${key}`)) {
 					const node = this.explorerNodeMap.get(`${id}#${key}`);
-					res.push(node);
+					if (node) {
+						res.push(node);
+					}
 				} else {
 					res.push(
 						new LeetCodeNode(

@@ -58,11 +58,11 @@ export class LeetCodeNode {
 		return this.isProblemNode;
 	}
 
-	public get rating(): number {
+	public get rating(): number | undefined {
 		return this.data.rating;
 	}
 
-	public get problemIndex(): string {
+	public get problemIndex(): string | undefined {
 		return this.data.problemIndex;
 	}
 

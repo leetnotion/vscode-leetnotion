@@ -44,7 +44,7 @@ class LeetCodeSolutionProvider extends LeetCodeWebview {
 	protected getWebviewContent(): string {
 		const webview = this.getPanel().webview;
 		const styles: string = markdownEngine.getStyles(webview);
-		const { title, url, authorName, authorUsername, views, createdAt, tags, votes } = this.solution;
+		const { title, url, authorName, authorUsername, tags, votes } = this.solution;
 		const head: string = markdownEngine.render(`# [${title}](${url})`);
 		const auth: string = `[${authorName}](https://leetcode.com/${authorUsername}/)`;
 		const info: string = markdownEngine.render(

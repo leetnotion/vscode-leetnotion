@@ -144,7 +144,7 @@ class MarkdownEngine implements vscode.Disposable {
 				if (lang && hljs.getLanguage(lang)) {
 					try {
 						return hljs.highlight(lang, code, true).value;
-					} catch (error) {
+					} catch {
 						/* do not highlight */
 					}
 				}
