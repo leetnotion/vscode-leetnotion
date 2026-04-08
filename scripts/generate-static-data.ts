@@ -54,35 +54,6 @@ async function generate() {
 	fs.writeFileSync(path.join(dataDir, 'ratings.json'), JSON.stringify(ratingsMap));
 	console.log(`Wrote ${Object.keys(ratingsMap).length} ratings`);
 
-	// 4. Contest data — contest name → array of problem frontend IDs
-	console.log('Fetching contest data...');
-	const slugToId: Record<string, string> = {};
-	for (const p of staticProblems) {
-		slugToId[p.slug] = p.id;
-	}
-
-	const contestData: Record<string, string[]> = {};
-	const totalContests = (await leetcode.getPastContests({ limit: 1 })).totalNum;
-	const pageSize = 50;
-
-	for (let skip = 0; skip < totalContests; skip += pageSize) {
-		const { contests } = await leetcode.getPastContests({ limit: pageSize, skip });
-		for (const contest of contests) {
-			try {
-				const { questions } = await leetcode.getContestQuestions(contest.titleSlug);
-				const ids = questions.map((q) => slugToId[q.title_slug]).filter(Boolean);
-				if (ids.length > 0) {
-					contestData[contest.title] = ids;
-				}
-				console.log(`  ${contest.title}: ${ids.length} problems`);
-			} catch (err) {
-				console.error(`  Failed to fetch ${contest.title}: ${err}`);
-			}
-		}
-	}
-	fs.writeFileSync(path.join(dataDir, 'contests.json'), JSON.stringify(contestData));
-	console.log(`Wrote ${Object.keys(contestData).length} contests`);
-
 	console.log('Done!');
 }
 

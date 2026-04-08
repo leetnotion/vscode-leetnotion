@@ -79,13 +79,17 @@ class LeetCodePreviewProvider extends LeetCodeWebview {
 				].join('\n'),
 			);
 		} else {
-			info = markdownEngine.render(
-				[
-					`| Category | Difficulty | Likes | Dislikes | Rating | Contest | Index |`,
-					`| :------: | :--------: | :---: | :------: | :----: | :-----: | :---: |`,
-					`| ${category} | ${difficulty} | ${likes} | ${dislikes} | ${this.node.rating} | ${this.node.contestName ?? '-'} | ${this.node.problemIndex} |`,
-				].join('\n'),
-			);
+			const contestCell = this.node.contestName
+				? `<a href="#" onclick="onContestClick('${this.node.contestName.replace(/'/g, "\\'")}')">${this.node.contestName}</a>`
+				: '-';
+			info = `<table>
+                <thead>
+                    <tr><th>Category</th><th>Difficulty</th><th>Likes</th><th>Dislikes</th><th>Rating</th><th>Contest</th><th>Index</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td align="center">${category}</td><td align="center">${difficulty}</td><td align="center">${likes}</td><td align="center">${dislikes}</td><td align="center">${this.node.rating}</td><td align="center">${contestCell}</td><td align="center">${this.node.problemIndex}</td></tr>
+                </tbody>
+            </table>`;
 		}
 		const tags: string = [
 			`<details>`,
@@ -190,6 +194,9 @@ class LeetCodePreviewProvider extends LeetCodeWebview {
                     function onQuestionClick(slug) {
                         vscode.postMessage({ command: 'QuestionClick', slug });
                     }
+                    function onContestClick(contest) {
+                        vscode.postMessage({ command: 'ContestClick', contest });
+                    }
                 </script>
             </body>
             </html>
@@ -213,6 +220,10 @@ class LeetCodePreviewProvider extends LeetCodeWebview {
 			}
 			case 'CompanyClick': {
 				explorerNodeManager.revealNode(`${Category.Company}#${message.company}`);
+				break;
+			}
+			case 'ContestClick': {
+				explorerNodeManager.revealNode(`${Category.Contests}#${message.contest}`);
 				break;
 			}
 			case 'QuestionClick': {
@@ -289,6 +300,7 @@ interface IWebViewMessage {
 	tag?: string;
 	company?: string;
 	slug?: string;
+	contest?: string;
 }
 
 export const leetCodePreviewProvider: LeetCodePreviewProvider = new LeetCodePreviewProvider();
