@@ -66,6 +66,10 @@ export class LeetCodeNode {
 		return this.data.problemIndex;
 	}
 
+	public get contestName(): string | undefined {
+		return this.data.contestName;
+	}
+
 	public get previewCommand(): Command {
 		return {
 			title: 'Preview Problem',

@@ -81,9 +81,9 @@ class LeetCodePreviewProvider extends LeetCodeWebview {
 		} else {
 			info = markdownEngine.render(
 				[
-					`| Category | Difficulty | Likes | Dislikes | Rating | Index |`,
-					`| :------: | :--------: | :---: | :------: | :----: | :---: |`,
-					`| ${category} | ${difficulty} | ${likes} | ${dislikes} | ${this.node.rating} | ${this.node.problemIndex}`,
+					`| Category | Difficulty | Likes | Dislikes | Rating | Contest | Index |`,
+					`| :------: | :--------: | :---: | :------: | :----: | :-----: | :---: |`,
+					`| ${category} | ${difficulty} | ${likes} | ${dislikes} | ${this.node.rating} | ${this.node.contestName ?? '-'} | ${this.node.problemIndex} |`,
 				].join('\n'),
 			);
 		}

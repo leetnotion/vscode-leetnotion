@@ -292,6 +292,7 @@ class LeetcodeClient {
 					tags,
 					rating: ratingEntry ? ratingEntry.Rating : undefined,
 					problemIndex: ratingEntry ? ratingEntry.ProblemIndex : undefined,
+					contestName: ratingEntry ? ratingEntry.ContestID_en : undefined,
 				};
 			})
 			.sort((a, b) => Number(a.id) - Number(b.id));

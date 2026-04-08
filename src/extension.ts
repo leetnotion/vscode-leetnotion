@@ -285,6 +285,7 @@ function startRecurringTasks() {
 		repeatAction(async () => {
 			try {
 				await Promise.all([syncListsIfNeeded(twoHoursMs), setProblemRatingMap(), syncContests()]);
+				leetCodeTreeDataProvider.refresh();
 			} catch (error) {
 				handleBackgroundError(error, '2-hour interval tasks');
 			}

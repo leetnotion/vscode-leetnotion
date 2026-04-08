@@ -74,6 +74,7 @@ export interface IProblem {
 	tags: string[];
 	rating?: number;
 	problemIndex?: string;
+	contestName?: string;
 }
 
 export interface ProblemRating {

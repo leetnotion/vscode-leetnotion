@@ -39,12 +39,16 @@ async function generate() {
 	// 3. Problem ratings
 	console.log('Fetching problem ratings...');
 	const { data } = await axios.get('https://zerotrac.github.io/leetcode_problem_rating/data.json');
-	const ratingsMap: Record<string, { Rating: number; ProblemIndex: string; ID: number }> = {};
+	const ratingsMap: Record<
+		string,
+		{ Rating: number; ProblemIndex: string; ID: number; ContestID_en: string }
+	> = {};
 	for (const rating of data) {
 		ratingsMap[String(rating.ID)] = {
 			ID: rating.ID,
 			Rating: _.floor(rating.Rating),
 			ProblemIndex: rating.ProblemIndex,
+			ContestID_en: rating.ContestID_en,
 		};
 	}
 	fs.writeFileSync(path.join(dataDir, 'ratings.json'), JSON.stringify(ratingsMap));
