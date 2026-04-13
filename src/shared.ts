@@ -151,6 +151,12 @@ using namespace std;
 	java: `import java.util.*;
 
 `,
+    'python': `from typing import *
+
+`,
+    'python3': `from typing import *
+
+`,
 };
 
 export const defaultFooters = {
