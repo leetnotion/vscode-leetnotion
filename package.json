@@ -812,7 +812,7 @@
 		]
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile",
+		"vscode:prepublish": "pnpm run compile",
 		"compile": "node ./esbuild.js",
 		"watch": "tsc -watch -p ./",
 		"lint": "eslint src/**/*.ts",
