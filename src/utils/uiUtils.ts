@@ -54,7 +54,7 @@ export async function promptForSignIn(): Promise<void> {
 			await vscode.commands.executeCommand('leetnotion.signin');
 			break;
 		case DialogOptions.signUp:
-			openUrl('https://leetcode.com');
+			openUrl('https://leetcode.com/accounts/signup/');
 			break;
 		default:
 			break;
