@@ -1,6 +1,6 @@
-import { ProblemState } from './shared';
+import { Event, EventEmitter } from 'vscode';
 import { globalState, SessionsMetadataKey } from './globalState';
-import { EventEmitter, Event } from 'vscode';
+import { ProblemState } from './shared';
 
 export interface LeetCodeSession {
 	id: string;
@@ -13,24 +13,26 @@ export interface SessionsMetadata {
 	activeSessionId: string | null;
 }
 
-
 function sessionStatusesKey(sessionId: string): string {
 	return `leetnotion-session:${sessionId}:statuses`;
 }
 
 class SessionManager {
 	private _onDidChangeSession = new EventEmitter<LeetCodeSession | null>();
-	public readonly onDidChangeSession: Event<LeetCodeSession | null> = this._onDidChangeSession.event;
+	public readonly onDidChangeSession: Event<LeetCodeSession | null> =
+		this._onDidChangeSession.event;
 
 	public dispose(): void {
 		this._onDidChangeSession.dispose();
 	}
 
 	private getMetadata(): SessionsMetadata {
-		return (globalState.get(SessionsMetadataKey) as SessionsMetadata) ?? {
-			sessions: [],
-			activeSessionId: null,
-		};
+		return (
+			(globalState.get(SessionsMetadataKey) as SessionsMetadata) ?? {
+				sessions: [],
+				activeSessionId: null,
+			}
+		);
 	}
 
 	private async setMetadata(metadata: SessionsMetadata): Promise<void> {
@@ -55,9 +57,7 @@ class SessionManager {
 
 	public async createSession(name: string): Promise<LeetCodeSession> {
 		const metadata = this.getMetadata();
-		const duplicate = metadata.sessions.find(
-			(s) => s.name.toLowerCase() === name.toLowerCase(),
-		);
+		const duplicate = metadata.sessions.find((s) => s.name.toLowerCase() === name.toLowerCase());
 		if (duplicate) {
 			throw new Error(`Session "${name}" already exists.`);
 		}
@@ -84,7 +84,7 @@ class SessionManager {
 		metadata.activeSessionId = sessionId;
 		await this.setMetadata(metadata);
 		const activeSession = sessionId
-			? metadata.sessions.find((s) => s.id === sessionId) ?? null
+			? (metadata.sessions.find((s) => s.id === sessionId) ?? null)
 			: null;
 		this._onDidChangeSession.fire(activeSession);
 	}

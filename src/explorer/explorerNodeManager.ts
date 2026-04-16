@@ -7,6 +7,7 @@ import { getSortingStrategy } from '../commands/plugin';
 import { globalState } from '../globalState';
 import { leetcodeClient } from '../leetCodeClient';
 import { leetCodeManager } from '../leetCodeManager';
+import { sessionManager } from '../sessionManager';
 import {
 	Category,
 	CompanySortingStrategy,
@@ -30,7 +31,6 @@ import {
 	shouldHidePremiumProblem,
 	shouldHideSolvedProblem,
 } from '../utils/settingUtils';
-import { sessionManager } from '../sessionManager';
 import { getStaticProblems } from '../utils/staticDataUtils';
 import { LeetCodeNode } from './LeetCodeNode';
 

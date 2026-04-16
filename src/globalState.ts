@@ -429,7 +429,10 @@ class GlobalState {
 		this._state.update(ListsSyncTimestampKey, undefined);
 		this._state.update('leetcode-favorite-overrides', undefined);
 		// Clear session data
-		const sessionsMetadata = this._state.get<{ sessions: { id: string }[]; activeSessionId: string | null }>(SessionsMetadataKey);
+		const sessionsMetadata = this._state.get<{
+			sessions: { id: string }[];
+			activeSessionId: string | null;
+		}>(SessionsMetadataKey);
 		if (sessionsMetadata) {
 			for (const session of sessionsMetadata.sessions) {
 				this._state.update(`leetnotion-session:${session.id}:statuses`, undefined);

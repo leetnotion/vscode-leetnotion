@@ -1,5 +1,6 @@
 import { leetCodeChannel } from '@/leetCodeChannel';
 import { leetcodeClient } from '@/leetCodeClient';
+import { handleError } from '@/utils/errorUtils';
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as vscode from 'vscode';
@@ -10,7 +11,6 @@ import { DialogType, promptForOpenOutputChannel } from '../utils/uiUtils';
 import { ILeetCodeWebviewOption, LeetCodeWebview } from './LeetCodeWebview';
 import { leetCodeSubmissionProvider } from './leetCodeSubmissionProvider';
 import { markdownEngine } from './markdownEngine';
-import { handleError } from '@/utils/errorUtils';
 
 class LeetCodeTestCaseProvider extends LeetCodeWebview {
 	protected readonly viewType: string = 'leetnotion.testcase';
@@ -165,7 +165,7 @@ class LeetCodeTestCaseProvider extends LeetCodeWebview {
 						'Failed to test the solution. Please open the output channel for details.',
 						DialogType.error,
 					);
-                    await handleError(error, 'test the solution');
+					await handleError(error, 'test the solution');
 				}
 				break;
 			}
