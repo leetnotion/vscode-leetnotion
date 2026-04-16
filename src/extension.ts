@@ -6,6 +6,7 @@ import * as plugin from './commands/plugin';
 import { withAuth } from './commands/shared';
 import * as show from './commands/show';
 import * as star from './commands/star';
+import * as session from './commands/session';
 import * as submit from './commands/submit';
 import * as test from './commands/test';
 import { explorerNodeManager } from './explorer/explorerNodeManager';
@@ -18,6 +19,7 @@ import { globalState } from './globalState';
 import { leetcodeClient } from './leetCodeClient';
 import { leetCodeManager } from './leetCodeManager';
 import { leetnotionManager } from './leetnotionManager';
+import { sessionManager } from './sessionManager';
 import { templateUpdater } from './modules/leetnotion/template-updater';
 import { UserStatus } from './shared';
 import { leetCodeStatusBarController } from './statusbar/leetCodeStatusBarController';
@@ -62,6 +64,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 		await globalState.initialize(context);
 		leetcodeClient.initialize();
 		leetnotionManager.initialize();
+		sessionManager.initialize();
 
 		const status = leetCodeManager.getStatus();
 		if (status === UserStatus.SignedIn) {
@@ -76,6 +79,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 			} catch (error) {
 				handleBackgroundError(error, 'process new problems');
 			}
+		});
+
+		sessionManager.onDidChangeSession(() => {
+			leetCodeTreeDataProvider.refresh();
 		});
 
 		leetcodeClient.setTitleSlugQuestionNumberMapping();
@@ -242,6 +249,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 				'leetnotion.addSubmissions',
 				withAuth(() => leetnotionManager.uploadSubmissions()),
 			),
+			sessionManager,
+			vscode.commands.registerCommand('leetnotion.createSession', () => session.createSession()),
+			vscode.commands.registerCommand('leetnotion.switchSession', () => session.switchSession()),
+			vscode.commands.registerCommand('leetnotion.deleteSession', () => session.deleteSession()),
 			{
 				dispose: () => {
 					intervals = clearIntervals(intervals);

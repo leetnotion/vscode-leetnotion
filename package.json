@@ -183,6 +183,21 @@
 				"command": "leetnotion.addSubmissions",
 				"title": "Add existing submissions to template",
 				"category": "LeetNotion"
+			},
+			{
+				"command": "leetnotion.createSession",
+				"title": "Create Session",
+				"category": "LeetNotion"
+			},
+			{
+				"command": "leetnotion.switchSession",
+				"title": "Switch Session",
+				"category": "LeetNotion"
+			},
+			{
+				"command": "leetnotion.deleteSession",
+				"title": "Delete Session",
+				"category": "LeetNotion"
 			}
 		],
 		"viewsContainers": {
