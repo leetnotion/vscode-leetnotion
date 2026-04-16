@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { ProblemState } from './shared';
-import { globalState } from './globalState';
+import { globalState, SessionsMetadataKey } from './globalState';
 
 export interface LeetCodeSession {
 	id: string;
@@ -13,7 +13,6 @@ export interface SessionsMetadata {
 	activeSessionId: string | null;
 }
 
-const SessionsMetadataKey = 'leetnotion-sessions-metadata';
 
 function sessionStatusesKey(sessionId: string): string {
 	return `leetnotion-session:${sessionId}:statuses`;
