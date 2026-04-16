@@ -30,6 +30,7 @@ import {
 	shouldHidePremiumProblem,
 	shouldHideSolvedProblem,
 } from '../utils/settingUtils';
+import { sessionManager } from '../sessionManager';
 import { getStaticProblems } from '../utils/staticDataUtils';
 import { LeetCodeNode } from './LeetCodeNode';
 
@@ -103,10 +104,21 @@ class ExplorerNodeManager implements Disposable {
 		listsWithQuestions: ListsWithQuestions,
 	): void {
 		this.lastBuildArgs = { problems, topicTags, contests, listsWithQuestions };
+
+		// Override problem states for custom sessions
+		let effectiveProblems = problems;
+		if (!sessionManager.isDefaultSession()) {
+			const sessionStatuses = sessionManager.getSessionProblemStatuses();
+			effectiveProblems = problems.map((p) => ({
+				...p,
+				state: sessionStatuses[p.id] ?? ProblemState.Unknown,
+			}));
+		}
+
 		const shouldHideSolved: boolean = shouldHideSolvedProblem();
 		const shouldHidePremium: boolean = shouldHidePremiumProblem();
 		const dailyProblem = globalState.getDailyProblem();
-		const filtered = problems.filter(
+		const filtered = effectiveProblems.filter(
 			(item) =>
 				(!shouldHideSolved || item.state !== ProblemState.AC) &&
 				(!shouldHidePremium || !item.locked),
@@ -114,7 +126,7 @@ class ExplorerNodeManager implements Disposable {
 
 		this.acProblemIds.clear();
 		this.lockedProblemIds.clear();
-		for (const problem of problems) {
+		for (const problem of effectiveProblems) {
 			if (problem.state === ProblemState.AC) {
 				this.acProblemIds.add(String(problem.id));
 			}
