@@ -64,7 +64,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 		await globalState.initialize(context);
 		leetcodeClient.initialize();
 		leetnotionManager.initialize();
-		sessionManager.initialize();
 
 		const status = leetCodeManager.getStatus();
 		if (status === UserStatus.SignedIn) {
@@ -82,6 +81,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 		});
 
 		sessionManager.onDidChangeSession(() => {
+			leetCodeStatusBarController.updateStatusBar(
+				leetCodeManager.getStatus(),
+				leetCodeManager.getUser(),
+			);
 			leetCodeTreeDataProvider.refresh();
 		});
 
@@ -249,7 +252,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 				'leetnotion.addSubmissions',
 				withAuth(() => leetnotionManager.uploadSubmissions()),
 			),
-			sessionManager,
 			vscode.commands.registerCommand('leetnotion.createSession', () => session.createSession()),
 			vscode.commands.registerCommand('leetnotion.switchSession', () => session.switchSession()),
 			vscode.commands.registerCommand('leetnotion.deleteSession', () => session.deleteSession()),

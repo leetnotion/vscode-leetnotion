@@ -1,6 +1,6 @@
-import * as vscode from 'vscode';
 import { ProblemState } from './shared';
 import { globalState, SessionsMetadataKey } from './globalState';
+import { EventEmitter, Event } from 'vscode';
 
 export interface LeetCodeSession {
 	id: string;
@@ -19,24 +19,11 @@ function sessionStatusesKey(sessionId: string): string {
 }
 
 class SessionManager {
-	private _onDidChangeSession = new vscode.EventEmitter<LeetCodeSession | null>();
-	public readonly onDidChangeSession = this._onDidChangeSession.event;
-
-	private _statusBarItem: vscode.StatusBarItem;
-
-	constructor() {
-		this._statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 0);
-		this._statusBarItem.command = 'leetnotion.switchSession';
-	}
-
-	public initialize(): void {
-		this.updateStatusBar();
-		this._statusBarItem.show();
-	}
+	private _onDidChangeSession = new EventEmitter<LeetCodeSession | null>();
+	public readonly onDidChangeSession: Event<LeetCodeSession | null> = this._onDidChangeSession.event;
 
 	public dispose(): void {
 		this._onDidChangeSession.dispose();
-		this._statusBarItem.dispose();
 	}
 
 	private getMetadata(): SessionsMetadata {
@@ -82,7 +69,6 @@ class SessionManager {
 		metadata.sessions.push(session);
 		metadata.activeSessionId = session.id;
 		await this.setMetadata(metadata);
-		this.updateStatusBar();
 		this._onDidChangeSession.fire(session);
 		return session;
 	}
@@ -97,7 +83,6 @@ class SessionManager {
 		}
 		metadata.activeSessionId = sessionId;
 		await this.setMetadata(metadata);
-		this.updateStatusBar();
 		const activeSession = sessionId
 			? metadata.sessions.find((s) => s.id === sessionId) ?? null
 			: null;
@@ -118,7 +103,6 @@ class SessionManager {
 		}
 		await this.setMetadata(metadata);
 		if (wasActive) {
-			this.updateStatusBar();
 			this._onDidChangeSession.fire(null);
 		}
 	}
@@ -152,13 +136,6 @@ class SessionManager {
 			await globalState.update(sessionStatusesKey(session.id), undefined);
 		}
 		await globalState.update(SessionsMetadataKey, undefined);
-		this.updateStatusBar();
-	}
-
-	private updateStatusBar(): void {
-		const session = this.getActiveSession();
-		this._statusBarItem.text = `$(bookmark) ${session ? session.name : 'Default'}`;
-		this._statusBarItem.tooltip = 'LeetNotion: Switch Session';
 	}
 }
 

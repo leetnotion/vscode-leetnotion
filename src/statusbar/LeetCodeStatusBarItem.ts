@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { sessionManager } from '../sessionManager';
 import { UserStatus } from '../shared';
 
 export class LeetCodeStatusBarItem implements vscode.Disposable {
@@ -6,13 +7,18 @@ export class LeetCodeStatusBarItem implements vscode.Disposable {
 
 	constructor() {
 		this.statusBarItem = vscode.window.createStatusBarItem();
+		this.statusBarItem.command = 'leetnotion.switchSession';
 	}
 
 	public updateStatusBar(status: UserStatus, user?: string): void {
 		switch (status) {
-			case UserStatus.SignedIn:
-				this.statusBarItem.text = `LeetCode: ${user}`;
+			case UserStatus.SignedIn: {
+				const session = sessionManager.getActiveSession();
+				this.statusBarItem.text = session
+					? `LeetCode: ${user} (${session.name})`
+					: `LeetCode: ${user}`;
 				break;
+			}
 			case UserStatus.SignedOut:
 			default:
 				this.statusBarItem.text = '';
