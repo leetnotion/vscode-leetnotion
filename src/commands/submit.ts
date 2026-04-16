@@ -8,7 +8,8 @@ import { globalState } from '../globalState';
 import { leetCodeChannel } from '../leetCodeChannel';
 import { leetcodeClient } from '../leetCodeClient';
 import { leetnotionManager } from '../leetnotionManager';
-import { langExt } from '../shared';
+import { langExt, ProblemState } from '../shared';
+import { sessionManager } from '../sessionManager';
 import { handleError } from '../utils/errorUtils';
 import { extractCode, getLangFromFile, getNodeIdFromFile } from '../utils/problemUtils';
 import { getQuestionNumber } from '../utils/toolUtils';
@@ -62,6 +63,14 @@ export async function submitSolution(uri?: vscode.Uri): Promise<void> {
 					code,
 				});
 			}
+		}
+
+		// Update session-local status
+		if (!sessionManager.isDefaultSession()) {
+			await sessionManager.updateProblemStatus(
+				nodeId,
+				result.ok ? ProblemState.AC : ProblemState.NotAC,
+			);
 		}
 	} catch (error) {
 		await handleError(error, 'submit the solution');
