@@ -7,6 +7,7 @@ import { leetCodeManager } from '../leetCodeManager';
 import { Category, defaultProblem, ProblemState } from '../shared';
 import { explorerNodeManager } from './explorerNodeManager';
 import { LeetCodeNode } from './LeetCodeNode';
+import { leetCodeTreeItemDecorationProvider } from './LeetCodeTreeItemDecorationProvider';
 
 export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<LeetCodeNode> {
 	private context: vscode.ExtensionContext;
@@ -18,7 +19,10 @@ export class LeetCodeTreeDataProvider implements vscode.TreeDataProvider<LeetCod
 
 	public initialize(context: vscode.ExtensionContext): void {
 		this.context = context;
-		explorerNodeManager.setOnTreeChanged(() => this.onDidChangeTreeDataEvent.fire(null));
+		explorerNodeManager.setOnTreeChanged(() => {
+			this.onDidChangeTreeDataEvent.fire(null);
+			leetCodeTreeItemDecorationProvider.refresh();
+		});
 		vscode.workspace.onDidChangeConfiguration((e) => {
 			if (
 				e.affectsConfiguration('leetnotion.hideSolved') ||

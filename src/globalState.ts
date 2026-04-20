@@ -428,17 +428,17 @@ class GlobalState {
 		this._state.update(LeetcodeListsKey, undefined);
 		this._state.update(ListsSyncTimestampKey, undefined);
 		this._state.update('leetcode-favorite-overrides', undefined);
-		// Clear session data
-		const sessionsMetadata = this._state.get<{
-			sessions: { id: string }[];
-			activeSessionId: string | null;
-		}>(SessionsMetadataKey);
-		if (sessionsMetadata) {
-			for (const session of sessionsMetadata.sessions) {
-				this._state.update(`leetnotion-session:${session.id}:statuses`, undefined);
-			}
-		}
-		this._state.update(SessionsMetadataKey, undefined);
+		// // Clear session data
+		// const sessionsMetadata = this._state.get<{
+		// 	sessions: { id: string }[];
+		// 	activeSessionId: string | null;
+		// }>(SessionsMetadataKey);
+		// if (sessionsMetadata) {
+		// 	for (const session of sessionsMetadata.sessions) {
+		// 		this._state.update(`leetnotion-session:${session.id}:statuses`, undefined);
+		// 	}
+		// }
+		// this._state.update(SessionsMetadataKey, undefined);
 		// Clear disk-stored data
 		for (const key of DISK_STORAGE_KEYS) {
 			await this._writeToDisk(key, undefined);
