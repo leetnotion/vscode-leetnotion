@@ -358,6 +358,8 @@ class LeetnotionClient {
 				throw new Error(`notion-integration-not-enabled`);
 			}
 			const databaseId = globalState.getQuestionsDatabaseId();
+            leetCodeChannel.appendLine(`Adding ${problems.length} problems to Notion database with ID: ${databaseId}`);
+            leetCodeChannel.appendLine(`Adding ${problems.length} problems to Notion database with ID: ${globalState.getSubmissionsDatabaseId()}`);
 			if (!databaseId) {
 				throw new Error(`questions-database-id-not-found`);
 			}
