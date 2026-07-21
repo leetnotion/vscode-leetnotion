@@ -3,8 +3,8 @@
 	"displayName": "Leetnotion",
 	"description": "Solve LeetCode problems in VsCode and keep your submissions in sync with your Ultimate LeetCode Tracker template in notion",
 	"version": "2.0.0",
-	"author": "Leetnotion",
-	"publisher": "Leetnotion",
+	"author": "codewithsathya",
+	"publisher": "leetnotion",
 	"license": "MIT",
 	"icon": "resources/LeetNotion.png",
 	"engines": {
