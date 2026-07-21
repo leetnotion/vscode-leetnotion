@@ -188,9 +188,10 @@ export class LeetCodeToNotionConverter {
 				],
 			},
 			'Similar Questions': {
-				relation: (problem.similarQuestions as SimilarQuestion[]).map((question) => ({
-					id: slugPageIdMapping[question.titleSlug as string],
-				})),
+				relation: (problem.similarQuestions as SimilarQuestion[])
+					.map((question) => slugPageIdMapping[question.titleSlug as string])
+					.filter((id): id is string => Boolean(id))
+					.map((id) => ({ id })),
 			},
 		};
 		return problemPageProperties;

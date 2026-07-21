@@ -23,6 +23,20 @@ class LeetCodePreviewProvider extends LeetCodeWebview {
 		this.showWebviewInternal();
 	}
 
+	public isShowingNode(node: IProblem): boolean {
+		return !!this.panel && this.node?.slug === node.slug;
+	}
+
+	public revealAsSide(): void {
+		if (!this.panel) {
+			return;
+		}
+		this.sideMode = true;
+		this.panel.title = 'Description';
+		this.panel.webview.html = this.getWebviewContent();
+		this.panel.reveal(ViewColumn.Two, true);
+	}
+
 	protected getWebviewOption(): ILeetCodeWebviewOption {
 		if (!this.sideMode) {
 			return {

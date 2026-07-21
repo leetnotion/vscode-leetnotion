@@ -836,32 +836,33 @@
 		"vs-publish": "vsce publish"
 	},
 	"devDependencies": {
-		"@types/fs-extra": "^9.0.13",
+		"@types/fs-extra": "^11.0.4",
 		"@types/he": "^1.2.3",
 		"@types/lodash": "^4.17.24",
-		"@types/markdown-it": "0.0.7",
-		"@types/mocha": "^2.2.48",
-		"@types/node": "^14.18.63",
+		"@types/markdown-it": "14.1.2",
+		"@types/mocha": "^10.0.10",
+		"@types/node": "^26.1.1",
 		"@types/require-from-string": "^1.2.3",
-		"@types/vscode": "1.93.0",
-		"@typescript-eslint/eslint-plugin": "^8.58.2",
-		"@typescript-eslint/parser": "^8.58.2",
-		"esbuild": "^0.28.0",
-		"eslint": "^10.2.0",
+		"@types/vscode": "^1.93.0",
+		"@typescript-eslint/eslint-plugin": "^8.65.0",
+		"@typescript-eslint/parser": "^8.65.0",
+		"@vscode/vsce": "^3.9.2",
+		"esbuild": "^0.28.1",
+		"eslint": "^10.7.0",
 		"prettier-plugin-organize-imports": "^4.3.0",
-		"tsx": "^4.21.0",
-		"typescript": "^6.0.2"
+		"tsx": "^4.23.1",
+		"typescript": "^6.0.3"
 	},
 	"dependencies": {
-		"@leetnotion/leetcode-api": "^3.0.0",
+		"@leetnotion/leetcode-api": "^3.0.2",
 		"@leetnotion/notion-api": "^0.0.2",
-		"axios": "^1.15.0",
+		"axios": "^1.18.1",
 		"bottleneck": "^2.19.5",
-		"fs-extra": "^10.1.0",
+		"fs-extra": "^11.3.6",
 		"he": "^1.2.0",
-		"highlight.js": "^10.7.3",
+		"highlight.js": "^11.11.1",
 		"lodash": "^4.18.1",
-		"markdown-it": "^8.4.2",
-		"mixpanel": "^0.18.1"
+		"markdown-it": "^14.3.0",
+		"mixpanel": "^0.22.0"
 	}
 }

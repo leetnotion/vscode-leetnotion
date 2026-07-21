@@ -1,4 +1,4 @@
-import * as hljs from 'highlight.js';
+import hljs from 'highlight.js';
 import MarkdownIt from 'markdown-it';
 import * as os from 'os';
 import * as path from 'path';
@@ -143,7 +143,7 @@ class MarkdownEngine implements vscode.Disposable {
 				}
 				if (lang && hljs.getLanguage(lang)) {
 					try {
-						return hljs.highlight(lang, code, true).value;
+						return hljs.highlight(code, { language: lang, ignoreIllegals: true }).value;
 					} catch {
 						/* do not highlight */
 					}

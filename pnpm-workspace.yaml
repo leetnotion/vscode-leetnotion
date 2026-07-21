@@ -1,2 +1,17 @@
 allowBuilds:
+  '@vscode/vsce-sign': false
   esbuild: true
+  keytar: false
+minimumReleaseAgeExclude:
+  - '@types/node@26.0.1'
+  - '@leetnotion/leetcode-api@3.0.2'
+  - '@typescript-eslint/eslint-plugin@8.65.0'
+  - '@typescript-eslint/parser@8.65.0'
+  - '@typescript-eslint/project-service@8.65.0'
+  - '@typescript-eslint/scope-manager@8.65.0'
+  - '@typescript-eslint/tsconfig-utils@8.65.0'
+  - '@typescript-eslint/type-utils@8.65.0'
+  - '@typescript-eslint/types@8.65.0'
+  - '@typescript-eslint/typescript-estree@8.65.0'
+  - '@typescript-eslint/utils@8.65.0'
+  - '@typescript-eslint/visitor-keys@8.65.0'

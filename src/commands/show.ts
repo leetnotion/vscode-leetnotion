@@ -373,11 +373,12 @@ async function showProblemInternal(node: IProblem): Promise<void> {
 			const codeFooter: string = getCodeFooter(language);
 			await fse.writeFile(finalPath, codeHeader + codeTemplate + codeFooter);
 		}
+		await vscode.window.showTextDocument(vscode.Uri.file(finalPath), {
+			preview: false,
+			viewColumn: vscode.ViewColumn.One,
+		});
+
 		const promises: any[] = [
-			vscode.window.showTextDocument(vscode.Uri.file(finalPath), {
-				preview: false,
-				viewColumn: vscode.ViewColumn.One,
-			}),
 			promptHintMessage(
 				'hint.commentDescription',
 				'You can config how to show the problem description through "leetnotion.showDescription".',
@@ -386,7 +387,11 @@ async function showProblemInternal(node: IProblem): Promise<void> {
 			),
 		];
 		if (descriptionConfig.showInWebview) {
-			promises.push(showDescriptionView(node));
+			if (leetCodePreviewProvider.isShowingNode(node)) {
+				leetCodePreviewProvider.revealAsSide();
+			} else {
+				promises.push(showDescriptionView(node));
+			}
 		}
 
 		await Promise.all(promises);
