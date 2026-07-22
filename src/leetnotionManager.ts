@@ -84,7 +84,7 @@ class LeetnotionManager {
 		try {
 			const accessToken = globalState.getNotionAccessToken();
 			const inputOptions: InputBoxOptions = {
-				placeHolder: 'Eg: secret_123...',
+				placeHolder: 'Eg: ntn_a3f...',
 				prompt: 'Enter your notion access token',
 				password: true,
 				ignoreFocusOut: true,
