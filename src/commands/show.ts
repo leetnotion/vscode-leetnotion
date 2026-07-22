@@ -17,7 +17,6 @@ import { globalState } from '../globalState';
 import { leetCodeChannel } from '../leetCodeChannel';
 import { leetcodeClient } from '../leetCodeClient';
 import {
-	ALL_TIME,
 	Category,
 	IProblem,
 	IQuickItemEx,
@@ -430,9 +429,7 @@ async function parseProblemsToPicks(
 async function parseCompaniesToPicks(companyTags: CompanyTags) {
 	const lenMap = {};
 	Object.keys(companyTags).forEach((key) => {
-		lenMap[key] = companyTags[key][ALL_TIME]
-			? companyTags[key][ALL_TIME].length
-			: (companyTags[key] as string[]).length;
+		lenMap[key] = extractArrayElements(companyTags[key]).length;
 	});
 	const picks: Array<IQuickItemEx<string>> = Object.keys(companyTags)
 		.sort((a, b) => lenMap[b] - lenMap[a])
@@ -442,7 +439,7 @@ async function parseCompaniesToPicks(companyTags: CompanyTags) {
 				{
 					label: company,
 					description: '',
-					detail: `No of Problems: ${companyTags[company][ALL_TIME] ? companyTags[company][ALL_TIME].length : (companyTags[company] as string[]).length}`,
+					detail: `No of Problems: ${lenMap[company]}`,
 					value: company,
 				},
 			),
