@@ -16,19 +16,13 @@
   </a>
 </p>
 
-## Requirements
-
-- [VS Code 1.30.1+](https://code.visualstudio.com/)
-- [Node.js 10+](https://nodejs.org)
-  > NOTE: Please make sure that `Node` is in your `PATH` environment variable. You can also use the setting `leetnotion.nodePath` to specify the location of your `Node.js` executable.
-
-## Quick Start
-
-![demo](https://raw.githubusercontent.com/leetnotion/vscode-leetnotion/master/docs/gif/demo.gif)
-
 ## Ultimate Leetcode Tracker Notion Template
 
-To get started using this, you can get the Ultimate LeetCode Tracker template from [here](https://codewithsathya.gumroad.com/l/leetnotion). Feel free to duplicate it into your own Notion workspace!
+For notion integration you need Ultimate LeetCode Tracker template which you can get from [here](https://codewithsathya.gumroad.com/l/leetnotion). Feel free to duplicate it into your own Notion workspace!
+
+## Demo
+
+![demo](https://raw.githubusercontent.com/leetnotion/vscode-leetnotion/master/docs/gif/demo.gif)
 
 ![Ultimate Leetcode Tracker](./docs/imgs/notion-template-preview.png)
 
