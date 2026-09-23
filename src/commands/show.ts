@@ -16,14 +16,7 @@ import { LeetCodeNode } from '../explorer/LeetCodeNode';
 import { globalState } from '../globalState';
 import { leetCodeChannel } from '../leetCodeChannel';
 import { leetcodeClient } from '../leetCodeClient';
-import {
-	Category,
-	IProblem,
-	IQuickItemEx,
-	languages,
-	PREMIUM_URL,
-	ProblemState,
-} from '../shared';
+import { Category, IProblem, IQuickItemEx, languages, PREMIUM_URL, ProblemState } from '../shared';
 import { handleError } from '../utils/errorUtils';
 import { genFileExt, genFileName, getNodeIdFromFile } from '../utils/problemUtils';
 import * as settingUtils from '../utils/settingUtils';

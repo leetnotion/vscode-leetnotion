@@ -469,8 +469,7 @@ class LeetcodeClient {
 
 	private getFavoriteState(questionId: string, apiValue: boolean): boolean {
 		const overrides = globalState.get('leetcode-favorite-overrides') as
-			| Record<string, boolean>
-			| undefined;
+			Record<string, boolean> | undefined;
 		if (overrides && questionId in overrides) {
 			return overrides[questionId];
 		}

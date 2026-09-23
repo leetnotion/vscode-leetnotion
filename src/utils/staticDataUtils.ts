@@ -24,21 +24,19 @@ interface StaticProblem {
 
 export function getStaticProblems(): IProblem[] {
 	const raw = fsExtra.readJSONSync(path.join(__dirname, categoryProblemsPath)) as StaticProblem[];
-	return raw.map(
-		(p): IProblem => ({
-			id: p.id,
-			questionId: p.questionId,
-			name: p.name,
-			slug: p.slug,
-			difficulty: p.difficulty,
-			passRate: p.passRate,
-			locked: p.locked,
-			state: ProblemState.Unknown,
-			isFavorite: false,
-			companies: [],
-			tags: [],
-		}),
-	);
+	return raw.map((p): IProblem => ({
+		id: p.id,
+		questionId: p.questionId,
+		name: p.name,
+		slug: p.slug,
+		difficulty: p.difficulty,
+		passRate: p.passRate,
+		locked: p.locked,
+		state: ProblemState.Unknown,
+		isFavorite: false,
+		companies: [],
+		tags: [],
+	}));
 }
 
 export function getStaticTopicTags(): TopicTags {

@@ -82,8 +82,7 @@ export class TemplateUpdater {
 
 	public async addNewProblems() {
 		const problems = (await templateUpdateSession.get(LEETCODE_PROBLEMS)) as
-			| LeetcodeProblem[]
-			| undefined;
+			LeetcodeProblem[] | undefined;
 		if (!problems) {
 			throw new Error(`leetcode-problems-not-found`);
 		}
@@ -129,8 +128,7 @@ export class TemplateUpdater {
 
 	public async updateProblems() {
 		const problems = (await templateUpdateSession.get(LEETCODE_PROBLEMS)) as
-			| LeetcodeProblem[]
-			| undefined;
+			LeetcodeProblem[] | undefined;
 		if (!problems) {
 			throw new Error(`leetcode-problems-not-found`);
 		}
