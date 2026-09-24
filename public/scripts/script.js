@@ -1,6 +1,23 @@
 const vscode = acquireVsCodeApi();
 const setPropertiesSection = document.getElementById("setPropertiesSection");
 const setPropertiesButton = document.getElementById("setPropertiesButton");
+
+// AI Analyze button
+const analyzeButton = document.getElementById("analyzeButton");
+if (analyzeButton) {
+    analyzeButton.addEventListener("click", () => {
+        vscode.postMessage({ command: "analyze" });
+    });
+}
+
+// AI Debug button
+const debugButton = document.getElementById("debugButton");
+if (debugButton) {
+    debugButton.addEventListener("click", () => {
+        vscode.postMessage({ command: "debug" });
+    });
+}
+
 window.addEventListener("message", (event) => {
     const message = event.data;
     switch (message.command) {
@@ -28,7 +45,24 @@ window.addEventListener("message", (event) => {
                 maximumSelectionLength: 100,
                 placeholder: "Search for an option...",
             });
+            const reviewDateInput = document.getElementById("review-date-input");
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const minDate = tomorrow.toISOString().split("T")[0];
+            reviewDateInput.min = minDate;
+            reviewDateInput.addEventListener("blur", () => {
+                if (reviewDateInput.value && reviewDateInput.value < minDate) {
+                    reviewDateInput.value = "";
+                    vscode.postMessage({ command: "show-error", message: "Review date must be in the future." });
+                }
+            });
             setPropertiesSection.style.display = "block";
+            $(document).on("click", (e) => {
+                if (!$(e.target).closest(".select2-container").length) {
+                    $("#tags-select").select2("close");
+                    $(".select2-container .select2-search__field").blur();
+                }
+            });
             break;
     }
 });

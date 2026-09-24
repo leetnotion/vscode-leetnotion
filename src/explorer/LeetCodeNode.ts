@@ -1,79 +1,93 @@
-// Copyright (c) jdneo. All rights reserved.
-// Licensed under the MIT license.
-
-import { Command, Uri } from "vscode";
-import { IProblem, ProblemState } from "../shared";
+import { Command, Uri } from 'vscode';
+import { IProblem, ProblemState } from '../shared';
 
 export class LeetCodeNode {
+	constructor(
+		private data: IProblem,
+		private isProblemNode: boolean = true,
+	) {}
 
-    constructor(private data: IProblem, private isProblemNode: boolean = true) { }
+	public get locked(): boolean {
+		return this.data.locked;
+	}
+	public get name(): string {
+		return this.data.name;
+	}
 
-    public get locked(): boolean {
-        return this.data.locked;
-    }
-    public get name(): string {
-        return this.data.name;
-    }
+	public get slug(): string {
+		return this.data.slug;
+	}
 
-    public get state(): ProblemState {
-        return this.data.state;
-    }
+	public get state(): ProblemState {
+		return this.data.state;
+	}
 
-    public get id(): string {
-        return this.data.id;
-    }
+	public get id(): string {
+		return this.data.id;
+	}
 
-    public get passRate(): string {
-        return this.data.passRate;
-    }
+	public get questionId(): number {
+		return this.data.questionId;
+	}
 
-    public get difficulty(): string {
-        return this.data.difficulty;
-    }
+	public get passRate(): string {
+		return this.data.passRate;
+	}
 
-    public get tags(): string[] {
-        return this.data.tags;
-    }
+	public get difficulty(): string {
+		return this.data.difficulty;
+	}
 
-    public get companies(): string[] {
-        return this.data.companies;
-    }
+	public get tags(): string[] {
+		return this.data.tags;
+	}
 
-    public get isFavorite(): boolean {
-        return this.data.isFavorite;
-    }
+	public get companies(): string[] {
+		return this.data.companies;
+	}
 
-    public get isProblem(): boolean {
-        return this.isProblemNode;
-    }
+	public get isFavorite(): boolean {
+		return this.data.isFavorite;
+	}
 
-    public get rating(): number {
-        return this.data.rating;
-    }
+	public set isFavorite(value: boolean) {
+		this.data.isFavorite = value;
+	}
 
-    public get problemIndex(): string {
-        return this.data.problemIndex;
-    }
+	public get isProblem(): boolean {
+		return this.isProblemNode;
+	}
 
-    public get previewCommand(): Command {
-        return {
-            title: "Preview Problem",
-            command: "leetnotion.previewProblem",
-            arguments: [this],
-        };
-    }
+	public get rating(): number | undefined {
+		return this.data.rating;
+	}
 
-    public get acceptanceRate(): number {
-        return Number(this.passRate.slice(0, -1).trim());
-    }
+	public get problemIndex(): string | undefined {
+		return this.data.problemIndex;
+	}
 
-    public get uri(): Uri {
-        return Uri.from({
-            scheme: "leetcode",
-            authority: this.isProblem ? "problems" : "tree-node",
-            path: `/${this.id}`, // path must begin with slash /
-            query: `difficulty=${this.difficulty}`,
-        });
-    }
+	public get contestName(): string | undefined {
+		return this.data.contestName;
+	}
 
+	public get previewCommand(): Command {
+		return {
+			title: 'Preview Problem',
+			command: 'leetnotion.previewProblem',
+			arguments: [this],
+		};
+	}
+
+	public get acceptanceRate(): number {
+		return Number(this.passRate.slice(0, -1).trim());
+	}
+
+	public get uri(): Uri {
+		return Uri.from({
+			scheme: 'leetcode',
+			authority: this.isProblem ? 'problems' : 'tree-node',
+			path: `/${this.id}`, // path must begin with slash /
+			query: `difficulty=${this.difficulty}`,
+		});
+	}
 }

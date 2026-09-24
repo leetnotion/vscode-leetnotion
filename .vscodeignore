@@ -6,6 +6,11 @@ src/**
 **/*.map
 .gitignore
 package-lock.json
+pnpm-lock.yaml
+pnpm-workspace.yaml
+eslint.config.mjs
+.prettierrc.yml
+.prettierignore
 tsconfig.json
 tslint.json
 **/*.gif
@@ -13,3 +18,14 @@ ACKNOWLEDGEMENTS.md
 docs
 .github
 public/scripts/.gitignore
+.npmrc
+.DS_Store
+esbuild.js
+_config.yml
+CLAUDE.md
+thirdpartynotice.txt
+**/*.vsix
+scripts/**
+node_modules/**
+CLAUDE.md
+AGENTS.md
