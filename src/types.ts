@@ -164,6 +164,13 @@ export type QuestionsOfList = Array<QuestionOfList>;
 export type Sheets = Record<string, Record<string, string[]>>;
 export type ListsWithQuestions = Record<string, string[]>;
 
+export type ContestDetail = {
+	slug: string;
+	title: string;
+	startTime: number; // unix seconds
+	duration: number; // seconds
+};
+
 export type CompanyProblem = string;
 
 export type CompanyDetails =

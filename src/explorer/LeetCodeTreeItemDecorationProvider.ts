@@ -212,22 +212,25 @@ export class LeetCodeTreeItemDecorationProvider implements FileDecorationProvide
 		hard: new ThemeColor('charts.red'),
 	};
 
+	private readonly CONTEST_COLOR: { [key: string]: ThemeColor } = {
+		weekly: new ThemeColor('charts.orange'),
+		biweekly: new ThemeColor('charts.blue'),
+	};
+
 	public provideFileDecoration(uri: Uri): ProviderResult<FileDecoration> {
 		if (uri.scheme !== 'leetcode') {
 			return;
 		}
 
 		if (uri.authority === 'tree-node') {
-			if (!this.isFolderEmojiEnabled()) {
-				return;
-			}
 			const nodeId = decodeURIComponent(uri.path.slice(1));
-			if (explorerNodeManager.isFolderCompleted(nodeId)) {
+			const color = this.getContestColor(nodeId);
+			if (this.isFolderEmojiEnabled() && explorerNodeManager.isFolderCompleted(nodeId)) {
 				const badge =
 					nodeId === 'Daily' ? this.getDailyEmoji() : (this.FOLDER_BADGE[nodeId] ?? '✅');
-				return { badge };
+				return { badge, color };
 			}
-			return;
+			return color ? { color } : undefined;
 		}
 
 		if (uri.authority !== 'problems' || !this.isDifficultyBadgeEnabled()) {
@@ -240,6 +243,16 @@ export class LeetCodeTreeItemDecorationProvider implements FileDecorationProvide
 			badge: this.DIFFICULTY_BADGE_LABEL[difficulty],
 			color: this.ITEM_COLOR[difficulty],
 		};
+	}
+
+	private getContestColor(nodeId: string): ThemeColor | undefined {
+		if (nodeId.startsWith('Contests#Weekly Contest')) {
+			return this.CONTEST_COLOR.weekly;
+		}
+		if (nodeId.startsWith('Contests#Biweekly Contest')) {
+			return this.CONTEST_COLOR.biweekly;
+		}
+		return undefined;
 	}
 
 	private isDifficultyBadgeEnabled(): boolean {

@@ -70,14 +70,17 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 			startRecurringTasks();
 		}
 
-		explorerNodeManager.setOnNewProblemsDetected(async (newProblems) => {
+		explorerNodeManager.setOnNewProblemsDetected(async () => {
 			try {
 				await refreshTopicTags();
 				leetCodeTreeDataProvider.refresh();
-				await leetnotionManager.addNewProblemsToNotion(newProblems);
 			} catch (error) {
 				handleBackgroundError(error, 'process new problems');
 			}
+		});
+
+		explorerNodeManager.setOnLiveProblemsFetched((problems) => {
+			leetnotionManager.syncMissingProblemsToNotion(problems);
 		});
 
 		sessionManager.onDidChangeSession(() => {

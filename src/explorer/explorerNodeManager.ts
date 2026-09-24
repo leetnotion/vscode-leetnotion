@@ -1,6 +1,7 @@
 import { leetcodeTreeView } from '@/extension';
 import { leetCodeChannel } from '@/leetCodeChannel';
 import { LeetnotionTree, ListsWithQuestions } from '@/types';
+import { isEqual } from 'lodash';
 import { Disposable } from 'vscode';
 import * as list from '../commands/list';
 import { getSortingStrategy } from '../commands/plugin';
@@ -44,6 +45,7 @@ class ExplorerNodeManager implements Disposable {
 	private pendingRefresh: Promise<void> | null = null;
 	private onTreeChanged: () => void = () => {};
 	private onNewProblemsDetected: (newProblems: IProblem[]) => void = () => {};
+	private onLiveProblemsFetched: (problems: IProblem[]) => void = () => {};
 	private lastBuildArgs: {
 		problems: IProblem[];
 		topicTags: Record<string, string[]>;
@@ -59,6 +61,10 @@ class ExplorerNodeManager implements Disposable {
 		this.onNewProblemsDetected = callback;
 	}
 
+	public setOnLiveProblemsFetched(callback: (problems: IProblem[]) => void): void {
+		this.onLiveProblemsFetched = callback;
+	}
+
 	public isFolderCompleted(id: string): boolean {
 		// return true; // TEMP: force all folders to show completed
 		return this.completedFolderIds.has(id);
@@ -66,7 +72,14 @@ class ExplorerNodeManager implements Disposable {
 
 	public async updateLists(): Promise<void> {
 		const listsWithQuestions = await getListsWithQuestions();
+		// List syncs re-fetch every list, so skip the tree refresh when nothing shown changed
+		if (isEqual(this.dataTree[Category.Lists], listsWithQuestions)) {
+			return;
+		}
 		this.dataTree[Category.Lists] = listsWithQuestions;
+		if (this.lastBuildArgs) {
+			this.lastBuildArgs.listsWithQuestions = listsWithQuestions;
+		}
 		this.onTreeChanged();
 	}
 
@@ -245,6 +258,7 @@ class ExplorerNodeManager implements Disposable {
 				leetCodeChannel.appendLine(
 					`[refreshCache] Phase 2: Live tree rendered (${Date.now() - start}ms)`,
 				);
+				this.onLiveProblemsFetched(liveProblems);
 			}
 
 			leetCodeChannel.appendLine(

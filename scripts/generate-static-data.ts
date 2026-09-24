@@ -54,6 +54,58 @@ async function generate() {
 	fs.writeFileSync(path.join(dataDir, 'ratings.json'), JSON.stringify(ratingsMap));
 	console.log(`Wrote ${Object.keys(ratingsMap).length} ratings`);
 
+	// 4. Contests — derived from the ratings data, since LeetCode's contest info API is
+	// behind a Cloudflare challenge. Ratings don't cover the oldest contests, so only
+	// contests missing from contests.json are added; existing entries are kept as-is.
+	const contestsPath = path.join(dataDir, 'contests.json');
+	const existingContests: Record<string, string[]> = JSON.parse(
+		fs.readFileSync(contestsPath, 'utf-8'),
+	);
+	const newContests: Record<string, { ProblemIndex: string; ID: number }[]> = {};
+	for (const rating of data) {
+		if (!existingContests[rating.ContestID_en]) {
+			(newContests[rating.ContestID_en] ??= []).push(rating);
+		}
+	}
+	// Tree renders contests in key order, so keep newest (highest problem ID) first
+	const newEntries = _.fromPairs(
+		_.sortBy(Object.entries(newContests), ([, problems]) => -_.max(problems.map((p) => p.ID))!).map(
+			([title, problems]) => [
+				title,
+				_.sortBy(problems, (p) => p.ProblemIndex).map((p) => String(p.ID)),
+			],
+		),
+	);
+	fs.writeFileSync(contestsPath, JSON.stringify({ ...newEntries, ...existingContests }));
+	console.log(
+		`Added ${Object.keys(newEntries).length} new contests: ${Object.keys(newEntries).join(', ')}`,
+	);
+
+	// 5. Contest details — from the past contests GraphQL query, newest first.
+	// The API caps each page at 30 contests regardless of the requested limit.
+	console.log('Fetching contest details...');
+	const pageSize = 30;
+	const contestDetails: { slug: string; title: string; startTime: number; duration: number }[] = [];
+	let totalContests = Infinity;
+	for (let skip = 0; skip < totalContests; skip += pageSize) {
+		const { totalNum, contests } = await leetcode.getPastContests({ limit: pageSize, skip });
+		totalContests = totalNum;
+		if (contests.length === 0) {
+			break;
+		}
+		contestDetails.push(
+			...contests.map((c) => ({
+				slug: c.titleSlug,
+				title: c.title,
+				startTime: c.startTime,
+				duration: c.duration,
+			})),
+		);
+	}
+	const uniqueContestDetails = _.uniqBy(contestDetails, (c) => c.slug);
+	fs.writeFileSync(path.join(dataDir, 'contestDetails.json'), JSON.stringify(uniqueContestDetails));
+	console.log(`Wrote ${uniqueContestDetails.length} contest details`);
+
 	console.log('Done!');
 }
 

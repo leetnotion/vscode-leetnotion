@@ -17,7 +17,13 @@ import {
 	promptForOpenOutputChannel,
 } from './utils/uiUtils';
 
+// Larger gaps are left to the "Update Template" command, which shows progress and can resume
+const MAX_AUTO_ADDED_PROBLEMS = 100;
+
 class LeetnotionManager {
+	private isSyncingMissingProblems = false;
+	private recheckedMissingProblemIds: Set<string> = new Set<string>();
+
 	public initialize(): void {
 		leetnotionClient.initialize();
 	}
@@ -215,6 +221,57 @@ class LeetnotionManager {
 			return submissions;
 		}
 		throw new Error(`Error at getting submission from submissions.json`);
+	}
+
+	/**
+	 * Adds problems that have no Notion page to the questions database. The page ID mapping
+	 * can be stale, so it is rebuilt from Notion before any problem is treated as new.
+	 */
+	public async syncMissingProblemsToNotion(problems: IProblem[]): Promise<void> {
+		if (!hasNotionIntegrationEnabled() || this.isSyncingMissingProblems) {
+			return;
+		}
+		const questionNumberPageIdMapping = globalState.getQuestionNumberPageIdMapping();
+		if (!questionNumberPageIdMapping || Object.keys(questionNumberPageIdMapping).length === 0) {
+			return;
+		}
+		let missingProblems = this.getProblemsWithoutPages(problems);
+		if (missingProblems.length === 0) {
+			return;
+		}
+		this.isSyncingMissingProblems = true;
+		try {
+			// Skip the full Notion scan when every missing problem was already rechecked,
+			// so a problem that keeps failing to add doesn't trigger a scan on each refresh.
+			if (missingProblems.some(({ id }) => !this.recheckedMissingProblemIds.has(id))) {
+				leetCodeChannel.appendLine(
+					`[Notion] ${missingProblems.length} problem(s) have no page ID. Rechecking Notion pages...`,
+				);
+				await leetnotionClient.updateTemplateInformation();
+				missingProblems = this.getProblemsWithoutPages(problems);
+				this.recheckedMissingProblemIds = new Set(missingProblems.map(({ id }) => id));
+				if (missingProblems.length === 0) {
+					leetCodeChannel.appendLine('[Notion] All problems have Notion pages after recheck.');
+					return;
+				}
+			}
+			if (missingProblems.length > MAX_AUTO_ADDED_PROBLEMS) {
+				leetCodeChannel.appendLine(
+					`[Notion] ${missingProblems.length} problems are missing from Notion, more than ${MAX_AUTO_ADDED_PROBLEMS} to add automatically. Run "Update Template" to add them.`,
+				);
+				return;
+			}
+			await this.addNewProblemsToNotion(missingProblems);
+		} catch (error) {
+			handleBackgroundError(error, 'sync missing problems to Notion');
+		} finally {
+			this.isSyncingMissingProblems = false;
+		}
+	}
+
+	private getProblemsWithoutPages(problems: IProblem[]): IProblem[] {
+		const questionNumberPageIdMapping = globalState.getQuestionNumberPageIdMapping() ?? {};
+		return problems.filter(({ id }) => !(id in questionNumberPageIdMapping));
 	}
 
 	public async addNewProblemsToNotion(newProblems: IProblem[]): Promise<void> {

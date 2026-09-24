@@ -41,6 +41,7 @@ const DISK_STORAGE_KEYS = new Set([
 	ProblemRatingMapKey,
 	CachedProblemsKey,
 	'leetcodeContests',
+	'leetcodeContestDetails',
 ]);
 
 export type UserDataType = {

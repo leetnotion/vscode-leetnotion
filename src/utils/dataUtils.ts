@@ -1,7 +1,9 @@
 // Copyright (c) leetnotion. All rights reserved.
 // Licensed under the MIT license.
 
+import { PastContest } from '@leetnotion/leetcode-api';
 import * as fsExtra from 'fs-extra';
+import { isEqual, uniqBy } from 'lodash';
 import * as path from 'path';
 import { explorerNodeManager } from '../explorer/explorerNodeManager';
 import { globalState } from '../globalState';
@@ -9,6 +11,7 @@ import { leetCodeChannel } from '../leetCodeChannel';
 import { leetcodeClient } from '../leetCodeClient';
 import {
 	CompanyTags,
+	ContestDetail,
 	Lists,
 	ListsWithQuestions,
 	Mapping,
@@ -17,7 +20,12 @@ import {
 	Sheets,
 	TopicTags,
 } from '../types';
-import { getStaticContests, getStaticRatings, getStaticTopicTags } from './staticDataUtils';
+import {
+	getStaticContestDetails,
+	getStaticContests,
+	getStaticRatings,
+	getStaticTopicTags,
+} from './staticDataUtils';
 import { sleep } from './toolUtils';
 
 const sheetsPath = '../../data/sheets.json';
@@ -38,47 +46,94 @@ export function getQuestionCompanyTags(): QuestionCompanyTags {
 	return fsExtra.readJSONSync(path.join(__dirname, questionCompanyTagsPath)) as QuestionCompanyTags;
 }
 
+let bundledContestsMerge: Promise<void> | undefined;
+
+// Each release bundles fresher contest data, so fold it into the caches once per session.
+// Bundled entries win: they're complete even when runtime sync could only map some of a
+// contest's problems. Contests only known from runtime sync are kept.
+function mergeBundledContests(): Promise<void> {
+	bundledContestsMerge ??= (async () => {
+		try {
+			const [cachedContests, cachedDetails] = await Promise.all([
+				globalState.getDisk<Record<string, string[]>>('leetcodeContests'),
+				globalState.getDisk<ContestDetail[]>('leetcodeContestDetails'),
+			]);
+
+			const staticContests = getStaticContests();
+			const contestsChanged =
+				!cachedContests ||
+				Object.entries(staticContests).some(([title, ids]) => !isEqual(cachedContests[title], ids));
+			if (contestsChanged) {
+				await globalState.updateDisk('leetcodeContests', { ...cachedContests, ...staticContests });
+			}
+
+			const staticDetails = getStaticContestDetails();
+			const cachedDetailsBySlug = new Map((cachedDetails ?? []).map((c) => [c.slug, c]));
+			const detailsChanged =
+				!cachedDetails || staticDetails.some((c) => !isEqual(cachedDetailsBySlug.get(c.slug), c));
+			if (detailsChanged) {
+				await globalState.updateDisk(
+					'leetcodeContestDetails',
+					uniqBy([...staticDetails, ...(cachedDetails ?? [])], (c) => c.slug),
+				);
+			}
+		} catch (error) {
+			leetCodeChannel.appendLine(
+				`[mergeBundledContests] Failed to merge bundled contests: ${error}`,
+			);
+		}
+	})();
+	return bundledContestsMerge;
+}
+
+async function getCachedContests(): Promise<Record<string, string[]>> {
+	await mergeBundledContests();
+	return (
+		(await globalState.getDisk<Record<string, string[]>>('leetcodeContests')) ?? getStaticContests()
+	);
+}
+
+export async function getContestDetails(): Promise<ContestDetail[]> {
+	await mergeBundledContests();
+	return (
+		(await globalState.getDisk<ContestDetail[]>('leetcodeContestDetails')) ??
+		getStaticContestDetails()
+	);
+}
+
+// Contests ordered by start time, newest first. The tree renders contests in key order.
 export async function getContests(): Promise<Record<string, string[]>> {
-	const cached = await globalState.getDisk<Record<string, string[]>>('leetcodeContests');
-	if (cached) {
-		return cached;
-	}
-	const staticContests = getStaticContests();
-	await globalState.updateDisk('leetcodeContests', staticContests);
-	return staticContests;
+	const [contests, contestDetails] = await Promise.all([getCachedContests(), getContestDetails()]);
+	const startTimes = new Map(contestDetails.map((c) => [c.title, c.startTime]));
+	// A contest without details was synced before its details were, so treat it as newest
+	const startTimeOf = (title: string) => startTimes.get(title) ?? Number.MAX_SAFE_INTEGER;
+	const sortedTitles = Object.keys(contests).sort((a, b) => startTimeOf(b) - startTimeOf(a));
+	return Object.fromEntries(sortedTitles.map((title) => [title, contests[title]]));
 }
 
 export async function syncContests(): Promise<void> {
 	try {
-		const contests = await getContests();
+		const [contests, contestDetails] = await Promise.all([
+			getCachedContests(),
+			getContestDetails(),
+		]);
 		const existingContestNames = new Set(Object.keys(contests));
+		const existingDetailSlugs = new Set(contestDetails.map((c) => c.slug));
+		const isKnown = (c: PastContest) =>
+			existingContestNames.has(c.title) && existingDetailSlugs.has(c.titleSlug);
+
+		// Past contests come newest first, so paginate until a page reaches known contests
 		const pageSize = 30;
-
-		// Fetch first page to get totalNum
-		const { totalNum, contests: firstPage } = await leetcodeClient.leetcode.getPastContests({
-			limit: pageSize,
-			skip: 0,
-		});
-
-		// Collect all new contests by paginating until we hit known contests
-		const newContests = firstPage.filter((c) => !existingContestNames.has(c.title));
-
-		// If all contests on first page are new and there could be more, keep fetching
-		if (
-			newContests.length === firstPage.length &&
-			totalNum > existingContestNames.size + pageSize
-		) {
-			for (let skip = pageSize; skip < totalNum; skip += pageSize) {
-				const { contests: page } = await leetcodeClient.leetcode.getPastContests({
-					limit: pageSize,
-					skip,
-				});
-				const newInPage = page.filter((c) => !existingContestNames.has(c.title));
-				newContests.push(...newInPage);
-				// Stop if we've reached contests we already have
-				if (newInPage.length < page.length) {
-					break;
-				}
+		const newContests: PastContest[] = [];
+		for (let skip = 0; ; skip += pageSize) {
+			const { totalNum, contests: page } = await leetcodeClient.leetcode.getPastContests({
+				limit: pageSize,
+				skip,
+			});
+			const newInPage = page.filter((c) => !isKnown(c));
+			newContests.push(...newInPage);
+			if (page.length === 0 || newInPage.length < page.length || skip + pageSize >= totalNum) {
+				break;
 			}
 		}
 
@@ -87,12 +142,27 @@ export async function syncContests(): Promise<void> {
 			return;
 		}
 
+		const newDetails: ContestDetail[] = newContests
+			.filter((c) => !existingDetailSlugs.has(c.titleSlug))
+			.map((c) => ({
+				slug: c.titleSlug,
+				title: c.title,
+				startTime: c.startTime,
+				duration: c.duration,
+			}));
+		if (newDetails.length > 0) {
+			await globalState.updateDisk('leetcodeContestDetails', [...newDetails, ...contestDetails]);
+			leetCodeChannel.appendLine(
+				`[syncContests] Synced details of ${newDetails.length} new contest(s).`,
+			);
+		}
+
 		// Use cached slug → frontend ID mapping
 		const slugToId = globalState.getTitleSlugQuestionNumberMapping() ?? {};
 
 		// Fetch questions for each new contest
 		const newEntries: Record<string, string[]> = {};
-		for (const contest of newContests) {
+		for (const contest of newContests.filter((c) => !existingContestNames.has(c.title))) {
 			try {
 				const { questions } = await leetcodeClient.leetcode.getContestQuestions(contest.titleSlug);
 				const ids = questions.map((q) => slugToId[q.title_slug]).filter(Boolean);
@@ -110,10 +180,17 @@ export async function syncContests(): Promise<void> {
 		if (Object.keys(newEntries).length > 0) {
 			const updated = { ...newEntries, ...contests };
 			await globalState.updateDisk('leetcodeContests', updated);
-			await explorerNodeManager.refreshCache();
 			leetCodeChannel.appendLine(
 				`[syncContests] Synced ${Object.keys(newEntries).length} new contest(s).`,
 			);
+		}
+
+		// New details can also move contests already in the tree, since they set the order
+		if (
+			Object.keys(newEntries).length > 0 ||
+			newDetails.some((c) => existingContestNames.has(c.title))
+		) {
+			await explorerNodeManager.refreshCache();
 		}
 	} catch (error) {
 		leetCodeChannel.appendLine(`[syncContests] Failed to sync contests: ${error}`);

@@ -4,12 +4,13 @@
 import * as fsExtra from 'fs-extra';
 import * as path from 'path';
 import { IProblem, ProblemState } from '../shared';
-import { ProblemRatingMap, TopicTags } from '../types';
+import { ContestDetail, ProblemRatingMap, TopicTags } from '../types';
 
 const categoryProblemsPath = '../../data/categoryProblems.json';
 const topicTagsPath = '../../data/topicTags.json';
 const ratingsPath = '../../data/ratings.json';
 const contestsPath = '../../data/contests.json';
+const contestDetailsPath = '../../data/contestDetails.json';
 
 interface StaticProblem {
 	id: string;
@@ -49,4 +50,8 @@ export function getStaticRatings(): ProblemRatingMap {
 
 export function getStaticContests(): Record<string, string[]> {
 	return fsExtra.readJSONSync(path.join(__dirname, contestsPath)) as Record<string, string[]>;
+}
+
+export function getStaticContestDetails(): ContestDetail[] {
+	return fsExtra.readJSONSync(path.join(__dirname, contestDetailsPath)) as ContestDetail[];
 }
